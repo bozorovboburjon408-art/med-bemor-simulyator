@@ -43,7 +43,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
         body {
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
             color: #0f172a;
             font-family: 'Inter', sans-serif;
             user-select: none;
@@ -54,17 +54,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             font-family: 'Share Tech Mono', monospace;
         }
 
-        /* Medical Console Bezel Casing (Clean Medical Platinum Styling) */
+        /* Medical Console Bezel Casing */
         .med-casing {
-            background: linear-gradient(145deg, #ffffff, #f8fafc);
-            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1), 0 0 0 1px #cbd5e1;
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.08), 0 0 0 1px #cbd5e1;
             border-radius: 1.5rem;
         }
 
         .med-panel-inset {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
             border-radius: 1rem;
         }
 
@@ -280,49 +280,50 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         </section>
 
-        <!-- ==================== RIGHT COLUMN (7/12): LARGE TEST CONTROLS & EXAM SUITE ==================== -->
+        <!-- ==================== RIGHT COLUMN (7/12): MAIN CLINICAL ASSESSMENT & CONTROLS ==================== -->
         <section class="lg:col-span-7 flex flex-col gap-4">
             
-            <!-- 1. TOP MODE SWITCHER & STUDENT STATUS CARD -->
+            <!-- 1. ENLARGED PROMINENT MODE SELECTOR (KATTALASHTIRILGAN REJIM TANLASH) -->
             <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">REJIM:</span>
-                        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                            <button type="button" id="tab-practice" onclick="switchMode('practice')" class="px-4 py-1.5 rounded-lg font-bold text-xs bg-blue-600 text-white transition shadow-sm cursor-pointer">
-                                🔘 Erkin Mashq
-                            </button>
-                            <button type="button" id="tab-exam" onclick="switchMode('exam')" class="px-4 py-1.5 rounded-lg font-bold text-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 transition flex items-center gap-1.5 cursor-pointer">
-                                <i class="fa-solid fa-graduation-cap text-amber-500"></i> 🎓 Imtihon / Baholash
-                            </button>
-                        </div>
-                    </div>
+                <div class="text-xs font-black text-slate-500 uppercase tracking-wider">MASHG'ULOT REJIMINI TANLANG:</div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Erkin Mashq Button -->
+                    <button type="button" id="tab-practice" onclick="switchMode('practice')" 
+                            class="py-4 px-4 rounded-2xl font-black text-sm sm:text-base bg-blue-600 text-white transition shadow-md flex items-center justify-center gap-2.5 cursor-pointer border-2 border-blue-700">
+                        <i class="fa-solid fa-dumbbell text-lg"></i> 🔘 ERKIN MASHQ
+                    </button>
 
-                    <button type="button" onclick="openStudentModal()" class="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-300 flex items-center gap-1.5 transition">
-                        <i class="fa-solid fa-user-pen text-blue-600"></i> Talabani o'zgartirish
+                    <!-- Imtihon Rejimi Button -->
+                    <button type="button" id="tab-exam" onclick="switchMode('exam')" 
+                            class="py-4 px-4 rounded-2xl font-black text-sm sm:text-base bg-slate-50 text-slate-700 hover:bg-slate-100 transition border-2 border-slate-200 flex items-center justify-center gap-2.5 cursor-pointer shadow-sm">
+                        <i class="fa-solid fa-graduation-cap text-lg text-amber-500"></i> 🎓 IMTIHON REJIMI
                     </button>
                 </div>
 
-                <div class="flex items-center justify-between bg-blue-50/70 border border-blue-200/80 px-3.5 py-2 rounded-xl text-xs">
+                <!-- Active Status Banner -->
+                <div id="mode-status-banner" class="flex items-center justify-between bg-blue-50/70 border border-blue-200/80 px-3.5 py-2.5 rounded-xl text-xs">
                     <div class="flex items-center gap-2 text-slate-800">
-                        <i class="fa-solid fa-user-graduate text-blue-600 text-sm"></i>
-                        <span id="hud-student-display" class="font-bold">Talaba: Kiritilmagan (Erkin mashq)</span>
+                        <i id="mode-status-icon" class="fa-solid fa-circle-check text-blue-600 text-sm"></i>
+                        <span id="hud-student-display" class="font-bold">Erkin Mashq: Cheklovlarsiz mashq qiling, barcha harakatlar hisoblanadi</span>
                     </div>
-                    <span class="text-[11px] text-blue-700 font-bold">General Doctor GD/H126</span>
+                    <button type="button" id="btn-reset-practice" onclick="resetPracticeCounts()" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-lg border border-slate-300 transition text-[11px] shadow-sm">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Qayta boshlash
+                    </button>
                 </div>
             </div>
 
-            <!-- 2. EXAM & LIVE ASSESSMENT HUD (REAL-TIME METRICS) -->
+            <!-- 2. REAL-TIME ASSESSMENT METRICS HUD (BOTH IN PRACTICE & EXAM MODES) -->
             <div id="exam-hud-card" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
                 
-                <!-- HUD Header with Timer and Control -->
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                <!-- Exam-Specific Controls Header (Visible only when in Exam mode) -->
+                <div id="exam-controls-header" class="hidden flex items-center justify-between border-b border-slate-100 pb-3">
                     <div class="flex flex-col">
                         <div class="flex items-center gap-2">
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase tracking-wide flex items-center gap-1">
-                                <i class="fa-solid fa-stopwatch"></i> BAHOLASH PROTOKOLI
+                                <i class="fa-solid fa-stopwatch"></i> RASMIY IMTIHON VAQTI
                             </span>
-                            <span id="exam-live-feedback" class="text-xs font-bold text-slate-600">Tayyor</span>
+                            <span id="exam-live-feedback" class="text-xs font-bold text-slate-600">Tayyor: 'Boshlash' tugmasini bosing!</span>
                         </div>
                     </div>
 
@@ -383,80 +384,79 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </div>
                 </div>
 
+                <!-- Practice Live Status Line -->
+                <div id="practice-live-status-line" class="text-xs font-bold text-slate-600 text-center py-1">
+                    Hozirgi holat: <span id="practice-feedback-text" class="text-blue-600">Ko'krakni 38-55 kg kuch bilan bosing yoki Ambu qopi bilan nafas bering</span>
+                </div>
+
             </div>
 
-            <!-- 3. ENLARGED TEST CONTROLS & MANUAL ACTION PANEL (KATAROQ TIBBIY TUGMALAR) -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3.5">
+            <!-- 3. COLLAPSIBLE SOFTWARE SIMULATION CONTROLS (YASHIRILGAN TEST BOSHQARUVI) -->
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
                 
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <span class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-blue-600"></i> DASTURIY TEST VA SIMULYATSIYA BOSHQARUVI
+                <!-- Header Toggle Button -->
+                <button type="button" onclick="toggleTestPanel()" 
+                        class="w-full py-3 px-4 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-between border-b border-slate-100 transition cursor-pointer">
+                    <span class="flex items-center gap-2 text-slate-700">
+                        <i class="fa-solid fa-sliders text-blue-600"></i>
+                        <span>Dasturiy Test va Simulyatsiya Slayderlari (Qo'lda sinash uchun)</span>
                     </span>
-                    <span class="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                        ESP32 Datchiklar Faol
+                    <span class="flex items-center gap-1.5 text-[11px] text-slate-400">
+                        <span id="test-panel-status-text">Ochish</span>
+                        <i id="test-panel-icon" class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
                     </span>
-                </div>
+                </button>
 
-                <!-- 2 LARGE FAST-ACTION BUTTONS (CPR & LUNG BREATH) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="button" onclick="simSingleStroke(45.0)" class="py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 font-bold text-sm text-white text-center shadow-md transition flex items-center justify-center gap-2 cursor-pointer border border-emerald-700">
-                        <i class="fa-solid fa-hand-fist text-base"></i> 🖐️ 1 ta CPR Bosish (45 kg)
-                    </button>
+                <!-- Hidden Simulation Controls by default -->
+                <div id="simulation-controls-wrapper" class="hidden p-4 flex flex-col gap-3.5 bg-white">
+                    
+                    <!-- 2 Large Fast-Action Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" onclick="simSingleStroke(45.0)" class="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 font-bold text-xs text-white text-center shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-hand-fist"></i> 🖐️ 1 ta CPR Bosish (45 kg)
+                        </button>
 
-                    <button type="button" onclick="simSingleBreath(2.6)" class="py-3.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-98 font-bold text-sm text-white text-center shadow-md transition flex items-center justify-center gap-2 cursor-pointer border border-sky-700">
-                        <i class="fa-solid fa-lungs text-base"></i> 🫁 1 ta Nafas (2.6 kPa)
-                    </button>
-                </div>
+                        <button type="button" onclick="simSingleBreath(2.6)" class="py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-98 font-bold text-xs text-white text-center shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-lungs"></i> 🫁 1 ta Nafas (2.6 kPa)
+                        </button>
+                    </div>
 
-                <!-- 2 LARGE SLIDERS (FORCE & LUNG PRESSURE) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                    <!-- Force Slider -->
-                    <div>
-                        <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                            <span>Ko'krak Massaj Kuchi:</span>
-                            <span id="sim-force-lbl" class="mono text-rose-600 font-black text-sm">0.0 kg</span>
+                    <!-- 2 Sliders -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                                <span>Ko'krak Kuchi:</span>
+                                <span id="sim-force-lbl" class="mono text-rose-600 font-bold">0.0 kg</span>
+                            </div>
+                            <input type="range" id="sim-force" min="0" max="60" step="0.5" value="0" 
+                                   oninput="onSimInput()" class="w-full accent-rose-600 h-2 bg-slate-300 rounded-lg cursor-pointer">
                         </div>
-                        <input type="range" id="sim-force" min="0" max="60" step="0.5" value="0" 
-                               oninput="onSimInput()" class="w-full accent-rose-600 h-2 bg-slate-300 rounded-lg cursor-pointer">
-                        <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold">
-                            <span>0 kg (Bo'sh)</span>
-                            <span class="text-emerald-600 font-bold">Norma (38 - 55 kg)</span>
-                            <span>60 kg</span>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                                <span>O'pka Bosimi:</span>
+                                <span id="sim-lung-lbl" class="mono text-cyan-600 font-bold">0.0 kPa</span>
+                            </div>
+                            <input type="range" id="sim-lung" min="0" max="4.0" step="0.1" value="0" 
+                                   oninput="onSimInput()" class="w-full accent-cyan-600 h-2 bg-slate-300 rounded-lg cursor-pointer">
                         </div>
                     </div>
 
-                    <!-- Lung Pressure Slider -->
-                    <div>
-                        <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                            <span>O'pka Ventilyatsiya Bosimi:</span>
-                            <span id="sim-lung-lbl" class="mono text-cyan-600 font-black text-sm">0.0 kPa (0 cmH2O)</span>
-                        </div>
-                        <input type="range" id="sim-lung" min="0" max="4.0" step="0.1" value="0" 
-                               oninput="onSimInput()" class="w-full accent-cyan-600 h-2 bg-slate-300 rounded-lg cursor-pointer">
-                        <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold">
-                            <span>0 kPa</span>
-                            <span class="text-emerald-600 font-bold">Norma (2.0 - 3.0 kPa)</span>
-                            <span>4.0 kPa</span>
-                        </div>
+                    <!-- 3 Toggles -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" id="btn-toggle-pos" onclick="toggleSimPos()" class="py-2 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-xs text-center border border-slate-300 transition cursor-pointer text-slate-800">
+                            🔘 Nuqta: <span id="pos-btn-text" class="text-rose-600">BO'SH</span>
+                        </button>
+
+                        <button type="button" id="btn-toggle-inj" onclick="triggerSimInj()" class="py-2 px-2 rounded-lg bg-purple-50 hover:bg-purple-100 font-bold text-xs text-center border border-purple-200 transition cursor-pointer text-purple-900">
+                            💉 Ukol: <span id="inj-btn-text" class="text-purple-700">Kiritish</span>
+                        </button>
+
+                        <button type="button" onclick="triggerSimStomach()" class="py-2 px-2 rounded-lg bg-rose-50 hover:bg-rose-100 font-bold text-xs text-rose-800 border border-rose-200 transition cursor-pointer">
+                            ⚠️ Oshqozon
+                        </button>
                     </div>
-                </div>
 
-                <!-- 3 TOGGLE BUTTONS (POSITION, INJECTION, STOMACH) -->
-                <div class="grid grid-cols-3 gap-2.5">
-                    <!-- Hand Position Button Toggle -->
-                    <button type="button" id="btn-toggle-pos" onclick="toggleSimPos()" class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-center border border-slate-300 transition cursor-pointer text-slate-800 shadow-sm">
-                        🔘 Nuqta (Pin 13): <span id="pos-btn-text" class="text-rose-600 font-black">BO'SH</span>
-                    </button>
-
-                    <!-- Injection Button Toggle -->
-                    <button type="button" id="btn-toggle-inj" onclick="triggerSimInj()" class="py-2.5 px-3 rounded-xl bg-purple-50 hover:bg-purple-100 font-bold text-xs text-center border border-purple-200 transition cursor-pointer text-purple-900 shadow-sm">
-                        💉 Ukol (Pin 4): <span id="inj-btn-text" class="text-purple-700 font-black">Kiritish</span>
-                    </button>
-
-                    <!-- Stomach Pressure Spike -->
-                    <button type="button" onclick="triggerSimStomach()" class="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 font-bold text-xs text-rose-800 border border-rose-200 transition cursor-pointer shadow-sm">
-                        ⚠️ Oshqozon Bosimi
-                    </button>
                 </div>
 
             </div>
@@ -465,7 +465,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </main>
 
-    <!-- ==================== 1. STUDENT REGISTRATION MODAL (CLEAN LIGHT MEDICAL THEME) ==================== -->
+    <!-- ==================== 1. STUDENT REGISTRATION MODAL (ONLY IN EXAM MODE) ==================== -->
     <div id="student-modal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white border border-slate-300 rounded-3xl max-w-md w-full p-6 shadow-2xl text-slate-900 flex flex-col gap-4">
             
@@ -528,7 +528,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- ==================== 2. EXAM RESULTS MODAL SCORECARD (LIGHT MEDICAL THEME) ==================== -->
+    <!-- ==================== 2. EXAM RESULTS MODAL SCORECARD (ONLY IN EXAM MODE) ==================== -->
     <div id="exam-modal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white border border-slate-300 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-slate-900 flex flex-col gap-4">
             
@@ -747,6 +747,25 @@ HTML_CONTENT = """<!DOCTYPE html>
         createLedSegments("force-bar-container");
         createLedSegments("lung-bar-container");
 
+        // ==================== TOGGLE HIDDEN TEST PANEL ====================
+        let isTestPanelOpen = false;
+        function toggleTestPanel() {
+            isTestPanelOpen = !isTestPanelOpen;
+            const wrapper = document.getElementById("simulation-controls-wrapper");
+            const icon = document.getElementById("test-panel-icon");
+            const txt = document.getElementById("test-panel-status-text");
+
+            if (isTestPanelOpen) {
+                wrapper.classList.remove("hidden");
+                icon.style.transform = "rotate(180deg)";
+                txt.innerText = "Yopish";
+            } else {
+                wrapper.classList.add("hidden");
+                icon.style.transform = "rotate(0deg)";
+                txt.innerText = "Ochish";
+            }
+        }
+
         // ==================== STUDENT REGISTRATION & EXAM STATE ====================
         let studentInfo = {
             name: "",
@@ -755,12 +774,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             examiner: "Kafedra Assistent / O'qituvchisi"
         };
 
-        let currentAppMode = "practice";
+        let currentAppMode = "practice"; // "practice" or "exam"
         let isExamActive = false;
         let examTimerInterval = null;
         let examTimeLeft = 120;
 
-        let examStats = {
+        let liveStats = {
             totalComps: 0,
             correctComps: 0,
             wrongComps: 0,
@@ -778,19 +797,60 @@ HTML_CONTENT = """<!DOCTYPE html>
             currentAppMode = mode;
             const tabPrac = document.getElementById("tab-practice");
             const tabExam = document.getElementById("tab-exam");
+            const examHeader = document.getElementById("exam-controls-header");
+            const pracStatusLine = document.getElementById("practice-live-status-line");
+            const btnResetPrac = document.getElementById("btn-reset-practice");
+            const banner = document.getElementById("mode-status-banner");
+            const bannerIcon = document.getElementById("mode-status-icon");
+            const bannerText = document.getElementById("hud-student-display");
 
             if (mode === "exam") {
-                tabExam.className = "px-4 py-1.5 rounded-lg font-bold text-xs bg-blue-600 text-white transition shadow-sm cursor-pointer";
-                tabPrac.className = "px-4 py-1.5 rounded-lg font-bold text-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 transition cursor-pointer";
+                tabExam.className = "py-4 px-4 rounded-2xl font-black text-sm sm:text-base bg-blue-600 text-white transition shadow-md flex items-center justify-center gap-2.5 cursor-pointer border-2 border-blue-700";
+                tabPrac.className = "py-4 px-4 rounded-2xl font-black text-sm sm:text-base bg-slate-50 text-slate-700 hover:bg-slate-100 transition border-2 border-slate-200 flex items-center justify-center gap-2.5 cursor-pointer shadow-sm";
                 
+                examHeader.classList.remove("hidden");
+                pracStatusLine.classList.add("hidden");
+                btnResetPrac.classList.add("hidden");
+
+                banner.className = "flex items-center justify-between bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-xl text-xs";
+                bannerIcon.className = "fa-solid fa-graduation-cap text-amber-600 text-sm";
+                bannerText.innerText = studentInfo.name ? `Talaba: ${studentInfo.name} (${studentInfo.group})` : "Imtihon rejimi: Talaba ro'yxatdan o'tkazilmoqda...";
+
                 if (!studentInfo.name) {
                     openStudentModal();
                 }
             } else {
-                tabPrac.className = "px-4 py-1.5 rounded-lg font-bold text-xs bg-blue-600 text-white transition shadow-sm cursor-pointer";
-                tabExam.className = "px-4 py-1.5 rounded-lg font-bold text-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 transition flex items-center gap-1.5 cursor-pointer";
-                if (isExamActive) toggleExamState();
+                tabPrac.className = "py-4 px-4 rounded-2xl font-black text-sm sm:text-base bg-blue-600 text-white transition shadow-md flex items-center justify-center gap-2.5 cursor-pointer border-2 border-blue-700";
+                tabExam.className = "py-4 px-4 rounded-2xl font-black text-sm sm:text-base bg-slate-50 text-slate-700 hover:bg-slate-100 transition border-2 border-slate-200 flex items-center justify-center gap-2.5 cursor-pointer shadow-sm";
+                
+                examHeader.classList.add("hidden");
+                pracStatusLine.classList.remove("hidden");
+                btnResetPrac.classList.remove("hidden");
+
+                banner.className = "flex items-center justify-between bg-blue-50/70 border border-blue-200/80 px-3.5 py-2.5 rounded-xl text-xs";
+                bannerIcon.className = "fa-solid fa-circle-check text-blue-600 text-sm";
+                bannerText.innerText = "Erkin Mashq: Cheklovlarsiz mashq qiling, barcha harakatlar hisoblanadi";
+
+                if (isExamActive) resetExamState();
             }
+        }
+
+        function resetPracticeCounts() {
+            liveStats = {
+                totalComps: 0,
+                correctComps: 0,
+                wrongComps: 0,
+                shallowErrors: 0,
+                excessErrors: 0,
+                posErrors: 0,
+                recoilErrors: 0,
+                totalVents: 0,
+                correctVents: 0,
+                stomachErrors: 0,
+                strokeTimes: []
+            };
+            updateExamHUD();
+            document.getElementById("practice-feedback-text").innerText = "Hisoblagich yangilandi. Ko'krakni bosing yoki nafas bering!";
         }
 
         function openStudentModal() {
@@ -802,6 +862,9 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function closeStudentModal() {
             document.getElementById("student-modal").classList.add("hidden");
+            if (!studentInfo.name && currentAppMode === "exam") {
+                switchMode("practice");
+            }
         }
 
         function requestStartExam() {
@@ -844,7 +907,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             isExamActive = false;
             examTimeLeft = 120;
 
-            examStats = {
+            liveStats = {
                 totalComps: 0,
                 correctComps: 0,
                 wrongComps: 0,
@@ -902,15 +965,15 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (examTimerInterval) clearInterval(examTimerInterval);
             isExamActive = false;
 
-            const total = examStats.totalComps || 1;
-            const correct = examStats.correctComps;
+            const total = liveStats.totalComps || 1;
+            const correct = liveStats.correctComps;
             const correctPct = Math.round((correct / total) * 100);
 
             let avgBpm = 110;
-            if (examStats.strokeTimes.length > 2) {
+            if (liveStats.strokeTimes.length > 2) {
                 let deltas = [];
-                for (let i = 1; i < examStats.strokeTimes.length; i++) {
-                    const d = examStats.strokeTimes[i] - examStats.strokeTimes[i-1];
+                for (let i = 1; i < liveStats.strokeTimes.length; i++) {
+                    const d = liveStats.strokeTimes[i] - liveStats.strokeTimes[i-1];
                     if (d > 200 && d < 1500) deltas.push(d);
                 }
                 if (deltas.length > 0) {
@@ -920,32 +983,32 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             let overallScore = correctPct;
-            if (examStats.stomachErrors > 0) {
-                overallScore = Math.max(0, overallScore - (examStats.stomachErrors * 5));
+            if (liveStats.stomachErrors > 0) {
+                overallScore = Math.max(0, overallScore - (liveStats.stomachErrors * 5));
             }
 
             const timeSpentSecs = 120 - examTimeLeft;
-            const isPassed = overallScore >= 80 && examStats.totalComps >= 20;
+            const isPassed = overallScore >= 80 && liveStats.totalComps >= 20;
 
-            // 1. Populate Screen Modal
+            // 1. Populate Screen Modal (Only shown in Exam mode)
             document.getElementById("modal-student-header").innerText = `Talaba: ${studentInfo.name || "Noma'lum"} (${studentInfo.group || "Guruhsiz"})`;
             document.getElementById("modal-total-score").innerText = `${overallScore}%`;
             document.getElementById("modal-time-spent").innerText = `${timeSpentSecs} soniya`;
-            document.getElementById("modal-total-comps").innerText = `${examStats.totalComps} ta`;
-            document.getElementById("modal-correct-comps").innerText = `${examStats.correctComps} ta (${correctPct}%)`;
-            document.getElementById("modal-wrong-comps").innerText = `${examStats.wrongComps} ta`;
+            document.getElementById("modal-total-comps").innerText = `${liveStats.totalComps} ta`;
+            document.getElementById("modal-correct-comps").innerText = `${liveStats.correctComps} ta (${correctPct}%)`;
+            document.getElementById("modal-wrong-comps").innerText = `${liveStats.wrongComps} ta`;
             document.getElementById("modal-bpm-avg").innerText = `${avgBpm} /min`;
 
             const errDiv = document.getElementById("modal-error-details");
             errDiv.innerHTML = `
-                <div>• ⚠️ Sayoz bosilgan (<38 kg): <b>${examStats.shallowErrors} ta</b></div>
-                <div>• ⚠️ Ortiqcha qattiq bosilgan (>55 kg): <b>${examStats.excessErrors} ta</b></div>
-                <div>• ❌ Qo'l noto'g'ri joyda bosilgan: <b>${examStats.posErrors} ta</b></div>
-                <div>• 🔄 Ko'krak to'liq bo'shatilmagan (recoil): <b>${examStats.recoilErrors} ta</b></div>
+                <div>• ⚠️ Sayoz bosilgan (<38 kg): <b>${liveStats.shallowErrors} ta</b></div>
+                <div>• ⚠️ Ortiqcha qattiq bosilgan (>55 kg): <b>${liveStats.excessErrors} ta</b></div>
+                <div>• ❌ Qo'l noto'g'ri joyda bosilgan: <b>${liveStats.posErrors} ta</b></div>
+                <div>• 🔄 Ko'krak to'liq bo'shatilmagan (recoil): <b>${liveStats.recoilErrors} ta</b></div>
             `;
 
             document.getElementById("modal-vent-summary").innerText = 
-                `Jami: ${examStats.totalVents} ta | To'g'ri (2.0-3.0 kPa): ${examStats.correctVents} ta | Oshqozon xatosi: ${examStats.stomachErrors} ta`;
+                `Jami: ${liveStats.totalVents} ta | To'g'ri (2.0-3.0 kPa): ${liveStats.correctVents} ta | Oshqozon xatosi: ${liveStats.stomachErrors} ta`;
 
             const badge = document.getElementById("modal-status-badge");
             if (isPassed) {
@@ -972,34 +1035,36 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById("print-status-text").style.color = isPassed ? "#15803d" : "#b91c1c";
             document.getElementById("print-total-pct").innerText = `${overallScore}%`;
 
-            document.getElementById("print-val-total-comps").innerText = `${examStats.totalComps} ta`;
-            document.getElementById("print-res-total-comps").innerText = examStats.totalComps >= 20 ? "Qoniqarli" : "Kam";
+            document.getElementById("print-val-total-comps").innerText = `${liveStats.totalComps} ta`;
+            document.getElementById("print-res-total-comps").innerText = liveStats.totalComps >= 20 ? "Qoniqarli" : "Kam";
 
-            document.getElementById("print-val-correct-comps").innerText = `${examStats.correctComps} ta (${correctPct}%)`;
+            document.getElementById("print-val-correct-comps").innerText = `${liveStats.correctComps} ta (${correctPct}%)`;
             document.getElementById("print-res-correct-comps").innerText = correctPct >= 80 ? "A'lo" : "Yetarli emas";
 
-            document.getElementById("print-val-recoil").innerText = `${examStats.recoilErrors} ta xato`;
-            document.getElementById("print-res-recoil").innerText = examStats.recoilErrors === 0 ? "Mukammal" : "E'tibor bering";
+            document.getElementById("print-val-recoil").innerText = `${liveStats.recoilErrors} ta xato`;
+            document.getElementById("print-res-recoil").innerText = liveStats.recoilErrors === 0 ? "Mukammal" : "E'tibor bering";
 
             document.getElementById("print-val-bpm").innerText = `${avgBpm} /min`;
             document.getElementById("print-res-bpm").innerText = (avgBpm >= 100 && avgBpm <= 120) ? "Me'yorda" : "Tuzatish lozim";
 
-            document.getElementById("print-val-vents").innerText = `${examStats.correctVents} / ${examStats.totalVents} to'g'ri`;
-            document.getElementById("print-res-vents").innerText = examStats.correctVents > 0 ? "Muvaffaqiyatli" : "Nafas berilmadi";
+            document.getElementById("print-val-vents").innerText = `${liveStats.correctVents} / ${liveStats.totalVents} to'g'ri`;
+            document.getElementById("print-res-vents").innerText = liveStats.correctVents > 0 ? "Muvaffaqiyatli" : "Nafas berilmadi";
 
-            document.getElementById("print-val-stomach").innerText = `${examStats.stomachErrors} ta`;
-            document.getElementById("print-res-stomach").innerText = examStats.stomachErrors === 0 ? "Toza" : "XATO (Oshqozon)";
+            document.getElementById("print-val-stomach").innerText = `${liveStats.stomachErrors} ta`;
+            document.getElementById("print-res-stomach").innerText = liveStats.stomachErrors === 0 ? "Toza" : "XATO (Oshqozon)";
 
             const printErrList = document.getElementById("print-error-list");
             printErrList.innerHTML = `
-                <div>• Sayoz bosilgan (<38 kg): <b>${examStats.shallowErrors} ta</b></div>
-                <div>• Ortiqcha qattiq bosilgan (>55 kg): <b>${examStats.excessErrors} ta</b></div>
-                <div>• Qo'l noto'g'ri nuqtada bosilgan: <b>${examStats.posErrors} ta</b></div>
-                <div>• Ko'krak to'liq bo'shatilmagan (recoil): <b>${examStats.recoilErrors} ta</b></div>
-                <div>• Oshqozonga havo qochishi: <b>${examStats.stomachErrors} ta</b></div>
+                <div>• Sayoz bosilgan (<38 kg): <b>${liveStats.shallowErrors} ta</b></div>
+                <div>• Ortiqcha qattiq bosilgan (>55 kg): <b>${liveStats.excessErrors} ta</b></div>
+                <div>• Qo'l noto'g'ri nuqtada bosilgan: <b>${liveStats.posErrors} ta</b></div>
+                <div>• Ko'krak to'liq bo'shatilmagan (recoil): <b>${liveStats.recoilErrors} ta</b></div>
+                <div>• Oshqozonga havo qochishi: <b>${liveStats.stomachErrors} ta</b></div>
             `;
 
-            document.getElementById("exam-modal").classList.remove("hidden");
+            if (currentAppMode === "exam") {
+                document.getElementById("exam-modal").classList.remove("hidden");
+            }
         }
 
         function printExamProtocol() {
@@ -1024,18 +1089,18 @@ HTML_CONTENT = """<!DOCTYPE html>
             const elTotal = document.getElementById("stat-total-comps");
             if (!elTotal) return;
 
-            elTotal.innerText = examStats.totalComps;
-            document.getElementById("stat-correct-comps").innerText = examStats.correctComps;
+            elTotal.innerText = liveStats.totalComps;
+            document.getElementById("stat-correct-comps").innerText = liveStats.correctComps;
             
-            const total = examStats.totalComps;
-            const pct = total > 0 ? Math.round((examStats.correctComps / total) * 100) : 100;
+            const total = liveStats.totalComps;
+            const pct = total > 0 ? Math.round((liveStats.correctComps / total) * 100) : 100;
             document.getElementById("stat-correct-pct").innerText = `${pct}% to'g'ri`;
 
-            document.getElementById("stat-wrong-comps").innerText = examStats.wrongComps;
-            document.getElementById("stat-wrong-reasons").innerText = `${examStats.wrongComps} ta xato`;
+            document.getElementById("stat-wrong-comps").innerText = liveStats.wrongComps;
+            document.getElementById("stat-wrong-reasons").innerText = `${liveStats.wrongComps} ta xato`;
 
-            document.getElementById("stat-total-vents").innerText = examStats.totalVents;
-            document.getElementById("stat-vent-status").innerText = `${examStats.correctVents} to'g'ri`;
+            document.getElementById("stat-total-vents").innerText = liveStats.totalVents;
+            document.getElementById("stat-vent-status").innerText = `${liveStats.correctVents} to'g'ri`;
 
             document.getElementById("stat-live-quality").innerText = `${pct}%`;
             const qBar = document.getElementById("stat-quality-bar");
@@ -1065,14 +1130,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             requestStartExam();
         }
 
-        // ==================== REAL ACTION STROKE ANALYZER ====================
+        // ==================== REAL ACTION STROKE ANALYZER (BOTH MODES) ====================
         let cprStrokeState = "idle";
         let cprPeak = 0;
         let cprPosAtPeak = false;
 
         function processExamHardware(forceKg, lungKpa, stomachKpa, posBtn) {
-            if (!isExamActive) return;
-
             const now = Date.now();
 
             // 1. Process Every Compression Attempt
@@ -1089,36 +1152,47 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
                 if (forceKg < (cprPeak - 4.0)) {
                     cprStrokeState = "recoiling";
-                    examStats.totalComps++;
-                    examStats.strokeTimes.push(now);
+                    liveStats.totalComps++;
+                    liveStats.strokeTimes.push(now);
 
                     let strokeErrors = [];
 
                     if (cprPeak < 38.0) {
-                        examStats.shallowErrors++;
+                        liveStats.shallowErrors++;
                         strokeErrors.push("Sayoz (<38kg)");
                     } else if (cprPeak > 55.0) {
-                        examStats.excessErrors++;
+                        liveStats.excessErrors++;
                         strokeErrors.push("Juda qattiq (>55kg)");
                     }
 
                     if (!cprPosAtPeak) {
-                        examStats.posErrors++;
+                        liveStats.posErrors++;
                         strokeErrors.push("Qo'l noto'g'ri joyda");
                     }
 
                     const fb = document.getElementById("exam-live-feedback");
+                    const pfb = document.getElementById("practice-feedback-text");
+
                     if (strokeErrors.length === 0) {
-                        examStats.correctComps++;
+                        liveStats.correctComps++;
                         if (fb) {
                             fb.innerText = `✅ To'g'ri zarba (${cprPeak.toFixed(1)} kg)`;
                             fb.className = "text-xs font-bold text-emerald-600";
                         }
+                        if (pfb) {
+                            pfb.innerText = `✅ A'LO ZARBA: ${cprPeak.toFixed(1)} kg (Me'yor: 38-55 kg)`;
+                            pfb.className = "text-emerald-600 font-bold";
+                        }
                     } else {
-                        examStats.wrongComps++;
+                        liveStats.wrongComps++;
+                        const errStr = strokeErrors.join(', ');
                         if (fb) {
-                            fb.innerText = `❌ Xato: ${strokeErrors.join(', ')}`;
+                            fb.innerText = `❌ Xato: ${errStr}`;
                             fb.className = "text-xs font-bold text-rose-600";
+                        }
+                        if (pfb) {
+                            pfb.innerText = `❌ XATO: ${errStr} (${cprPeak.toFixed(1)} kg)`;
+                            pfb.className = "text-rose-600 font-bold";
                         }
                     }
 
@@ -1128,7 +1202,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (forceKg <= 5.0) {
                     cprStrokeState = "idle";
                 } else if (forceKg > (cprPeak - 1.0) && forceKg > 5.0) {
-                    examStats.recoilErrors++;
+                    liveStats.recoilErrors++;
                     cprStrokeState = "compressing";
                     cprPeak = forceKg;
                 }
@@ -1137,24 +1211,38 @@ HTML_CONTENT = """<!DOCTYPE html>
             // 2. Process Ventilation Breath
             if (lungKpa >= 1.0 && !window._ventTriggered) {
                 window._ventTriggered = true;
-                examStats.totalVents++;
+                liveStats.totalVents++;
 
                 const fb = document.getElementById("exam-live-feedback");
+                const pfb = document.getElementById("practice-feedback-text");
+
                 if (lungKpa >= 2.0 && lungKpa <= 3.0) {
-                    examStats.correctVents++;
+                    liveStats.correctVents++;
                     if (fb) {
                         fb.innerText = `🫁 ✅ A'lo nafas (${lungKpa.toFixed(1)} kPa)`;
                         fb.className = "text-xs font-bold text-sky-600";
+                    }
+                    if (pfb) {
+                        pfb.innerText = `🫁 ✅ TO'G'RI NAFAS: ${lungKpa.toFixed(1)} kPa (20-30 cmH2O)`;
+                        pfb.className = "text-sky-600 font-bold";
                     }
                 } else if (lungKpa < 2.0) {
                     if (fb) {
                         fb.innerText = `🫁 ⚠️ Kam havo (<2.0 kPa)`;
                         fb.className = "text-xs font-bold text-amber-600";
                     }
+                    if (pfb) {
+                        pfb.innerText = `🫁 ⚠️ QATTIQROQ SIQING: Kam havo (${lungKpa.toFixed(1)} kPa < 2.0)`;
+                        pfb.className = "text-amber-600 font-bold";
+                    }
                 } else {
                     if (fb) {
                         fb.innerText = `🫁 🚨 Ortiqcha bosim (>3.0 kPa)`;
                         fb.className = "text-xs font-bold text-rose-600";
+                    }
+                    if (pfb) {
+                        pfb.innerText = `🫁 🚨 JUDA KUCHLI: Barotravma xavfi (${lungKpa.toFixed(1)} kPa > 3.0)`;
+                        pfb.className = "text-rose-600 font-bold";
                     }
                 }
 
@@ -1166,11 +1254,16 @@ HTML_CONTENT = """<!DOCTYPE html>
             // 3. Process Stomach Hazard
             if (stomachKpa > 0.8 && !window._stomachTriggered) {
                 window._stomachTriggered = true;
-                examStats.stomachErrors++;
+                liveStats.stomachErrors++;
                 const fb = document.getElementById("exam-live-feedback");
+                const pfb = document.getElementById("practice-feedback-text");
                 if (fb) {
                     fb.innerText = `⚠️ XATO: Havo oshqozonga ketdi!`;
                     fb.className = "text-xs font-bold text-rose-600 animate-pulse";
+                }
+                if (pfb) {
+                    pfb.innerText = `⚠️ XATO: Havo oshqozonga qochdi! Boshni to'g'ri buking.`;
+                    pfb.className = "text-rose-600 font-bold animate-pulse";
                 }
                 updateExamHUD();
             } else if (stomachKpa < 0.3) {
