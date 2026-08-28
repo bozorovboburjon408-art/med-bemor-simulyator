@@ -367,31 +367,72 @@
 
             </div>
 
-            <!-- 3. PERSISTENT EXAM RESULTS HISTORY LOG (IMTIHON NATIJALARI JURNALI) -->
-            <div id="exam-history-card" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <!-- 3. PERSISTENT EXAM RESULTS HISTORY LOG (COLLAPSIBLE, SEARCHABLE, SORTABLE) -->
+            <div id="exam-history-card" class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                
+                <!-- Header Toggle Button -->
+                <button type="button" onclick="toggleHistoryPanel()" 
+                        class="w-full py-3.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-between border-b border-slate-100 transition cursor-pointer">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> IMTIHON NATIJALARI TARI популяRI / JURNALI
-                        </span>
-                        <span id="history-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+                        <span class="font-extrabold uppercase tracking-wider text-slate-800">IMTIHON NATIJALARI JURNALI</span>
+                        <span id="history-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
                             0 ta
                         </span>
                     </div>
+                    <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+                        <span id="history-panel-status-text">Yopish</span>
+                        <i id="history-panel-icon" class="fa-solid fa-chevron-up text-xs transition-transform duration-200"></i>
+                    </div>
+                </button>
 
-                    <button type="button" onclick="clearAllExamHistory()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-[11px] flex items-center gap-1 cursor-pointer">
-                        <i class="fa-solid fa-trash-can text-xs"></i> Tarixni Tozalash
-                    </button>
+                <!-- Collapsible Content Wrapper -->
+                <div id="history-content-wrapper" class="p-4 flex flex-col gap-3 bg-white">
+                    <!-- Search & Sort Controls Bar -->
+                    <div class="flex flex-col sm:flex-row items-center gap-2">
+                        <!-- Search Input -->
+                        <div class="relative flex-1 w-full">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="history-search-input" oninput="onHistoryFilterChange()" 
+                                   placeholder="Talaba F.I.SH. yoki guruhi bo'yicha qidirish..." 
+                                   class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400">
+                        </div>
+
+                        <!-- Filter by Status Dropdown -->
+                        <select id="history-filter-status" onchange="onHistoryFilterChange()" 
+                                class="w-full sm:w-auto px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-bold focus:outline-none focus:border-blue-600 cursor-pointer">
+                            <option value="all">Barcha natijalar</option>
+                            <option value="passed">🏆 Faqat O'tganlar</option>
+                            <option value="failed">❌ Faqat Yiqilganlar</option>
+                        </select>
+
+                        <!-- Sort Dropdown -->
+                        <select id="history-sort-by" onchange="onHistoryFilterChange()" 
+                                class="w-full sm:w-auto px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-bold focus:outline-none focus:border-blue-600 cursor-pointer">
+                            <option value="newest">🕒 Eng yangilari</option>
+                            <option value="oldest">🕒 Eng eskisi</option>
+                            <option value="score_desc">📈 Yuqori ball</option>
+                            <option value="score_asc">📉 Past ball</option>
+                            <option value="name_asc">🔤 Alifbo (A-Z)</option>
+                        </select>
+
+                        <!-- Clear All Button -->
+                        <button type="button" onclick="clearAllExamHistory()" title="Barcha natijalarni tozalash"
+                                class="w-full sm:w-auto px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition text-xs flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
+                            <i class="fa-solid fa-trash-can text-xs"></i> Tozalash
+                        </button>
+                    </div>
+
+                    <!-- History Table / Records Container -->
+                    <div id="history-list-container" class="max-h-72 overflow-y-auto space-y-2 pr-1">
+                        <!-- Dynamic Records Loaded by JS -->
+                    </div>
+
+                    <div id="history-empty-placeholder" class="text-center py-4 text-xs text-slate-400 font-medium">
+                        Hali topshirilgan imtihonlar mavjud emas. Imtihon topshirilgach natijalar avtomatik saqlanadi.
+                    </div>
                 </div>
 
-                <!-- History Table / Records Container -->
-                <div id="history-list-container" class="max-h-60 overflow-y-auto space-y-2 pr-1">
-                    <!-- Dynamic Records Loaded by JS -->
-                </div>
-
-                <div id="history-empty-placeholder" class="text-center py-4 text-xs text-slate-400 font-medium">
-                    Hali topshirilgan imtihonlar mavjud emas. Imtihon topshirilgach natijalar avtomatik saqlanadi.
-                </div>
             </div>
 
             <!-- 4. COLLAPSIBLE SOFTWARE SIMULATION CONTROLS (YASHIRILGAN TEST BOSHQARUVI) -->
@@ -1167,6 +1208,29 @@
         }
 
         // ==================== PERSISTENT EXAM HISTORY STORAGE & MANAGEMENT ====================
+        let isHistoryPanelOpen = true;
+
+        function toggleHistoryPanel() {
+            isHistoryPanelOpen = !isHistoryPanelOpen;
+            const wrapper = document.getElementById("history-content-wrapper");
+            const icon = document.getElementById("history-panel-icon");
+            const txt = document.getElementById("history-panel-status-text");
+
+            if (isHistoryPanelOpen) {
+                wrapper.classList.remove("hidden");
+                icon.style.transform = "rotate(0deg)";
+                txt.innerText = "Yopish";
+            } else {
+                wrapper.classList.add("hidden");
+                icon.style.transform = "rotate(180deg)";
+                txt.innerText = "Ochish";
+            }
+        }
+
+        function onHistoryFilterChange() {
+            renderExamHistory();
+        }
+
         function getExamHistory() {
             try {
                 const raw = localStorage.getItem("cpr_exam_records");
@@ -1212,16 +1276,59 @@
         }
 
         function renderExamHistory() {
-            const list = getExamHistory();
+            let list = getExamHistory();
             const container = document.getElementById("history-list-container");
             const emptyEl = document.getElementById("history-empty-placeholder");
             const badge = document.getElementById("history-count-badge");
 
             if (badge) badge.innerText = `${list.length} ta`;
 
+            const searchInput = document.getElementById("history-search-input");
+            const filterStatus = document.getElementById("history-filter-status");
+            const sortBy = document.getElementById("history-sort-by");
+
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+            const statusVal = filterStatus ? filterStatus.value : "all";
+            const sortVal = sortBy ? sortBy.value : "newest";
+
+            // 1. Filter by Search Query
+            if (query) {
+                list = list.filter(item => {
+                    const name = (item.name || "").toLowerCase();
+                    const group = (item.group || "").toLowerCase();
+                    const id = (item.id || "").toLowerCase();
+                    const ticket = (item.ticket || "").toLowerCase();
+                    const date = (item.date || "").toLowerCase();
+                    return name.includes(query) || group.includes(query) || id.includes(query) || ticket.includes(query) || date.includes(query);
+                });
+            }
+
+            // 2. Filter by Status (Passed / Failed)
+            if (statusVal === "passed") {
+                list = list.filter(item => item.passed);
+            } else if (statusVal === "failed") {
+                list = list.filter(item => !item.passed);
+            }
+
+            // 3. Sort
+            if (sortVal === "newest") {
+                // Already newest first
+            } else if (sortVal === "oldest") {
+                list = [...list].reverse();
+            } else if (sortVal === "score_desc") {
+                list = [...list].sort((a, b) => (b.score || 0) - (a.score || 0));
+            } else if (sortVal === "score_asc") {
+                list = [...list].sort((a, b) => (a.score || 0) - (b.score || 0));
+            } else if (sortVal === "name_asc") {
+                list = [...list].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            }
+
             if (list.length === 0) {
                 if (container) container.innerHTML = "";
-                if (emptyEl) emptyEl.classList.remove("hidden");
+                if (emptyEl) {
+                    emptyEl.classList.remove("hidden");
+                    emptyEl.innerText = query ? "Qidiruv bo'yicha hech qanday natija topilmadi." : "Hali topshirilgan imtihonlar mavjud emas.";
+                }
                 return;
             }
 
@@ -1229,27 +1336,31 @@
             if (!container) return;
 
             container.innerHTML = list.map(item => `
-                <div class="flex items-center justify-between p-2.5 rounded-xl border ${item.passed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'} text-xs">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border ${item.passed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'} text-xs gap-2 transition hover:shadow-sm">
                     <div class="flex flex-col">
                         <div class="font-black text-slate-900 flex items-center gap-1.5">
                             <span>${item.name}</span>
                             <span class="text-[11px] font-semibold text-slate-500">(${item.group})</span>
+                            <span class="text-[10px] text-slate-400">${item.ticket ? '[' + item.ticket + ']' : ''}</span>
                         </div>
-                        <div class="text-[11px] text-slate-500 mt-0.5">
-                            📅 ${item.date} | Zarbalar: <b>${item.correctComps}/${item.totalComps}</b> | Nafas: <b>${item.correctVents}</b>
+                        <div class="text-[11px] text-slate-500 mt-0.5 flex flex-wrap gap-x-2">
+                            <span>📅 ${item.date}</span>
+                            <span>• Kompressiya: <b>${item.correctComps}/${item.totalComps}</b> (${item.correctPct || 0}%)</span>
+                            <span>• Nafas: <b>${item.correctVents}</b></span>
+                            <span>• Tezlik: <b>${item.bpm || 110} BPM</b></span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded-lg text-xs font-black ${item.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                    <div class="flex items-center gap-2 self-end sm:self-center">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-black ${item.passed ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'}">
                             ${item.score}% (${item.passed ? "O'TDI" : "YIQILDI"})
                         </span>
                         
-                        <button type="button" onclick="openHistoryRecord('${item.id}')" title="Protokolni ko'rish va chop etish" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition shadow-sm cursor-pointer">
-                            <i class="fa-solid fa-print mr-1"></i> Protokol
+                        <button type="button" onclick="openHistoryRecord('${item.id}')" title="Protokolni ko'rish va chop etish" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm cursor-pointer flex items-center gap-1">
+                            <i class="fa-solid fa-print"></i> Protokol
                         </button>
                         
-                        <button type="button" onclick="deleteSingleExamRecord('${item.id}')" title="O'chirish" class="p-1 text-slate-400 hover:text-rose-600 transition cursor-pointer">
+                        <button type="button" onclick="deleteSingleExamRecord('${item.id}')" title="O'chirish" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer">
                             <i class="fa-solid fa-trash-can text-sm"></i>
                         </button>
                     </div>
