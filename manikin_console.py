@@ -14,7 +14,7 @@ try:
 except:
     pass
 
-app = FastAPI(title="Bemor Maniken Test Pulti")
+app = FastAPI(title="Bemor Maniken Test va Imtihon Pulti")
 
 active_websockets: List[WebSocket] = []
 
@@ -31,11 +31,11 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bemor Maniken Test Pulti (CPR, O'pka va Ukol)</title>
+    <title>Bemor Maniken Test va Imtihon Pulti (30:2 CPR Standart)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700;900&display=swap');
 
         body {
             background-color: #0b0f19;
@@ -140,11 +140,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             100% { transform: translate(-50%, -50%) scale(1.1); filter: brightness(1.35); }
         }
 
-        @keyframes pulseGlow {
-            0% { transform: scale(1); filter: brightness(1); }
-            100% { transform: scale(1.15); filter: brightness(1.4); }
-        }
-
         @keyframes blinkFast {
             0%, 100% { opacity: 1; filter: brightness(1.5); }
             50% { opacity: 0.2; filter: brightness(0.5); }
@@ -153,19 +148,87 @@ HTML_CONTENT = """<!DOCTYPE html>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
 
-    <!-- Top Connection & Navigation Bar -->
-    <div class="w-full max-w-xl flex items-center justify-between mb-2 text-slate-300 text-xs px-2">
+    <!-- Top Connection & Mode Switcher Bar -->
+    <div class="w-full max-w-2xl flex items-center justify-between mb-2 text-slate-300 text-xs px-2">
         <div class="flex items-center gap-2">
             <span id="conn-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
             <span id="conn-status" class="font-bold text-slate-200">ESP32 UART: Kutish holatida</span>
         </div>
+
+        <!-- Mode Buttons (Erkin Mashq vs 30:2 Imtihon) -->
+        <div class="flex items-center gap-1.5 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+            <button id="tab-practice" onclick="switchMode('practice')" class="px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow">
+                🔘 Erkin Mashq
+            </button>
+            <button id="tab-exam" onclick="switchMode('exam')" class="px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition">
+                🎓 30:2 Imtihon Rejimi
+            </button>
+        </div>
+
         <div class="flex items-center gap-2">
-            <a href="/monitor" target="_blank" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition shadow text-[11px]">
-                <i class="fa-solid fa-heart-pulse mr-1"></i> ICU Monitor
+            <a href="/monitor" target="_blank" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition border border-slate-700 text-[11px]">
+                <i class="fa-solid fa-heart-pulse text-indigo-400 mr-1"></i> Monitor
             </a>
-            <a href="/" target="_blank" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition shadow text-[11px]">
-                <i class="fa-solid fa-user-doctor mr-1"></i> AI Bemor
+            <a href="/" target="_blank" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition border border-slate-700 text-[11px]">
+                <i class="fa-solid fa-user-doctor text-emerald-400 mr-1"></i> Bemor
             </a>
+        </div>
+    </div>
+
+    <!-- EXAM MODE LIVE HUD BANNER (Faqat Imtihon Rejimida chiqadi) -->
+    <div id="exam-hud-card" class="hidden w-full max-w-[560px] mb-2 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-2 border-indigo-500/80 rounded-2xl p-3 shadow-xl flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-600 text-white tracking-wide uppercase flex items-center gap-1">
+                    <i class="fa-solid fa-graduation-cap"></i> OSCE IMTIHON
+                </span>
+                <span id="exam-cycle-text" class="text-xs font-black text-amber-300">Tsikl: 1 / 5</span>
+            </div>
+
+            <!-- Timer Countdown -->
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400 font-semibold">Qolgan vaqt:</span>
+                <span id="exam-timer" class="mono text-lg font-black text-emerald-400 tracking-wider bg-black/60 px-2 py-0.5 rounded-lg border border-slate-700">02:00</span>
+            </div>
+        </div>
+
+        <!-- 30:2 Live Progress Tracker -->
+        <div class="grid grid-cols-2 gap-3 items-center bg-black/40 p-2 rounded-xl border border-slate-800">
+            
+            <!-- 1. Compressions Counter [ /30] -->
+            <div class="flex flex-col">
+                <div class="flex justify-between items-center text-xs font-bold text-slate-300 mb-0.5">
+                    <span><i class="fa-solid fa-hand-fist text-indigo-400 mr-1"></i> Kompressiya (30 ta):</span>
+                    <span id="exam-comp-num" class="mono font-black text-amber-400 text-sm">0 / 30</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                    <div id="exam-comp-bar" class="bg-amber-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- 2. Ventilation Counter [ /2] -->
+            <div class="flex flex-col">
+                <div class="flex justify-between items-center text-xs font-bold text-slate-300 mb-0.5">
+                    <span><i class="fa-solid fa-lungs text-cyan-400 mr-1"></i> Nafas (2 ta):</span>
+                    <span id="exam-vent-num" class="mono font-black text-cyan-400 text-sm">0 / 2</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                    <div id="exam-vent-bar" class="bg-cyan-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Live Instructor Prompt -->
+        <div class="flex items-center justify-between px-1">
+            <div id="exam-instruction-text" class="text-xs font-bold text-emerald-300 flex items-center gap-1.5 animate-pulse">
+                <i class="fa-solid fa-circle-info"></i> 1-tsikl: Ko'krak markazini 30 marta bosing!
+            </div>
+            
+            <!-- Start / Stop Button -->
+            <button id="btn-exam-toggle" onclick="toggleExamState()" class="px-3 py-1 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-900 transition shadow flex items-center gap-1">
+                <i class="fa-solid fa-play"></i> Boshlash
+            </button>
         </div>
     </div>
 
@@ -297,6 +360,78 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
+    <!-- ==================== EXAM RESULTS MODAL SCORECARD (OSCE PROTOKOL) ==================== -->
+    <div id="exam-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border-2 border-indigo-500 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl text-white flex flex-col gap-4">
+            
+            <div class="text-center border-b border-slate-800 pb-3">
+                <span id="modal-status-badge" class="px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500 inline-block mb-2">
+                    🏆 IMTIHONDAN O'TDI (PASSED)
+                </span>
+                <h2 class="text-xl font-black text-slate-100">CPR REANIMATSIYA IMTIHONI NATIJASI</h2>
+                <p class="text-xs text-slate-400">Xalqaro AHA/ERC 30:2 Standart Protokoli</p>
+            </div>
+
+            <!-- Total Score & Grade -->
+            <div class="flex items-center justify-between bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
+                <div>
+                    <div class="text-xs text-slate-400 font-semibold">Umumiy CPR Sifat Balli:</div>
+                    <div id="modal-total-score" class="mono text-3xl font-black text-emerald-400">92%</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-slate-400 font-semibold">Sarflangan Vaqt:</div>
+                    <div id="modal-time-spent" class="mono text-lg font-bold text-amber-300">01:52 soniya</div>
+                </div>
+            </div>
+
+            <!-- Detailed Breakdown Metrics -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                
+                <div class="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/60">
+                    <div class="text-slate-400 font-medium">🎯 Qo'l Nuqtasi Aniqligi:</div>
+                    <div id="modal-pos-acc" class="mono font-bold text-emerald-400 text-sm mt-0.5">96%</div>
+                </div>
+
+                <div class="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/60">
+                    <div class="text-slate-400 font-medium">🏋️ To'g'ri Chuqurlik (38-55kg):</div>
+                    <div id="modal-depth-acc" class="mono font-bold text-emerald-400 text-sm mt-0.5">88%</div>
+                </div>
+
+                <div class="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/60">
+                    <div class="text-slate-400 font-medium">🔄 To'liq Bo'shatish (Recoil):</div>
+                    <div id="modal-recoil-acc" class="mono font-bold text-emerald-400 text-sm mt-0.5">100%</div>
+                </div>
+
+                <div class="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/60">
+                    <div class="text-slate-400 font-medium">⏱️ O'rtacha Tezlik (BPM):</div>
+                    <div id="modal-bpm-avg" class="mono font-bold text-amber-300 text-sm mt-0.5">112 /min</div>
+                </div>
+
+                <div class="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/60">
+                    <div class="text-slate-400 font-medium">🫁 To'g'ri Nafas (2.0-3.0 kPa):</div>
+                    <div id="modal-vent-acc" class="mono font-bold text-cyan-400 text-sm mt-0.5">9 / 10 ta</div>
+                </div>
+
+                <div class="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/60">
+                    <div class="text-slate-400 font-medium">⚠️ Oshqozon Xatolari:</div>
+                    <div id="modal-stomach-errs" class="mono font-bold text-rose-400 text-sm mt-0.5">0 ta (A'lo)</div>
+                </div>
+
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex items-center gap-3 mt-1">
+                <button onclick="restartExam()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white transition shadow flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Qayta Topshirish
+                </button>
+                <button onclick="closeModal()" class="py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-xs text-slate-200 transition">
+                    Yopish
+                </button>
+            </div>
+
+        </div>
+    </div>
+
     <script>
         // ==================== GENERATE LED SEGMENTS ====================
         const NUM_SEGMENTS = 30;
@@ -315,12 +450,283 @@ HTML_CONTENT = """<!DOCTYPE html>
         createLedSegments("force-bar-container");
         createLedSegments("lung-bar-container");
 
+        // ==================== EXAM MODE ENGINE (30:2 PROTOCOL) ====================
+        let currentAppMode = "practice"; // "practice" or "exam"
+        let isExamActive = false;
+        let examTimerInterval = null;
+        let examTimeLeft = 120; // 2 minutes (120 seconds)
+        let examCycle = 1;      // 1 to 5
+        let examStage = "compress"; // "compress" (30 times) or "ventilate" (2 times)
+        let examCompCount = 0;  // 0 to 30
+        let examVentCount = 0;  // 0 to 2
+
+        // Exam Statistics for Scoring
+        let stats = {
+            totalComps: 0,
+            correctDepth: 0,
+            correctPos: 0,
+            correctRecoil: 0,
+            totalVents: 0,
+            correctVents: 0,
+            stomachErrors: 0,
+            strokeTimes: []
+        };
+
+        function switchMode(mode) {
+            currentAppMode = mode;
+            const tabPrac = document.getElementById("tab-practice");
+            const tabExam = document.getElementById("tab-exam");
+            const hudCard = document.getElementById("exam-hud-card");
+
+            if (mode === "exam") {
+                tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow";
+                tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
+                hudCard.classList.remove("hidden");
+                resetExamState();
+            } else {
+                tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow";
+                tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
+                hudCard.classList.add("hidden");
+                if (isExamActive) toggleExamState();
+            }
+        }
+
+        function resetExamState() {
+            if (examTimerInterval) clearInterval(examTimerInterval);
+            isExamActive = false;
+            examTimeLeft = 120;
+            examCycle = 1;
+            examStage = "compress";
+            examCompCount = 0;
+            examVentCount = 0;
+
+            stats = {
+                totalComps: 0,
+                correctDepth: 0,
+                correctPos: 0,
+                correctRecoil: 0,
+                totalVents: 0,
+                correctVents: 0,
+                stomachErrors: 0,
+                strokeTimes: []
+            };
+
+            updateExamUI();
+            const btn = document.getElementById("btn-exam-toggle");
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> Boshlash';
+            btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-900 transition shadow flex items-center gap-1";
+            document.getElementById("exam-instruction-text").innerText = "Tayyormisiz? 'Boshlash' tugmasini bosing!";
+        }
+
+        function toggleExamState() {
+            if (!isExamActive) {
+                // START EXAM
+                resetExamState();
+                isExamActive = true;
+                const btn = document.getElementById("btn-exam-toggle");
+                btn.innerHTML = '<i class="fa-solid fa-stop"></i> To\'xtatish';
+                btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-rose-500 hover:bg-rose-600 text-white transition shadow flex items-center gap-1";
+
+                document.getElementById("exam-instruction-text").innerText = `1-tsikl: Ko'krakni 30 marta bosing!`;
+
+                examTimerInterval = setInterval(() => {
+                    examTimeLeft--;
+                    updateTimerDisplay();
+                    if (examTimeLeft <= 0) {
+                        finishExam();
+                    }
+                }, 1000);
+            } else {
+                // STOP EXAM
+                resetExamState();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(examTimeLeft / 60);
+            const secs = examTimeLeft % 60;
+            const str = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const el = document.getElementById("exam-timer");
+            el.innerText = str;
+            if (examTimeLeft <= 20) {
+                el.className = "mono text-lg font-black text-rose-400 tracking-wider bg-rose-950/60 px-2 py-0.5 rounded-lg border border-rose-600 animate-pulse";
+            } else {
+                el.className = "mono text-lg font-black text-emerald-400 tracking-wider bg-black/60 px-2 py-0.5 rounded-lg border border-slate-700";
+            }
+        }
+
+        function updateExamUI() {
+            document.getElementById("exam-cycle-text").innerText = `Tsikl: ${examCycle} / 5`;
+            document.getElementById("exam-comp-num").innerText = `${examCompCount} / 30`;
+            document.getElementById("exam-comp-bar").style.width = `${(examCompCount / 30) * 100}%`;
+
+            document.getElementById("exam-vent-num").innerText = `${examVentCount} / 2`;
+            document.getElementById("exam-vent-bar").style.width = `${(examVentCount / 2) * 100}%`;
+            updateTimerDisplay();
+        }
+
+        function finishExam() {
+            if (examTimerInterval) clearInterval(examTimerInterval);
+            isExamActive = false;
+
+            // Calculate Final Scores
+            const totalComps = stats.totalComps || 1;
+            const posAcc = Math.round((stats.correctPos / totalComps) * 100);
+            const depthAcc = Math.round((stats.correctDepth / totalComps) * 100);
+            const recoilAcc = Math.round((stats.correctRecoil / totalComps) * 100);
+            
+            // Average BPM
+            let avgBpm = 110;
+            if (stats.strokeTimes.length > 2) {
+                let deltas = [];
+                for (let i = 1; i < stats.strokeTimes.length; i++) {
+                    const d = stats.strokeTimes[i] - stats.strokeTimes[i-1];
+                    if (d > 200 && d < 1500) deltas.push(d);
+                }
+                if (deltas.length > 0) {
+                    const avgDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+                    avgBpm = Math.round(60000 / avgDelta);
+                }
+            }
+
+            const totalVents = stats.totalVents || 1;
+            const ventAcc = `${stats.correctVents} / ${Math.max(stats.totalVents, examCycle * 2)} ta`;
+
+            // Weighted Overall Score (100% max)
+            const overallScore = Math.min(100, Math.round(
+                (posAcc * 0.25) + (depthAcc * 0.35) + (recoilAcc * 0.15) + 
+                ((stats.correctVents / Math.max(1, examCycle * 2)) * 100 * 0.25) - 
+                (stats.stomachErrors * 5)
+            ));
+
+            // Populate Scorecard
+            document.getElementById("modal-total-score").innerText = `${Math.max(0, overallScore)}%`;
+            document.getElementById("modal-time-spent").innerText = `${120 - examTimeLeft} soniya`;
+            document.getElementById("modal-pos-acc").innerText = `${posAcc}%`;
+            document.getElementById("modal-depth-acc").innerText = `${depthAcc}%`;
+            document.getElementById("modal-recoil-acc").innerText = `${recoilAcc}%`;
+            document.getElementById("modal-bpm-avg").innerText = `${avgBpm} /min`;
+            document.getElementById("modal-vent-acc").innerText = ventAcc;
+            document.getElementById("modal-stomach-errs").innerText = `${stats.stomachErrors} ta`;
+
+            const badge = document.getElementById("modal-status-badge");
+            if (overallScore >= 80 && examCycle >= 3) {
+                badge.innerText = "🏆 IMTIHONDAN O'TDI (PASSED)";
+                badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500 inline-block mb-2";
+            } else {
+                badge.innerText = "❌ YIQILDI (FAILED)";
+                badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500 inline-block mb-2";
+            }
+
+            document.getElementById("exam-modal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("exam-modal").classList.add("hidden");
+            resetExamState();
+        }
+
+        function restartExam() {
+            closeModal();
+            toggleExamState();
+        }
+
+        // ==================== CPR PEAK & VENTILATION PROCESSOR ====================
+        let cprStrokeState = "idle";
+        let cprPeak = 0;
+        let cprPosAtPeak = false;
+
+        function processExamHardware(forceKg, lungKpa, stomachKpa, posBtn) {
+            if (!isExamActive) return;
+
+            const now = Date.now();
+
+            // 1. Process Compression Strokes
+            if (cprStrokeState === "idle") {
+                if (forceKg > 5.0) {
+                    cprStrokeState = "compressing";
+                    cprPeak = forceKg;
+                    cprPosAtPeak = (posBtn === 1 || posBtn === true);
+                }
+            } else if (cprStrokeState === "compressing") {
+                if (forceKg > cprPeak) {
+                    cprPeak = forceKg;
+                    if (posBtn === 1 || posBtn === true) cprPosAtPeak = true;
+                }
+                if (forceKg < (cprPeak - 4.0)) {
+                    // STROKE FINISHED
+                    cprStrokeState = "recoiling";
+                    stats.totalComps++;
+                    stats.strokeTimes.push(now);
+
+                    const isDepthOk = (cprPeak >= 38.0 && cprPeak <= 55.0);
+                    if (isDepthOk) stats.correctDepth++;
+                    if (cprPosAtPeak) stats.correctPos++;
+
+                    if (examStage === "compress") {
+                        examCompCount++;
+                        updateExamUI();
+
+                        if (examCompCount >= 30) {
+                            // SWITCH TO VENTILATION STAGE
+                            examStage = "ventilate";
+                            examCompCount = 30;
+                            examVentCount = 0;
+                            updateExamUI();
+                            document.getElementById("exam-instruction-text").innerText = `🫁 30 ta bo'ldi! Endi 2 ta Ambu nafasi bering!`;
+                        }
+                    }
+                }
+            } else if (cprStrokeState === "recoiling") {
+                if (forceKg <= 5.0) {
+                    stats.correctRecoil++;
+                    cprStrokeState = "idle";
+                } else if (forceKg > (cprPeak - 1.0) && forceKg > 5.0) {
+                    // Failed recoil
+                    cprStrokeState = "compressing";
+                    cprPeak = forceKg;
+                }
+            }
+
+            // 2. Process Ventilation Breath
+            if (examStage === "ventilate") {
+                if (lungKpa >= 2.0 && !window._ventTriggered) {
+                    window._ventTriggered = true;
+                    stats.totalVents++;
+                    if (lungKpa >= 2.0 && lungKpa <= 3.0) stats.correctVents++;
+                    examVentCount++;
+                    updateExamUI();
+
+                    if (examVentCount >= 2) {
+                        // CYCLE COMPLETE!
+                        if (examCycle < 5) {
+                            examCycle++;
+                            examStage = "compress";
+                            examCompCount = 0;
+                            examVentCount = 0;
+                            updateExamUI();
+                            document.getElementById("exam-instruction-text").innerText = `🏋️ ${examCycle}-tsikl boshlandi: 30 marta bosing!`;
+                        } else {
+                            // ALL 5 CYCLES COMPLETE!
+                            finishExam();
+                        }
+                    }
+                } else if (lungKpa < 0.6) {
+                    window._ventTriggered = false;
+                }
+            }
+
+            // 3. Stomach Warning Errors
+            if (stomachKpa > 0.8 && !window._stomachTriggered) {
+                window._stomachTriggered = true;
+                stats.stomachErrors++;
+            } else if (stomachKpa < 0.3) {
+                window._stomachTriggered = false;
+            }
+        }
+
         // ==================== RENDER LED BARS ====================
         function renderBars(forceKg, lungKpa) {
-            // 1. Render Force Bar (Max: 60 kg)
-            // 0 - 38 kg: Yellow (Kam kuch)
-            // 38 - 55 kg: Green (Optimal)
-            // > 55 kg: Red (Ortiqcha kuch)
             const forcePercent = Math.min(1.0, Math.max(0, forceKg / 60.0));
             const activeForceSegments = Math.round(forcePercent * NUM_SEGMENTS);
 
@@ -344,9 +750,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById("force-val-text").innerText = `${forceKg.toFixed(1)} kg`;
 
             // 2. Render Lung Pressure Bar (Max: 3.5 kPa / 35 cmH2O Standard)
-            // 0 - 1.9 kPa (<20 cmH2O): Yellow (Kam havo / Qattiqroq siqing)
-            // 2.0 - 3.0 kPa (20 - 30 cmH2O): YORQIN YASHIL (TO'G'RI VA YETARLI NAFAS)
-            // > 3.1 kPa (>32 cmH2O): Qizil (Ortiqcha bosim / Barotravma xavfi)
             const lungPercent = Math.min(1.0, Math.max(0, lungKpa / 3.5));
             const activeLungSegments = Math.round(lungPercent * NUM_SEGMENTS);
 
@@ -447,6 +850,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                     renderBars(force, lungP);
                     updateIndicators(posBtn, stomachP, injBtn);
+                    processExamHardware(force, lungP, stomachP, posBtn);
                 } catch(e) {}
             };
 
@@ -471,6 +875,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             renderBars(f, l);
             updateIndicators(simPos, simStomach, simInj);
+            processExamHardware(f, l, simStomach, simPos);
         }
 
         function toggleSimPos() {
@@ -560,7 +965,7 @@ if __name__ == "__main__":
     local_ip = get_local_ip()
     port = int(os.environ.get("PORT", 8600))
     print("=" * 68)
-    print("  🎮 BEMOR MANIKEN TEST PULTI (FOCUSED HARDWARE CONSOLE)")
+    print("  🎓 BEMOR MANIKEN TEST VA IMTIHON PULTI (30:2 CPR OSCE)")
     print("=" * 68)
     print(f"  Kompyuterda ochish:   http://localhost:{port}")
     print(f"  Boshqa qurilmalarda:  http://{local_ip}:{port}")
