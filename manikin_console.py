@@ -86,44 +86,58 @@ HTML_CONTENT = """<!DOCTYPE html>
             box-shadow: 0 0 16px #ef4444, inset 0 0 4px #ffffff !important;
         }
 
-        /* Over-the-Photo Dynamic LED Glow Overlays */
+        /* Real-world Backlit LED Illuminations on the Image */
         .photo-led {
             border-radius: 50%;
-            transition: all 0.12s ease-out;
+            position: absolute;
+            transform: translate(-50%, -50%);
             pointer-events: auto;
             cursor: pointer;
-            opacity: 0; /* In idle state, completely invisible so only the photo's circle is seen */
+            transition: all 0.12s ease-out;
+            opacity: 0;
         }
 
-        /* Chest Center Position LED (PIN 13) */
+        /* Chest Center (PIN 13) Backlit Green LED */
         .pos-led-on {
             opacity: 1 !important;
-            background: radial-gradient(circle, #4ade80 20%, rgba(34, 197, 94, 0.85) 60%, rgba(34, 197, 94, 0) 100%) !important;
-            box-shadow: 0 0 25px #22c55e, 0 0 50px #22c55e, 0 0 80px rgba(34, 197, 94, 0.6) !important;
-            animation: pulseGlow 0.35s infinite alternate;
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.95) 15%, rgba(34, 197, 94, 0.85) 60%, rgba(34, 197, 94, 0.4) 100%) !important;
+            mix-blend-mode: screen;
+            box-shadow: 0 0 25px #22c55e, 0 0 50px #22c55e, 0 0 80px rgba(34, 197, 94, 0.8) !important;
+            border: 2px solid rgba(255, 255, 255, 0.95) !important;
+            animation: ledPulse 0.35s infinite alternate;
         }
 
-        /* Airway Throat LED */
-        .airway-led-on {
-            opacity: 1 !important;
-            background: radial-gradient(circle, #38bdf8 20%, rgba(6, 182, 212, 0.85) 60%, rgba(6, 182, 212, 0) 100%) !important;
-            box-shadow: 0 0 25px #06b6d4, 0 0 50px #06b6d4 !important;
-        }
-
-        /* Injection Arm LED (PIN 4) */
+        /* Injection Arm (PIN 4) Backlit Purple LED */
         .inj-led-on {
             opacity: 1 !important;
-            background: radial-gradient(circle, #c084fc 20%, rgba(168, 85, 247, 0.85) 60%, rgba(168, 85, 247, 0) 100%) !important;
-            box-shadow: 0 0 30px #a855f7, 0 0 60px #c084fc, 0 0 90px rgba(168, 85, 247, 0.6) !important;
-            animation: pulseGlow 0.25s infinite alternate;
+            background: radial-gradient(circle, rgba(192, 132, 252, 0.95) 15%, rgba(168, 85, 247, 0.85) 60%, rgba(168, 85, 247, 0.4) 100%) !important;
+            mix-blend-mode: screen;
+            box-shadow: 0 0 30px #a855f7, 0 0 60px #c084fc, 0 0 90px rgba(168, 85, 247, 0.8) !important;
+            border: 2px solid rgba(255, 255, 255, 0.95) !important;
+            animation: ledPulse 0.25s infinite alternate;
         }
 
-        /* Stomach Hazard LED */
+        /* Airway Throat Backlit Cyan LED */
+        .airway-led-on {
+            opacity: 1 !important;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.95) 15%, rgba(6, 182, 212, 0.85) 60%, rgba(6, 182, 212, 0.4) 100%) !important;
+            mix-blend-mode: screen;
+            box-shadow: 0 0 25px #06b6d4, 0 0 50px #06b6d4, 0 0 75px rgba(6, 182, 212, 0.8) !important;
+            border: 2px solid rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Stomach Warning Flashing Red */
         .stomach-led-on {
             opacity: 1 !important;
-            background: radial-gradient(circle, #f87171 20%, rgba(239, 68, 68, 0.85) 60%, rgba(239, 68, 68, 0) 100%) !important;
+            background: radial-gradient(ellipse, rgba(239, 68, 68, 0.95) 10%, rgba(239, 68, 68, 0.7) 60%, transparent 100%) !important;
+            mix-blend-mode: screen;
             box-shadow: 0 0 30px #ef4444, 0 0 60px #ef4444 !important;
             animation: blinkFast 0.2s infinite;
+        }
+
+        @keyframes ledPulse {
+            0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+            100% { transform: translate(-50%, -50%) scale(1.1); filter: brightness(1.35); }
         }
 
         @keyframes pulseGlow {
@@ -190,19 +204,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <!-- ==================== PIXEL-PERFECT INTERACTIVE LED OVERLAYS ==================== -->
 
                         <!-- 1. Airway / Throat LED (Bo'yin/Tomir nuqtasi) -->
-                        <div id="led-airway" class="photo-led absolute top-[33.74%] left-[50.85%] -translate-x-1/2 -translate-y-1/2 w-[8.5%] h-[6.0%] flex items-center justify-center pointer-events-none">
+                        <div id="led-airway" class="photo-led top-[33.74%] left-[50.85%] w-[6.5%] h-[4.5%] flex items-center justify-center pointer-events-none">
                         </div>
 
                         <!-- 2. Chest Center Position LED (NUQTA PIN 13) -->
-                        <div id="led-position" onclick="toggleSimPos()" class="photo-led absolute top-[56.30%] left-[50.85%] -translate-x-1/2 -translate-y-1/2 w-[12.5%] h-[8.6%] flex items-center justify-center" title="Qo'l nuqtasi (Pin 13)">
+                        <div id="led-position" onclick="toggleSimPos()" class="photo-led top-[56.30%] left-[50.85%] w-[8.2%] h-[5.7%] flex items-center justify-center" title="Qo'l nuqtasi (Pin 13)">
                         </div>
 
                         <!-- 3. Right Arm Injection LED (UKOL PIN 4) -->
-                        <div id="led-injection" onclick="triggerSimInj()" class="photo-led absolute top-[68.41%] left-[91.58%] -translate-x-1/2 -translate-y-1/2 w-[13.0%] h-[9.0%] flex items-center justify-center" title="Ukol / Inyeksiya (Pin 4)">
+                        <div id="led-injection" onclick="triggerSimInj()" class="photo-led top-[68.41%] left-[91.58%] w-[9.0%] h-[6.2%] flex items-center justify-center" title="Ukol / Inyeksiya (Pin 4)">
                         </div>
 
                         <!-- 4. Stomach Warning LED (OSHQOZON) -->
-                        <div id="led-stomach" class="photo-led absolute top-[92.7%] left-[51.0%] -translate-x-1/2 -translate-y-1/2 w-[11.0%] h-[7.6%] flex items-center justify-center pointer-events-none" title="Oshqozon bosimi">
+                        <div id="led-stomach" class="photo-led top-[93.0%] left-[51.0%] w-[18.0%] h-[4.5%] flex items-center justify-center pointer-events-none" title="Oshqozon bosimi" style="border-radius: 6px;">
                         </div>
 
                     </div>
