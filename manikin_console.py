@@ -7,6 +7,8 @@ from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 import uvicorn
+import webbrowser
+import threading
 
 try:
     if sys.stdout.encoding != 'utf-8':
@@ -118,12 +120,33 @@ HTML_CONTENT = """<!DOCTYPE html>
             box-shadow: 0 0 25px #ef4444, 0 0 50px #ef4444, inset 0 0 8px #ffffff !important;
             border: 2px solid #ffffff !important;
         }
+
+        /* ==================== PROFESSIONAL PRINT SHEET STYLING ==================== */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #print-protocol-container {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                color: black;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
 
-    <!-- Top Connection & Mode Switcher Bar -->
-    <div class="w-full max-w-2xl flex items-center justify-between mb-2 text-slate-300 text-xs px-2">
+    <!-- Top Connection & Mode Switcher Bar (Hidden on Print) -->
+    <div class="no-print w-full max-w-2xl flex items-center justify-between mb-2 text-slate-300 text-xs px-2">
         <div class="flex items-center gap-2">
             <span id="conn-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
             <span id="conn-status" class="font-bold text-slate-200">ESP32 UART: Kutish holatida</span>
@@ -149,23 +172,26 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- EXAM MODE LIVE ASSESSMENT HUD (Real-Vaqtda Hisoblagich va To'g'ri/Xato Tahlili) -->
-    <div id="exam-hud-card" class="hidden w-full max-w-[560px] mb-2 bg-gradient-to-br from-slate-900 via-indigo-950/80 to-slate-900 border-2 border-indigo-500/80 rounded-2xl p-3 shadow-2xl flex flex-col gap-2.5">
+    <!-- EXAM MODE LIVE ASSESSMENT HUD (Hidden on Print) -->
+    <div id="exam-hud-card" class="no-print hidden w-full max-w-[560px] mb-2 bg-gradient-to-br from-slate-900 via-indigo-950/80 to-slate-900 border-2 border-indigo-500/80 rounded-2xl p-3 shadow-2xl flex flex-col gap-2">
         
-        <!-- Header with Timer and Control -->
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-600 text-white tracking-wide uppercase flex items-center gap-1">
-                    <i class="fa-solid fa-stopwatch"></i> IMTIHON JARAYONI
-                </span>
-                <span id="exam-live-feedback" class="text-xs font-bold text-amber-300">Tayyor</span>
+        <!-- Header with Student Name, Timer and Control -->
+        <div class="flex items-center justify-between border-b border-indigo-800/60 pb-2">
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-indigo-600 text-white uppercase tracking-wider">
+                        <i class="fa-solid fa-graduation-cap mr-1"></i> IMTIHON
+                    </span>
+                    <span id="hud-student-display" class="text-xs font-bold text-emerald-300">Talaba: Kiritilmagan</span>
+                </div>
+                <span id="exam-live-feedback" class="text-[11px] font-semibold text-amber-300 mt-0.5">Tayyor</span>
             </div>
 
             <!-- Timer & Actions -->
             <div class="flex items-center gap-2">
                 <span id="exam-timer" class="mono text-lg font-black text-emerald-400 tracking-wider bg-black/70 px-2.5 py-0.5 rounded-lg border border-slate-700">02:00</span>
                 
-                <button type="button" id="btn-exam-toggle" onclick="toggleExamState()" class="px-3 py-1 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-900 transition shadow flex items-center gap-1 cursor-pointer">
+                <button type="button" id="btn-exam-toggle" onclick="requestStartExam()" class="px-3 py-1 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-900 transition shadow flex items-center gap-1 cursor-pointer">
                     <i class="fa-solid fa-play"></i> Boshlash
                 </button>
                 <button type="button" id="btn-exam-finish" onclick="finishExamManually()" class="hidden px-2.5 py-1 rounded-lg font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition shadow flex items-center gap-1 cursor-pointer">
@@ -178,28 +204,28 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="grid grid-cols-4 gap-2 text-center">
             
             <!-- 1. Total Compressions Attempted -->
-            <div class="bg-black/50 p-2 rounded-xl border border-slate-700">
+            <div class="bg-black/50 p-1.5 rounded-xl border border-slate-700">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Jami Bosildi</div>
                 <div id="stat-total-comps" class="mono text-xl font-black text-white mt-0.5">0</div>
                 <div class="text-[9px] text-slate-400">zarba</div>
             </div>
 
             <!-- 2. Correct Compressions (To'g'ri) -->
-            <div class="bg-emerald-950/40 p-2 rounded-xl border border-emerald-600/60">
+            <div class="bg-emerald-950/40 p-1.5 rounded-xl border border-emerald-600/60">
                 <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-tight">To'g'ri</div>
                 <div id="stat-correct-comps" class="mono text-xl font-black text-emerald-400 mt-0.5">0</div>
                 <div id="stat-correct-pct" class="text-[9px] text-emerald-300 font-bold">0%</div>
             </div>
 
             <!-- 3. Errors / Faults (Xatolar) -->
-            <div class="bg-rose-950/40 p-2 rounded-xl border border-rose-600/60">
+            <div class="bg-rose-950/40 p-1.5 rounded-xl border border-rose-600/60">
                 <div class="text-[10px] font-bold text-rose-400 uppercase tracking-tight">Xatolar</div>
                 <div id="stat-wrong-comps" class="mono text-xl font-black text-rose-400 mt-0.5">0</div>
                 <div id="stat-wrong-reasons" class="text-[9px] text-rose-300 truncate">0 ta</div>
             </div>
 
             <!-- 4. Breaths / Ventilations (O'pka nafasi) -->
-            <div class="bg-cyan-950/40 p-2 rounded-xl border border-cyan-600/60">
+            <div class="bg-cyan-950/40 p-1.5 rounded-xl border border-cyan-600/60">
                 <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-tight">Nafas</div>
                 <div id="stat-total-vents" class="mono text-xl font-black text-cyan-400 mt-0.5">0</div>
                 <div id="stat-vent-status" class="text-[9px] text-cyan-300">0 to'g'ri</div>
@@ -220,8 +246,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- MAIN CONSOLE DEVICE -->
-    <div class="w-full max-w-[560px] casing rounded-3xl p-3 sm:p-4 flex flex-col">
+    <!-- MAIN CONSOLE DEVICE (Hidden on Print) -->
+    <div class="no-print w-full max-w-[560px] casing rounded-3xl p-3 sm:p-4 flex flex-col">
         
         <!-- MAIN DISPLAY PANEL (LEFT BAR | PHOTO OF MANIKIN WITH OVERLAYS | RIGHT BAR) -->
         <div class="panel-inset rounded-2xl p-2 sm:p-3 relative overflow-hidden flex flex-col">
@@ -250,7 +276,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <div class="relative h-full flex items-center justify-center" style="aspect-ratio: 707 / 1024; position: relative;">
                         
                         <!-- Base Manikin Photo -->
-                        <img src="/manikin_photo.png" alt="Maniken" class="w-full h-full block object-fill pointer-events-none select-none">
+                        <img src="manikin_photo.png" alt="Maniken" class="w-full h-full block object-fill pointer-events-none select-none">
 
                         <!-- ==================== BULLETPROOF INLINE-STYLED LED OVERLAYS ==================== -->
 
@@ -359,8 +385,71 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- ==================== EXAM RESULTS MODAL SCORECARD (KLINIK PROTOKOL) ==================== -->
-    <div id="exam-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <!-- ==================== 1. STUDENT REGISTRATION MODAL (IMTIHON BOSHLANISHIDAN OLDIN) ==================== -->
+    <div id="student-modal" class="no-print fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border-2 border-indigo-500 rounded-3xl max-w-md w-full p-6 shadow-2xl text-white flex flex-col gap-4">
+            
+            <div class="text-center border-b border-slate-800 pb-3">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-500 flex items-center justify-center mx-auto mb-2 text-indigo-400 text-xl">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <h2 class="text-lg font-black text-slate-100">TALABA / KURSANTNI RO'YXATGA OLISH</h2>
+                <p class="text-xs text-slate-400">Imtihon natijalari ushbu ma'lumotlar bilan rasmiylashtiriladi</p>
+            </div>
+
+            <form onsubmit="confirmStartExam(event)" class="flex flex-col gap-3">
+                <!-- F.I.SH -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">
+                        👤 Talaba F.I.SH. (Familiya, Ism, Sharif): <span class="text-rose-400">*</span>
+                    </label>
+                    <input type="text" id="input-student-name" required placeholder="Masalan: Bozorov Boburjon" 
+                           class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold placeholder:text-slate-500">
+                </div>
+
+                <!-- Guruh / ID -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">
+                            🏷️ Guruh / Fakultet: <span class="text-rose-400">*</span>
+                        </label>
+                        <input type="text" id="input-student-group" required placeholder="Davolash 402" 
+                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold placeholder:text-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">
+                            🆔 ID / Bilet №:
+                        </label>
+                        <input type="text" id="input-student-id" placeholder="№ 14" 
+                               class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold placeholder:text-slate-500">
+                    </div>
+                </div>
+
+                <!-- O'qituvchi / Imtihonchi -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">
+                        🩺 Imtihonchi (O'qituvchi):
+                    </label>
+                    <input type="text" id="input-examiner" placeholder="Kafedra o'qituvchisi" value="Kafedra Assistent / O'qituvchisi" 
+                           class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold placeholder:text-slate-500">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-2 mt-2">
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-xs text-white transition shadow flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-play"></i> Imtihonni Boshlash
+                    </button>
+                    <button type="button" onclick="closeStudentModal()" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xs text-slate-300 transition cursor-pointer">
+                        Bekor qilish
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- ==================== 2. EXAM RESULTS MODAL SCORECARD (KLINIK PROTOKOL) ==================== -->
+    <div id="exam-modal" class="no-print fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-slate-900 border-2 border-indigo-500 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl text-white flex flex-col gap-4">
             
             <div class="text-center border-b border-slate-800 pb-3">
@@ -368,7 +457,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     🏆 IMTIHONDAN O'TDI (PASSED)
                 </span>
                 <h2 class="text-xl font-black text-slate-100">CPR IMTIHON VA BAHOLASH PROTOKOLI</h2>
-                <p class="text-xs text-slate-400">Amaliy Tibbiy Ko'nikmalarni Tekshirish Natijalari</p>
+                <p id="modal-student-header" class="text-xs text-indigo-300 font-semibold mt-0.5">Talaba: -</p>
             </div>
 
             <!-- Total Score & Grade -->
@@ -420,17 +509,143 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             </div>
 
-            <!-- Modal Action Buttons -->
-            <div class="flex items-center gap-3 mt-1">
-                <button type="button" onclick="restartExam()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white transition shadow flex items-center justify-center gap-2 cursor-pointer">
+            <!-- Modal Action Buttons (Printerga Chiqarish & Qayta topshirish) -->
+            <div class="flex items-center gap-2 mt-1">
+                <!-- PRINT PROTOCOL BUTTON -->
+                <button type="button" onclick="printExamProtocol()" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 font-black text-xs text-slate-950 transition shadow flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-print text-sm"></i> 🖨️ Printerga Chiqarish (Chop etish / PDF)
+                </button>
+
+                <button type="button" onclick="restartExam()" class="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white transition shadow flex items-center justify-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-rotate-right"></i> Qayta Topshirish
                 </button>
-                <button type="button" onclick="closeModal()" class="py-2.5 px-4 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-xs text-slate-200 transition cursor-pointer">
+                <button type="button" onclick="closeModal()" class="py-2.5 px-3 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-xs text-slate-200 transition cursor-pointer">
                     Yopish
                 </button>
             </div>
 
         </div>
+    </div>
+
+    <!-- ==================== 3. OFFICIAL PRINTABLE PROTOCOL SHEET (A4 FORMAT) ==================== -->
+    <div id="print-protocol-container" class="hidden p-8 max-w-4xl mx-auto bg-white text-black font-sans">
+        
+        <!-- Header -->
+        <div class="text-center border-b-2 border-black pb-4 mb-4">
+            <h1 class="text-xl font-black uppercase tracking-wider">TIBBIY KO'NIKMALARNI BAHOLASH VA SIMULYATSIYA MARKAZI</h1>
+            <h2 class="text-lg font-bold text-slate-800 mt-1">CPR VA YURAK-O'PKA REANIMATSIYASI IMTIHON PROTOKOLI</h2>
+            <div class="text-xs text-slate-600 mt-1">Qurilma: GD/H126 Intelligent CPR & Airway Manikin System | Protokol №: <span id="print-protocol-no" class="font-bold">CPR-2026-001</span></div>
+        </div>
+
+        <!-- Student & Exam Details Table -->
+        <div class="grid grid-cols-2 gap-4 border border-black p-4 mb-4 rounded text-xs">
+            <div>
+                <p><b>👤 Talaba (F.I.SH.):</b> <span id="print-student-name" class="font-bold text-sm underline">-</span></p>
+                <p class="mt-1.5"><b>🏷️ Guruh / Fakultet:</b> <span id="print-student-group">-</span></p>
+                <p class="mt-1.5"><b>🆔 Bilet / ID №:</b> <span id="print-student-id">-</span></p>
+            </div>
+            <div>
+                <p><b>📅 Imtihon Sanasi:</b> <span id="print-exam-date">-</span></p>
+                <p class="mt-1.5"><b>⏱️ Sarflangan Vaqt:</b> <span id="print-exam-duration">-</span></p>
+                <p class="mt-1.5"><b>🩺 Imtihon Oluvchi:</b> <span id="print-examiner">-</span></p>
+            </div>
+        </div>
+
+        <!-- Grade Banner -->
+        <div class="flex items-center justify-between border-2 border-black p-4 mb-4 rounded bg-slate-50">
+            <div>
+                <div class="text-xs font-bold text-slate-600 uppercase">YAKUNIY BAHOLASH NATIJASI:</div>
+                <div id="print-status-text" class="text-2xl font-black mt-0.5">🏆 IMTIHONDAN O'TDI (PASSED)</div>
+            </div>
+            <div class="text-right">
+                <div class="text-xs font-bold text-slate-600 uppercase">UMUMIY SIFAT DARAJASI:</div>
+                <div id="print-total-pct" class="text-3xl font-black text-black">92%</div>
+            </div>
+        </div>
+
+        <!-- Metric Table -->
+        <table class="w-full border-collapse border border-black text-xs mb-4">
+            <thead>
+                <tr class="bg-slate-200">
+                    <th class="border border-black p-2 text-left">№</th>
+                    <th class="border border-black p-2 text-left">Klinik Mezon va Ko'rsatkich</th>
+                    <th class="border border-black p-2 text-center">Talab etilgan Me'yor</th>
+                    <th class="border border-black p-2 text-center">Amalda Bajarildi</th>
+                    <th class="border border-black p-2 text-center">Xulosa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border border-black p-2 text-center font-bold">1</td>
+                    <td class="border border-black p-2">Jami Kompressiyalar (Zarbalar soni)</td>
+                    <td class="border border-black p-2 text-center">Kamida 20 - 30 ta</td>
+                    <td class="border border-black p-2 text-center font-bold" id="print-val-total-comps">0 ta</td>
+                    <td class="border border-black p-2 text-center" id="print-res-total-comps">Qoniqarli</td>
+                </tr>
+                <tr>
+                    <td class="border border-black p-2 text-center font-bold">2</td>
+                    <td class="border border-black p-2">To'g'ri chuqurlik va nuqtadagi zarbalar</td>
+                    <td class="border border-black p-2 text-center">≥ 80% (38 - 55 kg)</td>
+                    <td class="border border-black p-2 text-center font-bold" id="print-val-correct-comps">0 ta (0%)</td>
+                    <td class="border border-black p-2 text-center" id="print-res-correct-comps">-</td>
+                </tr>
+                <tr>
+                    <td class="border border-black p-2 text-center font-bold">3</td>
+                    <td class="border border-black p-2">Ko'krak qafasining to'liq bo'shatilishi (Recoil)</td>
+                    <td class="border border-black p-2 text-center">To'liq (< 5 kg)</td>
+                    <td class="border border-black p-2 text-center font-bold" id="print-val-recoil">0 ta xato</td>
+                    <td class="border border-black p-2 text-center" id="print-res-recoil">-</td>
+                </tr>
+                <tr>
+                    <td class="border border-black p-2 text-center font-bold">4</td>
+                    <td class="border border-black p-2">Kompressiya tezligi (BPM)</td>
+                    <td class="border border-black p-2 text-center">100 - 120 /min</td>
+                    <td class="border border-black p-2 text-center font-bold" id="print-val-bpm">110 /min</td>
+                    <td class="border border-black p-2 text-center" id="print-res-bpm">Me'yorda</td>
+                </tr>
+                <tr>
+                    <td class="border border-black p-2 text-center font-bold">5</td>
+                    <td class="border border-black p-2">O'pka ventilyatsiyasi (Ambu nafasi)</td>
+                    <td class="border border-black p-2 text-center">2.0 - 3.0 kPa (20-30 cmH2O)</td>
+                    <td class="border border-black p-2 text-center font-bold" id="print-val-vents">0 to'g'ri</td>
+                    <td class="border border-black p-2 text-center" id="print-res-vents">-</td>
+                </tr>
+                <tr>
+                    <td class="border border-black p-2 text-center font-bold">6</td>
+                    <td class="border border-black p-2">Oshqozonga havo ketishi (Xato)</td>
+                    <td class="border border-black p-2 text-center">0 ta (Bo'lmasligi shart)</td>
+                    <td class="border border-black p-2 text-center font-bold" id="print-val-stomach">0 ta</td>
+                    <td class="border border-black p-2 text-center" id="print-res-stomach">Xavfsiz</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Error Summary -->
+        <div class="border border-black p-3 mb-6 rounded text-xs">
+            <p class="font-bold text-slate-800">🔍 Yo'l qo'yilgan xatolar ro'yxati:</p>
+            <div id="print-error-list" class="mt-1 space-y-0.5 text-slate-700">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="grid grid-cols-2 gap-8 pt-6 border-t-2 border-black text-xs">
+            <div>
+                <p><b>Imtihon oluvchi o'qituvchi:</b></p>
+                <div class="mt-6 border-b border-black w-3/4"></div>
+                <p class="text-[10px] text-slate-500 mt-1">(Imzo / F.I.SH.)</p>
+            </div>
+            <div>
+                <p><b>Talaba / Kursant:</b></p>
+                <div class="mt-6 border-b border-black w-3/4"></div>
+                <p class="text-[10px] text-slate-500 mt-1">(Imzo / F.I.SH.)</p>
+            </div>
+        </div>
+
+        <div class="text-center text-[10px] text-slate-400 mt-8">
+            Ushbu protokol tibbiy simulyatsiya markazining kompyuterlashgan GD/H126 tizimi orqali avtomatik shakllantirildi.
+        </div>
+
     </div>
 
     <script>
@@ -452,7 +667,14 @@ HTML_CONTENT = """<!DOCTYPE html>
         createLedSegments("force-bar-container");
         createLedSegments("lung-bar-container");
 
-        // ==================== REAL-WORLD EXAM & ASSESSMENT ENGINE ====================
+        // ==================== STUDENT REGISTRATION & EXAM STATE ====================
+        let studentInfo = {
+            name: "",
+            group: "",
+            id: "",
+            examiner: "Kafedra Assistent / O'qituvchisi"
+        };
+
         let currentAppMode = "practice";
         let isExamActive = false;
         let examTimerInterval = null;
@@ -482,12 +704,63 @@ HTML_CONTENT = """<!DOCTYPE html>
                 tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow flex items-center gap-1.5 cursor-pointer";
                 tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition cursor-pointer";
                 hudCard.classList.remove("hidden");
-                resetExamState();
+                
+                // Open student registration if not entered yet
+                if (!studentInfo.name) {
+                    openStudentModal();
+                }
             } else {
                 tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow cursor-pointer";
                 tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center gap-1.5 cursor-pointer";
                 hudCard.classList.add("hidden");
                 if (isExamActive) toggleExamState();
+            }
+        }
+
+        function openStudentModal() {
+            document.getElementById("student-modal").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("input-student-name").focus();
+            }, 100);
+        }
+
+        function closeStudentModal() {
+            document.getElementById("student-modal").classList.add("hidden");
+        }
+
+        function requestStartExam() {
+            if (!studentInfo.name) {
+                openStudentModal();
+            } else {
+                toggleExamState();
+            }
+        }
+
+        function confirmStartExam(e) {
+            if (e) e.preventDefault();
+            const nameVal = document.getElementById("input-student-name").value.trim();
+            const groupVal = document.getElementById("input-student-group").value.trim();
+            const idVal = document.getElementById("input-student-id").value.trim();
+            const examVal = document.getElementById("input-examiner").value.trim();
+
+            if (!nameVal || !groupVal) {
+                alert("Iltimos, Talaba F.I.SH. va Guruhini kiriting!");
+                return;
+            }
+
+            studentInfo = {
+                name: nameVal,
+                group: groupVal,
+                id: idVal || "№ 01",
+                examiner: examVal || "Kafedra O'qituvchisi"
+            };
+
+            document.getElementById("hud-student-display").innerText = `Talaba: ${studentInfo.name} (${studentInfo.group})`;
+            closeStudentModal();
+
+            // Start Exam
+            if (!isExamActive) {
+                toggleExamState();
             }
         }
 
@@ -513,7 +786,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             updateExamHUD();
             const btn = document.getElementById("btn-exam-toggle");
             if (btn) {
-                btn.innerHTML = '<i class="fa-solid fa-play"></i> Boshlash';
+                btn.innerHTML = `<i class="fa-solid fa-play"></i> Boshlash`;
                 btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-900 transition shadow flex items-center gap-1 cursor-pointer";
             }
             const finishBtn = document.getElementById("btn-exam-finish");
@@ -576,8 +849,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                 overallScore = Math.max(0, overallScore - (examStats.stomachErrors * 5));
             }
 
+            const timeSpentSecs = 120 - examTimeLeft;
+            const isPassed = overallScore >= 80 && examStats.totalComps >= 20;
+
+            // 1. Populate Screen Modal
+            document.getElementById("modal-student-header").innerText = `Talaba: ${studentInfo.name || "Noma'lum"} (${studentInfo.group || "Guruhsiz"})`;
             document.getElementById("modal-total-score").innerText = `${overallScore}%`;
-            document.getElementById("modal-time-spent").innerText = `${120 - examTimeLeft} soniya`;
+            document.getElementById("modal-time-spent").innerText = `${timeSpentSecs} soniya`;
             document.getElementById("modal-total-comps").innerText = `${examStats.totalComps} ta`;
             document.getElementById("modal-correct-comps").innerText = `${examStats.correctComps} ta (${correctPct}%)`;
             document.getElementById("modal-wrong-comps").innerText = `${examStats.wrongComps} ta`;
@@ -595,7 +873,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 `Jami: ${examStats.totalVents} ta | To'g'ri (2.0-3.0 kPa): ${examStats.correctVents} ta | Oshqozon xatosi: ${examStats.stomachErrors} ta`;
 
             const badge = document.getElementById("modal-status-badge");
-            if (overallScore >= 80 && examStats.totalComps >= 20) {
+            if (isPassed) {
                 badge.innerText = "🏆 IMTIHONDAN O'TDI (PASSED)";
                 badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500 inline-block mb-2";
             } else {
@@ -603,7 +881,54 @@ HTML_CONTENT = """<!DOCTYPE html>
                 badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500 inline-block mb-2";
             }
 
+            // 2. Populate Printable Sheet
+            const d = new Date();
+            const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth()+1).toString().padStart(2, '0')}.${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+            
+            document.getElementById("print-protocol-no").innerText = `CPR-${d.getFullYear()}-${Math.floor(1000 + Math.random()*9000)}`;
+            document.getElementById("print-student-name").innerText = studentInfo.name || "Noma'lum";
+            document.getElementById("print-student-group").innerText = studentInfo.group || "-";
+            document.getElementById("print-student-id").innerText = studentInfo.id || "-";
+            document.getElementById("print-exam-date").innerText = dateStr;
+            document.getElementById("print-exam-duration").innerText = `${timeSpentSecs} soniya`;
+            document.getElementById("print-examiner").innerText = studentInfo.examiner || "Kafedra O'qituvchisi";
+
+            document.getElementById("print-status-text").innerText = isPassed ? "🏆 IMTIHONDAN O'TDI (PASSED)" : "❌ YIQILDI (FAILED)";
+            document.getElementById("print-status-text").style.color = isPassed ? "#15803d" : "#b91c1c";
+            document.getElementById("print-total-pct").innerText = `${overallScore}%`;
+
+            document.getElementById("print-val-total-comps").innerText = `${examStats.totalComps} ta`;
+            document.getElementById("print-res-total-comps").innerText = examStats.totalComps >= 20 ? "Qoniqarli" : "Kam";
+
+            document.getElementById("print-val-correct-comps").innerText = `${examStats.correctComps} ta (${correctPct}%)`;
+            document.getElementById("print-res-correct-comps").innerText = correctPct >= 80 ? "A'lo" : "Yetarli emas";
+
+            document.getElementById("print-val-recoil").innerText = `${examStats.recoilErrors} ta xato`;
+            document.getElementById("print-res-recoil").innerText = examStats.recoilErrors === 0 ? "Mukammal" : "E'tibor bering";
+
+            document.getElementById("print-val-bpm").innerText = `${avgBpm} /min`;
+            document.getElementById("print-res-bpm").innerText = (avgBpm >= 100 && avgBpm <= 120) ? "Me'yorda" : "Tuzatish lozim";
+
+            document.getElementById("print-val-vents").innerText = `${examStats.correctVents} / ${examStats.totalVents} to'g'ri`;
+            document.getElementById("print-res-vents").innerText = examStats.correctVents > 0 ? "Muvaffaqiyatli" : "Nafas berilmadi";
+
+            document.getElementById("print-val-stomach").innerText = `${examStats.stomachErrors} ta`;
+            document.getElementById("print-res-stomach").innerText = examStats.stomachErrors === 0 ? "Toza" : "XATO (Oshqozon)";
+
+            const printErrList = document.getElementById("print-error-list");
+            printErrList.innerHTML = `
+                <div>• Sayoz bosilgan (<38 kg): <b>${examStats.shallowErrors} ta</b></div>
+                <div>• Ortiqcha qattiq bosilgan (>55 kg): <b>${examStats.excessErrors} ta</b></div>
+                <div>• Qo'l noto'g'ri nuqtada bosilgan: <b>${examStats.posErrors} ta</b></div>
+                <div>• Ko'krak to'liq bo'shatilmagan (recoil): <b>${examStats.recoilErrors} ta</b></div>
+                <div>• Oshqozonga havo qochishi: <b>${examStats.stomachErrors} ta</b></div>
+            `;
+
             document.getElementById("exam-modal").classList.remove("hidden");
+        }
+
+        function printExamProtocol() {
+            window.print();
         }
 
         function updateTimerDisplay() {
@@ -662,7 +987,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function restartExam() {
             closeModal();
-            toggleExamState();
+            requestStartExam();
         }
 
         // ==================== REAL ACTION STROKE ANALYZER ====================
@@ -1039,9 +1364,6 @@ async def get_index():
 @app.get("/console", response_class=HTMLResponse)
 async def get_console():
     return HTMLResponse(content=HTML_CONTENT, headers=NO_CACHE_HEADERS)
-
-import webbrowser
-import threading
 
 def open_browser_delayed(url):
     import time
