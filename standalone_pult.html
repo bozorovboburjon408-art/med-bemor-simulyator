@@ -1,32 +1,4 @@
-import os
-import sys
-import json
-import socket
-import asyncio
-from typing import List
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
-import uvicorn
-
-try:
-    if sys.stdout.encoding != 'utf-8':
-        sys.stdout.reconfigure(encoding='utf-8')
-except:
-    pass
-
-app = FastAPI(title="Bemor Maniken Test va Imtihon Pulti")
-
-active_websockets: List[WebSocket] = []
-
-latest_data = {
-    "force": 0.0,
-    "lung_p": 0.0,
-    "stomach_p": 0.0,
-    "pos_btn": 0,
-    "inj_btn": 0
-}
-
-HTML_CONTENT = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
@@ -556,7 +528,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 isExamActive = true;
                 const btn = document.getElementById("btn-exam-toggle");
                 if (btn) {
-                    btn.innerHTML = '<i class="fa-solid fa-stop"></i> To\'xtatish';
+                    btn.innerHTML = '<i class="fa-solid fa-stop"></i> To'xtatish';
                     btn.className = "px-3 py-1 rounded-lg font-black text-xs bg-rose-500 hover:bg-rose-600 text-white transition shadow flex items-center gap-1 cursor-pointer";
                 }
                 const finishBtn = document.getElementById("btn-exam-finish");
@@ -1032,79 +1004,3 @@ HTML_CONTENT = """<!DOCTYPE html>
     </script>
 </body>
 </html>
-"""
-
-NO_CACHE_HEADERS = {
-    "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
-    "Pragma": "no-cache",
-    "Expires": "0"
-}
-
-@app.get("/", response_class=HTMLResponse)
-async def get_index():
-    return HTMLResponse(content=HTML_CONTENT, headers=NO_CACHE_HEADERS)
-
-@app.get("/console", response_class=HTMLResponse)
-async def get_console():
-    return HTMLResponse(content=HTML_CONTENT, headers=NO_CACHE_HEADERS)
-
-@app.get("/manikin_photo.png")
-async def get_photo():
-    photo_path = os.path.join(os.path.dirname(__file__), "manikin_photo.png")
-    if os.path.exists(photo_path):
-        return FileResponse(photo_path, media_type="image/png")
-    return JSONResponse(content={"error": "Photo not found"}, status_code=404)
-
-@app.post("/api/telemetry")
-async def post_telemetry(request: Request):
-    global latest_data
-    try:
-        data = await request.json()
-        latest_data = data
-        for ws in active_websockets:
-            try:
-                await ws.send_text(json.dumps(data))
-            except:
-                pass
-        return JSONResponse(content={"status": "ok", "received": data})
-    except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=400)
-
-@app.websocket("/ws/telemetry")
-async def websocket_telemetry(websocket: WebSocket):
-    await websocket.accept()
-    active_websockets.append(websocket)
-    try:
-        while True:
-            msg = await websocket.receive_text()
-            try:
-                data = json.loads(msg)
-                for ws in active_websockets:
-                    if ws != websocket:
-                        await ws.send_text(json.dumps(data))
-            except:
-                pass
-    except WebSocketDisconnect:
-        if websocket in active_websockets:
-            active_websockets.remove(websocket)
-
-def get_local_ip():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except:
-        return "127.0.0.1"
-
-if __name__ == "__main__":
-    local_ip = get_local_ip()
-    port = int(os.environ.get("PORT", 8600))
-    print("=" * 68)
-    print("  🎓 BEMOR MANIKEN TEST VA IMTIHON PULTI")
-    print("=" * 68)
-    print(f"  Kompyuterda ochish:   http://localhost:{port}")
-    print(f"  Boshqa qurilmalarda:  http://{local_ip}:{port}")
-    print("=" * 68 + "\n")
-    uvicorn.run(app, host="0.0.0.0", port=port)
