@@ -46,7 +46,7 @@ float curStomach = 0.0; // Oshqozon bosimi (kPa)
 
 // Paket uzatish vaqti nazorati
 unsigned long lastSendTime = 0;
-const unsigned long sendInterval = 50; // Har 50 ms da uzatish (20 Hz chastota)
+const unsigned long sendInterval = 30; // Har 30 ms da uzatish (33 Hz chastota, 0ms kechikish)
 
 // ============================================================================
 // 3. SOZLASH (SETUP)
