@@ -5,6 +5,7 @@ import serial
 import serial.tools.list_ports
 
 TARGET_URLS = [
+    "http://localhost:8600/api/telemetry",
     "http://localhost:8500/api/telemetry",
     "http://localhost:8000/api/telemetry"
 ]

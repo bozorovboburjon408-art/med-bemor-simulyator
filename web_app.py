@@ -12,6 +12,7 @@ from google import genai
 from google.genai import types
 import uvicorn
 from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry
+from manikin_console import HTML_CONTENT as CONSOLE_HTML
 
 
 # Console encodingni to'g'rilash (Windows uchun)
@@ -749,6 +750,11 @@ async def get_index():
 @app.get("/monitor", response_class=HTMLResponse)
 async def get_monitor():
     return HTMLResponse(content=MONITOR_HTML)
+
+@app.get("/console", response_class=HTMLResponse)
+async def get_console():
+    return HTMLResponse(content=CONSOLE_HTML)
+
 
 @app.post("/api/telemetry")
 async def post_telemetry(request: Request):
