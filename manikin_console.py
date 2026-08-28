@@ -354,6 +354,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
+            <div class="grid grid-cols-2 gap-2 mt-0.5">
+                <!-- 1-Click CPR Compression Stroke -->
+                <button onclick="simSingleStroke(45.0)" class="py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-[11px] text-white text-center shadow transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-hand-fist"></i> 🖐️ 1 ta CPR Bosish (45 kg)
+                </button>
+
+                <!-- 1-Click Ventilation Breath -->
+                <button onclick="simSingleBreath(2.6)" class="py-1.5 px-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 font-bold text-[11px] text-white text-center shadow transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-lungs"></i> 🫁 1 ta Nafas (2.6 kPa)
+                </button>
+            </div>
+
             <div class="flex items-center justify-between gap-2 mt-0.5">
                 <!-- Hand Position Button Toggle -->
                 <button id="btn-toggle-pos" onclick="toggleSimPos()" class="flex-1 py-1 px-2 rounded bg-slate-800 hover:bg-slate-700 font-bold text-[11px] text-center border border-slate-700 transition">
@@ -954,6 +966,35 @@ HTML_CONTENT = """<!DOCTYPE html>
             simStomach = 2.5;
             onSimInput();
             setTimeout(() => { simStomach = 0.0; onSimInput(); }, 2000);
+        }
+
+        function simSingleStroke(targetForce = 45.0) {
+            simPos = 1;
+            const steps = [10, 25, targetForce, targetForce - 8, 15, 0];
+            let idx = 0;
+            const iv = setInterval(() => {
+                if (idx < steps.length) {
+                    document.getElementById("sim-force").value = steps[idx];
+                    onSimInput();
+                    idx++;
+                } else {
+                    clearInterval(iv);
+                }
+            }, 55);
+        }
+
+        function simSingleBreath(targetKpa = 2.6) {
+            const steps = [0.8, 1.8, targetKpa, 1.2, 0];
+            let idx = 0;
+            const iv = setInterval(() => {
+                if (idx < steps.length) {
+                    document.getElementById("sim-lung").value = steps[idx];
+                    onSimInput();
+                    idx++;
+                } else {
+                    clearInterval(iv);
+                }
+            }, 80);
         }
 
         window.onload = () => {
