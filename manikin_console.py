@@ -1040,6 +1040,22 @@ async def get_index():
 async def get_console():
     return HTMLResponse(content=HTML_CONTENT, headers=NO_CACHE_HEADERS)
 
+import webbrowser
+import threading
+
+def open_browser_delayed(url):
+    import time
+    time.sleep(0.8)
+    try:
+        webbrowser.open(url)
+    except:
+        pass
+
+@app.on_event("startup")
+async def on_startup():
+    port = int(os.environ.get("PORT", 8600))
+    threading.Thread(target=open_browser_delayed, args=(f"http://localhost:{port}",), daemon=True).start()
+
 @app.get("/manikin_photo.png")
 async def get_photo():
     photo_path = os.path.join(os.path.dirname(__file__), "manikin_photo.png")

@@ -7,10 +7,9 @@ echo ====================================================================
 echo   🎮 GD/H126 BEMOR MANIKEN TEST VA IMTIHON PULTI
 echo ====================================================================
 echo.
-echo Brauzerda ochilmoqda: http://localhost:8600
+echo Server ishga tushmoqda va brauzer avtomatik ochiladi...
 echo.
 
-start http://localhost:8600
 python manikin_console.py
 
 pause
