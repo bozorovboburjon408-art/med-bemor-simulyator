@@ -134,6 +134,41 @@ HTML_CONTENT = """<!DOCTYPE html>
             animation: countPulse 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
+        /* ==================== REALISTIC PATIENT REVIVAL (ROSC) ANIMATIONS ==================== */
+        @keyframes roscChestBreathe {
+            0% { transform: scale(1.0); filter: drop-shadow(0 0 0 rgba(34, 197, 94, 0)); }
+            30% { transform: scale(1.025) translateY(-2.5px); filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.55)); }
+            70% { transform: scale(1.025) translateY(-2.5px); filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.55)); }
+            100% { transform: scale(1.0); filter: drop-shadow(0 0 0 rgba(34, 197, 94, 0)); }
+        }
+
+        .rosc-breathing {
+            animation: roscChestBreathe 3.6s ease-in-out infinite !important;
+        }
+
+        @keyframes sinusHeartBeat {
+            0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
+            15% { opacity: 1.0; transform: translate(-50%, -50%) scale(1.2); background-color: #22c55e !important; box-shadow: 0 0 30px #22c55e, inset 0 0 8px #ffffff !important; }
+            30% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.0); }
+            45% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.15); background-color: #22c55e !important; box-shadow: 0 0 25px #22c55e !important; }
+            60% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
+        }
+
+        .sinus-pulse-on {
+            animation: sinusHeartBeat 0.8s ease-in-out infinite !important;
+            opacity: 1 !important;
+        }
+
+        @keyframes eyeGlow {
+            0%, 100% { opacity: 0.85; transform: scale(1.0); }
+            50% { opacity: 1.0; transform: scale(1.1); box-shadow: 0 0 15px #38bdf8; }
+        }
+
+        .eye-alive-pulse {
+            animation: eyeGlow 2.5s ease-in-out infinite;
+        }
+
         /* ==================== PROFESSIONAL PRINT SHEET STYLING ==================== */
         @media print {
             body {
@@ -157,6 +192,9 @@ HTML_CONTENT = """<!DOCTYPE html>
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-start p-3 sm:p-5">
+
+    <!-- CELEBRATION & TRIUMPH CONFETTI CANVAS -->
+    <canvas id="celebration-canvas" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
 
     <!-- Top Medical Navigation & Device Header (Clean White Medical Styling) -->
     <header class="no-print w-full max-w-7xl bg-white border border-slate-200 rounded-2xl px-4 py-3 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
@@ -253,6 +291,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                                 <div id="led-stomach" class="photo-led" style="position: absolute; top: 93.0%; left: 51.0%; width: 120px; height: 32px; transform: translate(-50%, -50%); border-radius: 6px;" title="Oshqozon bosimi">
                                 </div>
 
+                                <!-- 5. Eyes Revival / Open Eye Glow Overlay (Bemor ko'zlari) -->
+                                <div id="led-eyes-revival" class="photo-led hidden flex items-center justify-center gap-7" style="position: absolute; top: 26.6%; left: 50.85%; width: 94px; height: 26px; transform: translate(-50%, -50%); z-index: 30; pointer-events: none;">
+                                    <div class="w-3.5 h-2 rounded-full bg-sky-400 border border-white shadow-[0_0_12px_#38bdf8] eye-alive-pulse"></div>
+                                    <div class="w-3.5 h-2 rounded-full bg-sky-400 border border-white shadow-[0_0_12px_#38bdf8] eye-alive-pulse"></div>
+                                </div>
+
                             </div>
 
                         </div>
@@ -272,6 +316,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                             <div class="text-[11px] font-black text-slate-700 uppercase tracking-tighter">NAFAS</div>
                         </div>
 
+                    </div>
+
+                    <!-- ROSC (BEMORNING TIRILISHI / O'ZIGA KELISHI) TRIUMPH BANNER -->
+                    <div id="rosc-revival-banner" class="hidden mt-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xl text-center flex flex-col items-center gap-1 border border-emerald-300 animate-pulse">
+                        <div class="flex items-center gap-2 text-sm font-black uppercase tracking-wider">
+                            <i class="fa-solid fa-sparkles text-amber-300"></i> ✨ ROSC: BEMOR HU'SHIGA KELDI (TIRILDI)!
+                        </div>
+                        <div class="text-[11px] font-semibold text-emerald-100 flex items-center justify-center gap-3">
+                            <span>❤️ Sinus: <b>75 BPM</b></span>
+                            <span>🫁 Mustaqil nafas</span>
+                            <span>🩸 Bosim: <b>120/80</b></span>
+                            <span>📈 SpO2: <b>98%</b></span>
+                        </div>
                     </div>
 
                     <!-- Ukol va Oshqozon Ogohlantirish Popupi -->
@@ -676,6 +733,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <div id="modal-vent-summary" class="mono text-xs text-cyan-900 mt-0.5">Jami: 2 ta | To'g'ri: 2 ta | Oshqozon: 0 ta</div>
                 </div>
 
+            </div>
+
+            <!-- ROSC Revival Button in Modal -->
+            <div id="modal-revival-action" class="hidden">
+                <button type="button" onclick="triggerPatientRevivalEffect(true)" class="w-full py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-300 transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i class="fa-solid fa-sparkles text-emerald-600"></i> ✨ Bemorning Tirilish Effektini Ko'rish (Ovoz, Puls va Nafas)
+                </button>
             </div>
 
             <!-- Modal Action Buttons (Printerga Chiqarish & Qayta topshirish) -->
@@ -1188,12 +1252,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                 `Jami: ${record.totalVents} ta | To'g'ri (2.0-3.0 kPa): ${record.correctVents} ta | Oshqozon xatosi: ${record.stomachErrors} ta`;
 
             const badge = document.getElementById("modal-status-badge");
+            const revivalBtn = document.getElementById("modal-revival-action");
+
             if (record.passed) {
-                badge.innerText = "🏆 IMTIHONDAN O'TDI (PASSED)";
+                badge.innerText = "🏆 IMTIHONDAN O'TDI (PASSED - ROSC ERISHILDI!)";
                 badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-300 inline-block mb-2";
+                if (revivalBtn) revivalBtn.classList.remove("hidden");
+                // Trigger Multi-Sensory Revival Experience!
+                triggerPatientRevivalEffect();
             } else {
                 badge.innerText = "❌ YIQILDI (FAILED)";
                 badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-50 text-rose-700 border border-rose-300 inline-block mb-2";
+                if (revivalBtn) revivalBtn.classList.add("hidden");
+                resetRevivalEffects();
             }
 
             // 2. Populate Printable Sheet
@@ -1235,6 +1306,199 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <div>• Ko'krak to'liq bo'shatilmagan (recoil): <b>${record.recoilErrors} ta</b></div>
                 <div>• Oshqozonga havo qochishi: <b>${record.stomachErrors} ta</b></div>
             `;
+        }
+
+        // ==================== PATIENT REVIVAL (ROSC) MULTI-SENSORY EFFECT ====================
+        let roscAudioInterval = null;
+
+        function resetRevivalEffects() {
+            if (roscAudioInterval) {
+                clearInterval(roscAudioInterval);
+                roscAudioInterval = null;
+            }
+            const banner = document.getElementById("rosc-revival-banner");
+            if (banner) banner.classList.add("hidden");
+
+            const eyes = document.getElementById("led-eyes-revival");
+            if (eyes) eyes.classList.add("hidden");
+
+            const airway = document.getElementById("led-airway");
+            if (airway) airway.classList.remove("sinus-pulse-on");
+
+            const pos = document.getElementById("led-position");
+            if (pos) pos.classList.remove("sinus-pulse-on");
+
+            const imgWrap = document.querySelector("#led-position") ? document.querySelector("#led-position").parentElement : null;
+            if (imgWrap) imgWrap.classList.remove("rosc-breathing");
+
+            const canvas = document.getElementById("celebration-canvas");
+            if (canvas) canvas.classList.add("hidden");
+        }
+
+        function playInhaleAudio() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const bufferSize = audioCtx.sampleRate * 1.5;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = "bandpass";
+                filter.frequency.setValueAtTime(300, audioCtx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 1.2);
+                filter.Q.value = 3.0;
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.35, audioCtx.currentTime + 0.8);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                noise.start();
+                noise.stop(audioCtx.currentTime + 1.5);
+            } catch(e) {}
+        }
+
+        function playSinusBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.12);
+            } catch(e) {}
+        }
+
+        function speakRevivalVoice() {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const text = "Rahmat doktor... nafasim qaytdi...";
+                    const utter = new SpeechSynthesisUtterance(text);
+                    utter.rate = 0.85;
+                    utter.pitch = 0.9;
+                    utter.volume = 1.0;
+                    window.speechSynthesis.speak(utter);
+                }
+            } catch(e) {}
+        }
+
+        function startConfettiCelebration() {
+            const canvas = document.getElementById("celebration-canvas");
+            if (!canvas) return;
+            canvas.classList.remove("hidden");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext("2d");
+
+            const colors = ["#22c55e", "#10b981", "#38bdf8", "#facc15", "#a855f7", "#ec4899"];
+            const particles = [];
+
+            for (let i = 0; i < 90; i++) {
+                particles.push({
+                    x: canvas.width * 0.5 + (Math.random() - 0.5) * 300,
+                    y: canvas.height * 0.4 + (Math.random() - 0.5) * 100,
+                    vx: (Math.random() - 0.5) * 16,
+                    vy: (Math.random() - 0.7) * 16,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rot: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.2,
+                    alpha: 1.0
+                });
+            }
+
+            let startT = Date.now();
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let alive = false;
+                const elapsed = Date.now() - startT;
+
+                for (let p of particles) {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.35; // Gravity
+                    p.rot += p.rotSpeed;
+                    if (elapsed > 2000) {
+                        p.alpha -= 0.015;
+                    }
+
+                    if (p.alpha > 0) {
+                        alive = true;
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, p.alpha);
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rot);
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+                        ctx.restore();
+                    }
+                }
+
+                if (alive && elapsed < 4500) {
+                    requestAnimationFrame(animateParticles);
+                } else {
+                    canvas.classList.add("hidden");
+                }
+            }
+            animateParticles();
+        }
+
+        function triggerPatientRevivalEffect(isManualReplay = false) {
+            resetRevivalEffects();
+
+            // 1. Visual Chest Expansion Breathing
+            const posEl = document.getElementById("led-position");
+            if (posEl && posEl.parentElement) {
+                posEl.parentElement.classList.add("rosc-breathing");
+            }
+
+            // 2. Eyes Awaken Overlay
+            const eyes = document.getElementById("led-eyes-revival");
+            if (eyes) eyes.classList.remove("hidden");
+
+            // 3. Carotid & Sternum Sinus Pulse (75 BPM)
+            const airway = document.getElementById("led-airway");
+            if (airway) airway.classList.add("sinus-pulse-on");
+            if (posEl) posEl.classList.add("sinus-pulse-on");
+
+            // 4. ROSC Banner
+            const banner = document.getElementById("rosc-revival-banner");
+            if (banner) banner.classList.remove("hidden");
+
+            // 5. Audio: Inhale -> Monitor Beeps -> Spoken Voice
+            playInhaleAudio();
+
+            // 6. Monitor Beeps at 75 BPM (every 800ms)
+            let beepCount = 0;
+            roscAudioInterval = setInterval(() => {
+                playSinusBeep();
+                beepCount++;
+                if (beepCount === 2) {
+                    speakRevivalVoice();
+                }
+                if (beepCount >= 10) {
+                    clearInterval(roscAudioInterval);
+                    roscAudioInterval = null;
+                }
+            }, 800);
+
+            // 7. Confetti Burst
+            startConfettiCelebration();
         }
 
         // ==================== PERSISTENT EXAM HISTORY STORAGE & MANAGEMENT ====================
