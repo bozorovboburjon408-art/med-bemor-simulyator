@@ -75,21 +75,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
         }
 
-        .led-yellow-on {
-            background-color: #facc15 !important;
-            box-shadow: 0 0 14px #facc15, inset 0 0 4px #ffffff !important;
-        }
-
-        .led-green-on {
-            background-color: #22c55e !important;
-            box-shadow: 0 0 16px #22c55e, inset 0 0 4px #ffffff !important;
-        }
-
-        .led-red-on {
-            background-color: #ef4444 !important;
-            box-shadow: 0 0 16px #ef4444, inset 0 0 4px #ffffff !important;
-        }
-
         /* Real-world Backlit LED Illuminations on the Image */
         .photo-led {
             border-radius: 50%;
@@ -97,53 +82,41 @@ HTML_CONTENT = """<!DOCTYPE html>
             transform: translate(-50%, -50%);
             pointer-events: auto;
             cursor: pointer;
-            transition: all 0.12s ease-out;
+            transition: opacity 0.12s ease, background-color 0.12s ease;
             opacity: 0;
             z-index: 20;
         }
 
-        /* Chest Center (PIN 13) Backlit Green LED */
+        /* Chest Center (PIN 13) Solid Neon Green Glow */
         .pos-led-on {
-            opacity: 1 !important;
-            background: radial-gradient(circle, rgba(74, 222, 128, 0.95) 15%, rgba(34, 197, 94, 0.85) 60%, rgba(34, 197, 94, 0.4) 100%) !important;
-            box-shadow: 0 0 25px #22c55e, 0 0 50px #22c55e, 0 0 80px rgba(34, 197, 94, 0.8) !important;
-            border: 2px solid rgba(255, 255, 255, 0.95) !important;
-            animation: ledPulse 0.35s infinite alternate;
+            opacity: 0.95 !important;
+            background-color: #22c55e !important;
+            box-shadow: 0 0 25px #22c55e, 0 0 50px #22c55e, inset 0 0 8px #ffffff !important;
+            border: 3px solid #ffffff !important;
         }
 
-        /* Injection Arm (PIN 4) Backlit Purple LED */
+        /* Injection Arm (PIN 4) Solid Neon Purple Glow */
         .inj-led-on {
-            opacity: 1 !important;
-            background: radial-gradient(circle, rgba(192, 132, 252, 0.95) 15%, rgba(168, 85, 247, 0.85) 60%, rgba(168, 85, 247, 0.4) 100%) !important;
-            box-shadow: 0 0 30px #a855f7, 0 0 60px #c084fc, 0 0 90px rgba(168, 85, 247, 0.8) !important;
-            border: 2px solid rgba(255, 255, 255, 0.95) !important;
-            animation: ledPulse 0.25s infinite alternate;
+            opacity: 0.95 !important;
+            background-color: #a855f7 !important;
+            box-shadow: 0 0 25px #a855f7, 0 0 50px #c084fc, inset 0 0 8px #ffffff !important;
+            border: 3px solid #ffffff !important;
         }
 
-        /* Airway Throat Backlit Cyan LED */
+        /* Airway Throat Solid Neon Cyan Glow */
         .airway-led-on {
-            opacity: 1 !important;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.95) 15%, rgba(6, 182, 212, 0.85) 60%, rgba(6, 182, 212, 0.4) 100%) !important;
-            box-shadow: 0 0 25px #06b6d4, 0 0 50px #06b6d4, 0 0 75px rgba(6, 182, 212, 0.8) !important;
-            border: 2px solid rgba(255, 255, 255, 0.95) !important;
+            opacity: 0.95 !important;
+            background-color: #06b6d4 !important;
+            box-shadow: 0 0 20px #06b6d4, 0 0 40px #06b6d4, inset 0 0 6px #ffffff !important;
+            border: 2px solid #ffffff !important;
         }
 
-        /* Stomach Warning Flashing Red */
+        /* Stomach Warning Solid Neon Red Glow */
         .stomach-led-on {
-            opacity: 1 !important;
-            background: radial-gradient(ellipse, rgba(239, 68, 68, 0.95) 10%, rgba(239, 68, 68, 0.7) 60%, transparent 100%) !important;
-            box-shadow: 0 0 30px #ef4444, 0 0 60px #ef4444 !important;
-            animation: blinkFast 0.2s infinite;
-        }
-
-        @keyframes ledPulse {
-            0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
-            100% { transform: translate(-50%, -50%) scale(1.1); filter: brightness(1.35); }
-        }
-
-        @keyframes blinkFast {
-            0%, 100% { opacity: 1; filter: brightness(1.5); }
-            50% { opacity: 0.2; filter: brightness(0.5); }
+            opacity: 0.95 !important;
+            background-color: #ef4444 !important;
+            box-shadow: 0 0 25px #ef4444, 0 0 50px #ef4444, inset 0 0 8px #ffffff !important;
+            border: 2px solid #ffffff !important;
         }
     </style>
 </head>
@@ -158,10 +131,10 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         <!-- Mode Buttons (Erkin Mashq vs Imtihon Rejimi) -->
         <div class="flex items-center gap-1.5 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
-            <button id="tab-practice" onclick="switchMode('practice')" class="px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow">
+            <button type="button" id="tab-practice" onclick="switchMode('practice')" class="px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow cursor-pointer">
                 🔘 Erkin Mashq
             </button>
-            <button id="tab-exam" onclick="switchMode('exam')" class="px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center gap-1.5">
+            <button type="button" id="tab-exam" onclick="switchMode('exam')" class="px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-clipboard-check text-amber-400"></i> Imtihon / Baholash
             </button>
         </div>
@@ -192,10 +165,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             <div class="flex items-center gap-2">
                 <span id="exam-timer" class="mono text-lg font-black text-emerald-400 tracking-wider bg-black/70 px-2.5 py-0.5 rounded-lg border border-slate-700">02:00</span>
                 
-                <button id="btn-exam-toggle" onclick="toggleExamState()" class="px-3 py-1 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-900 transition shadow flex items-center gap-1">
+                <button type="button" id="btn-exam-toggle" onclick="toggleExamState()" class="px-3 py-1 rounded-lg font-black text-xs bg-emerald-500 hover:bg-emerald-600 text-slate-900 transition shadow flex items-center gap-1 cursor-pointer">
                     <i class="fa-solid fa-play"></i> Boshlash
                 </button>
-                <button id="btn-exam-finish" onclick="finishExamManually()" class="hidden px-2.5 py-1 rounded-lg font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition shadow flex items-center gap-1">
+                <button type="button" id="btn-exam-finish" onclick="finishExamManually()" class="hidden px-2.5 py-1 rounded-lg font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition shadow flex items-center gap-1 cursor-pointer">
                     Yakunlash
                 </button>
             </div>
@@ -253,7 +226,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         <!-- MAIN DISPLAY PANEL (LEFT BAR | PHOTO OF MANIKIN WITH OVERLAYS | RIGHT BAR) -->
         <div class="panel-inset rounded-2xl p-2 sm:p-3 relative overflow-hidden flex flex-col">
             
-            <div class="flex items-stretch justify-between relative h-[480px]">
+            <div class="flex items-stretch justify-between relative" style="height: 480px;">
                 
                 <!-- LEFT LED BAR: KO'KRAK MASSAJ KUCHI (CPR FORCE) -->
                 <div class="w-16 flex flex-col items-center justify-between py-2 z-10">
@@ -262,8 +235,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <div id="force-val-text" class="mono font-black text-rose-700 text-sm sm:text-base mt-0.5">0.0 kg</div>
                     </div>
                     
-                    <!-- LED Bar Graph Enclosure (30 Segments) -->
-                    <div class="w-9 h-[380px] bg-[#1a0808] border-2 border-[#542525] rounded-md p-1 flex flex-col-reverse justify-between shadow-inner relative" id="force-bar-container">
+                    <!-- LED Bar Graph Enclosure (30 Segments) with Bulletproof Inline Style -->
+                    <div id="force-bar-container" style="width: 36px; height: 380px; background-color: #1a0808; border: 2px solid #542525; border-radius: 6px; padding: 4px; display: flex; flex-direction: column-reverse; justify-content: space-between; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); position: relative;">
                         <!-- LED Segments generated by JS -->
                     </div>
 
@@ -308,8 +281,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <div id="lung-val-text" class="mono font-black text-rose-700 text-xs sm:text-sm mt-0.5">0.0 kPa</div>
                     </div>
 
-                    <!-- LED Bar Graph Enclosure (30 Segments) -->
-                    <div class="w-9 h-[380px] bg-[#1a0808] border-2 border-[#542525] rounded-md p-1 flex flex-col-reverse justify-between shadow-inner relative" id="lung-bar-container">
+                    <!-- LED Bar Graph Enclosure (30 Segments) with Bulletproof Inline Style -->
+                    <div id="lung-bar-container" style="width: 36px; height: 380px; background-color: #1a0808; border: 2px solid #542525; border-radius: 6px; padding: 4px; display: flex; flex-direction: column-reverse; justify-content: space-between; box-shadow: inset 0 2px 4px rgba(0,0,0,0.8); position: relative;">
                         <!-- LED Segments generated by JS -->
                     </div>
 
@@ -506,13 +479,13 @@ HTML_CONTENT = """<!DOCTYPE html>
             const hudCard = document.getElementById("exam-hud-card");
 
             if (mode === "exam") {
-                tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow flex items-center gap-1.5";
-                tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
+                tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow flex items-center gap-1.5 cursor-pointer";
+                tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition cursor-pointer";
                 hudCard.classList.remove("hidden");
                 resetExamState();
             } else {
-                tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow";
-                tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center gap-1.5";
+                tabPrac.className = "px-3 py-1 rounded-lg font-bold text-xs bg-indigo-600 text-white transition shadow cursor-pointer";
+                tabExam.className = "px-3 py-1 rounded-lg font-bold text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center gap-1.5 cursor-pointer";
                 hudCard.classList.add("hidden");
                 if (isExamActive) toggleExamState();
             }
@@ -805,7 +778,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // ==================== RENDER LED BARS ====================
+        // ==================== RENDER LED BARS (DIRECT INLINE COLORS) ====================
         function renderBars(forceKg, lungKpa) {
             const forcePercent = Math.min(1.0, Math.max(0, forceKg / 60.0));
             const activeForceSegments = Math.round(forcePercent * NUM_SEGMENTS);
@@ -817,14 +790,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (i < activeForceSegments) {
                     const segPercent = i / NUM_SEGMENTS;
                     if (segPercent < 0.60) {
-                        seg.className = "led-segment led-yellow-on";
+                        seg.style.backgroundColor = "#facc15";
+                        seg.style.boxShadow = "0 0 12px #facc15";
                     } else if (segPercent <= 0.88) {
-                        seg.className = "led-segment led-green-on";
+                        seg.style.backgroundColor = "#22c55e";
+                        seg.style.boxShadow = "0 0 16px #22c55e, inset 0 0 4px #ffffff";
                     } else {
-                        seg.className = "led-segment led-red-on";
+                        seg.style.backgroundColor = "#ef4444";
+                        seg.style.boxShadow = "0 0 16px #ef4444, inset 0 0 4px #ffffff";
                     }
                 } else {
-                    seg.className = "led-segment";
+                    seg.style.backgroundColor = "#2e0f0f";
+                    seg.style.boxShadow = "none";
                 }
             }
             const forceText = document.getElementById("force-val-text");
@@ -841,14 +818,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (i < activeLungSegments) {
                     const segPercent = i / NUM_SEGMENTS;
                     if (segPercent < 0.55) {
-                        seg.className = "led-segment led-yellow-on";
+                        seg.style.backgroundColor = "#facc15";
+                        seg.style.boxShadow = "0 0 12px #facc15";
                     } else if (segPercent <= 0.88) {
-                        seg.className = "led-segment led-green-on";
+                        seg.style.backgroundColor = "#22c55e";
+                        seg.style.boxShadow = "0 0 16px #22c55e, inset 0 0 4px #ffffff";
                     } else {
-                        seg.className = "led-segment led-red-on";
+                        seg.style.backgroundColor = "#ef4444";
+                        seg.style.boxShadow = "0 0 16px #ef4444, inset 0 0 4px #ffffff";
                     }
                 } else {
-                    seg.className = "led-segment";
+                    seg.style.backgroundColor = "#2e0f0f";
+                    seg.style.boxShadow = "none";
                 }
             }
             const lungText = document.getElementById("lung-val-text");
