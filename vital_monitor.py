@@ -116,7 +116,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
         </div>
 
-        <div class="flex items-center space-x-3 text-xs">
+        <div class="flex items-center space-x-2 text-xs">
+            <a href="/console" target="_blank" class="px-2.5 py-1 rounded bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-600 flex items-center gap-1.5 transition font-bold shadow">
+                <i class="fa-solid fa-graduation-cap text-purple-400"></i>
+                <span>🎓 CPR Imtihon & Pult</span>
+            </a>
+
             <div id="hw-badge" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 flex items-center gap-1.5">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span id="hw-text">ESP32 UART: Jonli oqim</span>

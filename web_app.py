@@ -297,10 +297,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <p class="text-xs text-indigo-200">Gemini Live AI — Erkak ovozi (Anvar, 40 yosh)</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2">
                 <a href="/monitor" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
                     <i class="fa-solid fa-heart-pulse"></i>
                     <span>📊 Vital Monitor</span>
+                </a>
+                <a href="/console" target="_blank" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>🎓 CPR Imtihon & Pult</span>
                 </a>
                 <div id="top-status" class="flex items-center space-x-2 bg-indigo-800/60 px-3 py-1.5 rounded-full text-xs">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
@@ -753,6 +757,14 @@ async def get_monitor():
 
 @app.get("/console", response_class=HTMLResponse)
 async def get_console():
+    return HTMLResponse(content=CONSOLE_HTML)
+
+@app.get("/pult", response_class=HTMLResponse)
+async def get_pult():
+    return HTMLResponse(content=CONSOLE_HTML)
+
+@app.get("/exam", response_class=HTMLResponse)
+async def get_exam():
     return HTMLResponse(content=CONSOLE_HTML)
 
 @app.get("/manikin_photo.png")
