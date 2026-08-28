@@ -86,57 +86,43 @@ HTML_CONTENT = """<!DOCTYPE html>
             box-shadow: 0 0 16px #ef4444, inset 0 0 4px #ffffff !important;
         }
 
-        /* Over-the-Photo LED Lights */
+        /* Over-the-Photo Dynamic LED Glow Overlays */
         .photo-led {
             border-radius: 50%;
-            transition: all 0.08s ease;
+            transition: all 0.12s ease-out;
             pointer-events: auto;
             cursor: pointer;
+            opacity: 0; /* In idle state, completely invisible so only the photo's circle is seen */
         }
 
-        /* Chest Center Position LED */
-        .pos-led-off {
-            background: rgba(0,0,0,0.1);
-            border: 3px dashed rgba(34, 197, 94, 0.4);
-        }
+        /* Chest Center Position LED (PIN 13) */
         .pos-led-on {
-            background: rgba(34, 197, 94, 0.85) !important;
-            border: 3px solid #ffffff !important;
-            box-shadow: 0 0 30px #22c55e, 0 0 60px #22c55e, inset 0 0 10px #ffffff !important;
+            opacity: 1 !important;
+            background: radial-gradient(circle, #4ade80 20%, rgba(34, 197, 94, 0.85) 60%, rgba(34, 197, 94, 0) 100%) !important;
+            box-shadow: 0 0 25px #22c55e, 0 0 50px #22c55e, 0 0 80px rgba(34, 197, 94, 0.6) !important;
             animation: pulseGlow 0.35s infinite alternate;
         }
 
         /* Airway Throat LED */
-        .airway-led-off {
-            background: transparent;
-            border: 2.5px dashed rgba(6, 182, 212, 0.3);
-        }
         .airway-led-on {
-            background: rgba(6, 182, 212, 0.85) !important;
-            border: 3px solid #ffffff !important;
-            box-shadow: 0 0 25px #06b6d4, 0 0 50px #06b6d4, inset 0 0 8px #ffffff !important;
+            opacity: 1 !important;
+            background: radial-gradient(circle, #38bdf8 20%, rgba(6, 182, 212, 0.85) 60%, rgba(6, 182, 212, 0) 100%) !important;
+            box-shadow: 0 0 25px #06b6d4, 0 0 50px #06b6d4 !important;
         }
 
-        /* Injection Arm LED */
-        .inj-led-off {
-            background: rgba(0,0,0,0.1);
-            border: 3px dashed rgba(168, 85, 247, 0.4);
-        }
+        /* Injection Arm LED (PIN 4) */
         .inj-led-on {
-            background: rgba(168, 85, 247, 0.9) !important;
-            border: 3px solid #ffffff !important;
-            box-shadow: 0 0 30px #a855f7, 0 0 60px #c084fc, inset 0 0 10px #ffffff !important;
+            opacity: 1 !important;
+            background: radial-gradient(circle, #c084fc 20%, rgba(168, 85, 247, 0.85) 60%, rgba(168, 85, 247, 0) 100%) !important;
+            box-shadow: 0 0 30px #a855f7, 0 0 60px #c084fc, 0 0 90px rgba(168, 85, 247, 0.6) !important;
             animation: pulseGlow 0.25s infinite alternate;
         }
 
         /* Stomach Hazard LED */
-        .stomach-led-off {
-            background: transparent;
-        }
         .stomach-led-on {
-            background: rgba(239, 68, 68, 0.9) !important;
-            border: 3px solid #ffffff !important;
-            box-shadow: 0 0 30px #ef4444, 0 0 60px #ef4444, inset 0 0 10px #ffffff !important;
+            opacity: 1 !important;
+            background: radial-gradient(circle, #f87171 20%, rgba(239, 68, 68, 0.85) 60%, rgba(239, 68, 68, 0) 100%) !important;
+            box-shadow: 0 0 30px #ef4444, 0 0 60px #ef4444 !important;
             animation: blinkFast 0.2s infinite;
         }
 
@@ -204,19 +190,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <!-- ==================== PIXEL-PERFECT INTERACTIVE LED OVERLAYS ==================== -->
 
                         <!-- 1. Airway / Throat LED (Bo'yin/Tomir nuqtasi) -->
-                        <div id="led-airway" class="photo-led airway-led-off absolute top-[33.0%] left-[53.0%] -translate-x-1/2 -translate-y-1/2 w-[9.5%] h-[6.5%] flex items-center justify-center">
+                        <div id="led-airway" class="photo-led absolute top-[33.74%] left-[50.85%] -translate-x-1/2 -translate-y-1/2 w-[8.5%] h-[6.0%] flex items-center justify-center pointer-events-none">
                         </div>
 
                         <!-- 2. Chest Center Position LED (NUQTA PIN 13) -->
-                        <div id="led-position" onclick="toggleSimPos()" class="photo-led pos-led-off absolute top-[57.5%] left-[50.5%] -translate-x-1/2 -translate-y-1/2 w-[13.5%] h-[9.3%] flex items-center justify-center" title="Qo'l nuqtasi (Pin 13)">
+                        <div id="led-position" onclick="toggleSimPos()" class="photo-led absolute top-[56.30%] left-[50.85%] -translate-x-1/2 -translate-y-1/2 w-[12.5%] h-[8.6%] flex items-center justify-center" title="Qo'l nuqtasi (Pin 13)">
                         </div>
 
                         <!-- 3. Right Arm Injection LED (UKOL PIN 4) -->
-                        <div id="led-injection" onclick="triggerSimInj()" class="photo-led inj-led-off absolute top-[69.6%] left-[90.5%] -translate-x-1/2 -translate-y-1/2 w-[13.5%] h-[9.3%] flex items-center justify-center" title="Ukol / Inyeksiya (Pin 4)">
+                        <div id="led-injection" onclick="triggerSimInj()" class="photo-led absolute top-[68.41%] left-[91.58%] -translate-x-1/2 -translate-y-1/2 w-[13.0%] h-[9.0%] flex items-center justify-center" title="Ukol / Inyeksiya (Pin 4)">
                         </div>
 
                         <!-- 4. Stomach Warning LED (OSHQOZON) -->
-                        <div id="led-stomach" class="photo-led stomach-led-off absolute top-[92.7%] left-[51.6%] -translate-x-1/2 -translate-y-1/2 w-[11.5%] h-[8.0%] flex items-center justify-center" title="Oshqozon bosimi">
+                        <div id="led-stomach" class="photo-led absolute top-[92.7%] left-[51.0%] -translate-x-1/2 -translate-y-1/2 w-[11.0%] h-[7.6%] flex items-center justify-center pointer-events-none" title="Oshqozon bosimi">
                         </div>
 
                     </div>
@@ -370,12 +356,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             const cmH2O = (lungKpa * 10.2).toFixed(0);
             document.getElementById("lung-val-text").innerText = `${lungKpa.toFixed(1)} kPa`;
 
-            // 3. Airway Pulse LED
+            // 3. Airway Pulse LED (Nafas kurganda)
             const airwayLed = document.getElementById("led-airway");
             if (lungKpa > 0.8) {
-                airwayLed.className = "photo-led airway-led-on absolute top-[31.5%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center";
+                airwayLed.classList.add("airway-led-on");
             } else {
-                airwayLed.className = "photo-led airway-led-off absolute top-[31.5%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center";
+                airwayLed.classList.remove("airway-led-on");
             }
         }
 
@@ -385,13 +371,13 @@ HTML_CONTENT = """<!DOCTYPE html>
             const posLed = document.getElementById("led-position");
             const posLbl = document.getElementById("pos-btn-text");
             if (posBtn === 1 || posBtn === true) {
-                posLed.className = "photo-led pos-led-on absolute top-[55.8%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center";
+                posLed.classList.add("pos-led-on");
                 if (posLbl) {
                     posLbl.innerText = "BOSILDI (TO'G'RI)";
                     posLbl.className = "text-emerald-400 font-bold";
                 }
             } else {
-                posLed.className = "photo-led pos-led-off absolute top-[55.8%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center";
+                posLed.classList.remove("pos-led-on");
                 if (posLbl) {
                     posLbl.innerText = "BO'SH";
                     posLbl.className = "text-rose-400";
@@ -404,23 +390,23 @@ HTML_CONTENT = """<!DOCTYPE html>
             const alertText = document.getElementById("console-alert-text");
 
             if (injBtn === 1 || injBtn === true) {
-                injLed.className = "photo-led inj-led-on absolute top-[68.2%] left-[91.5%] -translate-x-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center";
+                injLed.classList.add("inj-led-on");
                 alertBox.classList.remove("hidden");
                 alertBox.className = "mt-2 p-2 rounded-lg bg-purple-100 border border-purple-400 text-purple-900 text-xs font-bold text-center flex items-center justify-center gap-2 animate-pulse";
                 alertText.innerText = "💉 INYEKSIYA (UKOL TOMIRGA KIRDI!)";
             } else {
-                injLed.className = "photo-led inj-led-off absolute top-[68.2%] left-[91.5%] -translate-x-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center";
+                injLed.classList.remove("inj-led-on");
             }
 
             // Stomach Warning LED
             const stomachLed = document.getElementById("led-stomach");
             if (stomachKpa > 0.6) {
-                stomachLed.className = "photo-led stomach-led-on absolute top-[94%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center";
+                stomachLed.classList.add("stomach-led-on");
                 alertBox.classList.remove("hidden");
                 alertBox.className = "mt-2 p-2 rounded-lg bg-rose-100 border border-rose-400 text-rose-900 text-xs font-bold text-center flex items-center justify-center gap-2 animate-pulse";
                 alertText.innerText = `⚠️ HAVO OSHQOZONDA! (${stomachKpa.toFixed(1)} kPa)`;
             } else {
-                stomachLed.className = "photo-led stomach-led-off absolute top-[94%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center";
+                stomachLed.classList.remove("stomach-led-on");
                 if (!injBtn) alertBox.classList.add("hidden");
             }
         }
