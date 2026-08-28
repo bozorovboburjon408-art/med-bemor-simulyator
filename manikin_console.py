@@ -337,7 +337,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <span>O'pka Bosimi:</span>
                         <span id="sim-lung-lbl" class="mono text-cyan-400 font-bold">0 kPa</span>
                     </div>
-                    <input type="range" id="sim-lung" min="0" max="30" step="0.2" value="0" 
+                    <input type="range" id="sim-lung" min="0" max="4.0" step="0.1" value="0" 
                            oninput="onSimInput()" class="w-full accent-cyan-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
                 </div>
             </div>
@@ -408,11 +408,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
             document.getElementById("force-val-text").innerText = `${forceKg.toFixed(1)} kg`;
 
-            // 2. Render Lung Pressure Bar (Max: 30 kPa)
-            // 0 - 5 kPa: Yellow
-            // 5 - 20 kPa: Green
-            // > 20 kPa: Red
-            const lungPercent = Math.min(1.0, Math.max(0, lungKpa / 30.0));
+            // 2. Render Lung Pressure Bar (Max: 3.5 kPa / 35 cmH2O Standard)
+            // 0 - 1.9 kPa (<20 cmH2O): Yellow (Kam havo / Qattiqroq siqing)
+            // 2.0 - 3.0 kPa (20 - 30 cmH2O): YORQIN YASHIL (TO'G'RI VA YETARLI NAFAS)
+            // > 3.1 kPa (>32 cmH2O): Qizil (Ortiqcha bosim / Barotravma xavfi)
+            const lungPercent = Math.min(1.0, Math.max(0, lungKpa / 3.5));
             const activeLungSegments = Math.round(lungPercent * NUM_SEGMENTS);
 
             for (let i = 0; i < NUM_SEGMENTS; i++) {
@@ -421,22 +421,23 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                 if (i < activeLungSegments) {
                     const segPercent = i / NUM_SEGMENTS;
-                    if (segPercent < 0.20) {
-                        seg.className = "led-segment led-yellow-on";
-                    } else if (segPercent <= 0.70) {
-                        seg.className = "led-segment led-green-on";  // Target ventilation
+                    if (segPercent < 0.55) {
+                        seg.className = "led-segment led-yellow-on"; // Kam havo (<2.0 kPa)
+                    } else if (segPercent <= 0.88) {
+                        seg.className = "led-segment led-green-on";  // Me'yor: 2.0 - 3.0 kPa (20-30 cmH2O)
                     } else {
-                        seg.className = "led-segment led-red-on";    // Excess pressure
+                        seg.className = "led-segment led-red-on";    // Ortiqcha bosim (>3.1 kPa)
                     }
                 } else {
                     seg.className = "led-segment";
                 }
             }
-            document.getElementById("lung-val-text").innerText = `${lungKpa.toFixed(1)} kPa`;
+            const cmH2O = (lungKpa * 10.2).toFixed(0);
+            document.getElementById("lung-val-text").innerText = `${lungKpa.toFixed(1)} kPa (${cmH2O} cmH2O)`;
 
-            // 3. Airway Pulse LED
+            // 3. Airway Pulse LED (Nafas kurganda)
             const airwayLed = document.getElementById("led-airway");
-            if (lungKpa > 1.5) {
+            if (lungKpa > 0.8) {
                 airwayLed.classList.add("led-pulse-active");
             } else {
                 airwayLed.classList.remove("led-pulse-active");

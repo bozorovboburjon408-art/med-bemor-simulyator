@@ -595,26 +595,32 @@ HTML_CONTENT = """<!DOCTYPE html>
                 rateBadge.innerText = "Standart: 100 - 120 /min";
             }
 
-            // 4. Lung Pressure
-            document.getElementById("lung-p-val").innerText = `${lungP.toFixed(1)} cmH2O`;
-            const lungPct = Math.min(100, (lungP / 30.0) * 100);
+            // 4. Lung Pressure (Max: 3.5 kPa)
+            document.getElementById("lung-p-val").innerText = `${lungP.toFixed(1)} kPa`;
+            const lungPct = Math.min(100, (lungP / 3.5) * 100);
             document.getElementById("lung-p-bar").style.width = `${lungPct}%`;
-            if (lungP > 8.0) {
-                document.getElementById("lung-status-text").innerText = "🫁 O'pka ventilyatsiyasi berilmoqda";
-                document.getElementById("lung-status-text").className = "text-[10px] text-emerald-400 mt-0.5 font-bold";
+            if (lungP >= 2.0 && lungP <= 3.0) {
+                document.getElementById("lung-status-text").innerText = "✅ TO'G'RI VA YETARLI NAFAS (20-30 cmH2O)";
+                document.getElementById("lung-status-text").className = "text-[10px] text-emerald-400 mt-0.5 font-bold glow-green";
                 if (current.spo2 < 99) {
                     current.spo2 = Math.min(100, current.spo2 + 1);
                     updateNumericsUI();
                 }
+            } else if (lungP > 3.0) {
+                document.getElementById("lung-status-text").innerText = "🚨 JUDA KUCHLI! BAROTRAVMA XAVFI (>3.0 kPa)";
+                document.getElementById("lung-status-text").className = "text-[10px] text-rose-400 mt-0.5 font-bold glow-red";
+            } else if (lungP > 0.6) {
+                document.getElementById("lung-status-text").innerText = "⚠️ Qattiqroq siqing (<20 cmH2O)";
+                document.getElementById("lung-status-text").className = "text-[10px] text-yellow-400 mt-0.5 font-bold";
             } else {
                 document.getElementById("lung-status-text").innerText = "O'pka: Normal";
                 document.getElementById("lung-status-text").className = "text-[10px] text-cyan-400 mt-0.5";
             }
 
             // 5. Stomach Pressure
-            document.getElementById("stomach-p-val").innerText = stomachP.toFixed(1);
+            document.getElementById("stomach-p-val").innerText = `${stomachP.toFixed(1)} kPa`;
             const stomachAlert = document.getElementById("stomach-alert");
-            if (stomachP > 1.2) {
+            if (stomachP > 0.8) {
                 stomachAlert.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-500 alarm-blink";
                 stomachAlert.innerHTML = "⚠️ HAVO OSHQOZONDA!";
             } else {
