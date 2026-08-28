@@ -93,9 +93,15 @@
             border: 2px solid #ffffff !important;
         }
 
-        /* Medical Range Slider Styling */
-        input[type=range] {
-            accent-color: #0284c7;
+        /* Countdown Pulse Animation */
+        @keyframes countPulse {
+            0% { transform: scale(0.6); opacity: 0; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1.0); opacity: 1; }
+        }
+
+        .animate-countdown {
+            animation: countPulse 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
         /* ==================== PROFESSIONAL PRINT SHEET STYLING ==================== */
@@ -361,7 +367,34 @@
 
             </div>
 
-            <!-- 3. COLLAPSIBLE SOFTWARE SIMULATION CONTROLS (YASHIRILGAN TEST BOSHQARUVI) -->
+            <!-- 3. PERSISTENT EXAM RESULTS HISTORY LOG (IMTIHON NATIJALARI JURNALI) -->
+            <div id="exam-history-card" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> IMTIHON NATIJALARI TARI популяRI / JURNALI
+                        </span>
+                        <span id="history-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                            0 ta
+                        </span>
+                    </div>
+
+                    <button type="button" onclick="clearAllExamHistory()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 transition text-[11px] flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-trash-can text-xs"></i> Tarixni Tozalash
+                    </button>
+                </div>
+
+                <!-- History Table / Records Container -->
+                <div id="history-list-container" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                    <!-- Dynamic Records Loaded by JS -->
+                </div>
+
+                <div id="history-empty-placeholder" class="text-center py-4 text-xs text-slate-400 font-medium">
+                    Hali topshirilgan imtihonlar mavjud emas. Imtihon topshirilgach natijalar avtomatik saqlanadi.
+                </div>
+            </div>
+
+            <!-- 4. COLLAPSIBLE SOFTWARE SIMULATION CONTROLS (YASHIRILGAN TEST BOSHQARUVI) -->
             <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
                 
                 <!-- Header Toggle Button -->
@@ -435,7 +468,22 @@
 
     </main>
 
-    <!-- ==================== 1. STUDENT REGISTRATION MODAL (ONLY IN EXAM MODE) ==================== -->
+    <!-- ==================== COUNTDOWN OVERLAY (3... 2... 1... START!) ==================== -->
+    <div id="countdown-overlay" class="no-print fixed inset-0 bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center p-4 z-50 hidden">
+        <div class="text-center flex flex-col items-center">
+            <div class="text-white/80 font-bold text-lg mb-2 tracking-widest uppercase">IMTIHON BOSHLANMOQDA:</div>
+            
+            <div id="countdown-number-circle" class="w-36 h-36 rounded-full bg-blue-600 border-4 border-white/80 flex items-center justify-center text-white text-6xl font-black shadow-2xl animate-countdown">
+                3
+            </div>
+
+            <div id="countdown-subtitle" class="text-slate-200 font-bold text-sm mt-4 tracking-wide">
+                Qo'llaringizni maniken ko'kragiga qo'ying!
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 1. STUDENT REGISTRATION MODAL ==================== -->
     <div id="student-modal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white border border-slate-300 rounded-3xl max-w-md w-full p-6 shadow-2xl text-slate-900 flex flex-col gap-4">
             
@@ -498,7 +546,7 @@
         </div>
     </div>
 
-    <!-- ==================== 2. EXAM RESULTS MODAL SCORECARD (ONLY IN EXAM MODE) ==================== -->
+    <!-- ==================== 2. EXAM RESULTS MODAL SCORECARD ==================== -->
     <div id="exam-modal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white border border-slate-300 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-slate-900 flex flex-col gap-4">
             
@@ -717,6 +765,23 @@
         createLedSegments("force-bar-container");
         createLedSegments("lung-bar-container");
 
+        // ==================== BEEP SOUND SYNTHESIZER FOR COUNTDOWN ====================
+        function playBeep(freq = 440, duration = 0.15) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
         // ==================== TOGGLE HIDDEN TEST PANEL ====================
         let isTestPanelOpen = false;
         function toggleTestPanel() {
@@ -841,7 +906,7 @@
             if (!studentInfo.name) {
                 openStudentModal();
             } else {
-                toggleExamState();
+                startExamWithCountdown();
             }
         }
 
@@ -867,9 +932,68 @@
             document.getElementById("hud-student-display").innerText = `Talaba: ${studentInfo.name} (${studentInfo.group})`;
             closeStudentModal();
 
-            if (!isExamActive) {
-                toggleExamState();
+            startExamWithCountdown();
+        }
+
+        // ==================== 3... 2... 1... TESKARI HISOB VA BOSHLASH ====================
+        function startExamWithCountdown() {
+            if (isExamActive) {
+                resetExamState();
+                return;
             }
+
+            const overlay = document.getElementById("countdown-overlay");
+            const circle = document.getElementById("countdown-number-circle");
+            const sub = document.getElementById("countdown-subtitle");
+
+            overlay.classList.remove("hidden");
+
+            let count = 3;
+            circle.innerText = count;
+            circle.className = "w-36 h-36 rounded-full bg-blue-600 border-4 border-white/80 flex items-center justify-center text-white text-6xl font-black shadow-2xl animate-countdown";
+            sub.innerText = "Qo'llaringizni maniken ko'kragiga qo'ying!";
+            playBeep(440, 0.2);
+
+            const countInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    circle.innerText = count;
+                    circle.className = "w-36 h-36 rounded-full bg-blue-600 border-4 border-white/80 flex items-center justify-center text-white text-6xl font-black shadow-2xl animate-countdown";
+                    playBeep(440, 0.2);
+                } else if (count === 0) {
+                    circle.innerText = "🚀";
+                    circle.className = "w-36 h-36 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white text-6xl font-black shadow-2xl animate-countdown";
+                    sub.innerText = "BOSHLANG! (Kompressiya va Nafas)";
+                    playBeep(880, 0.35);
+                } else {
+                    clearInterval(countInterval);
+                    overlay.classList.add("hidden");
+                    actuallyStartExamTimer();
+                }
+            }, 900);
+        }
+
+        function actuallyStartExamTimer() {
+            resetExamState();
+            isExamActive = true;
+            const btn = document.getElementById("btn-exam-toggle");
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-stop"></i> To'xtatish`;
+                btn.className = "px-4 py-2 rounded-xl font-black text-xs bg-rose-600 hover:bg-rose-500 text-white transition shadow flex items-center gap-1.5 cursor-pointer";
+            }
+            const finishBtn = document.getElementById("btn-exam-finish");
+            if (finishBtn) finishBtn.classList.remove("hidden");
+
+            const fb = document.getElementById("exam-live-feedback");
+            if (fb) fb.innerText = "Imtihon ketyapti: Massaj va nafas bering!";
+
+            examTimerInterval = setInterval(() => {
+                examTimeLeft--;
+                updateTimerDisplay();
+                if (examTimeLeft <= 0) {
+                    finishExamManually();
+                }
+            }, 1000);
         }
 
         function resetExamState() {
@@ -903,34 +1027,6 @@
             if (fb) fb.innerText = "Tayyor: 'Boshlash' tugmasini bosing!";
         }
 
-        function toggleExamState() {
-            if (!isExamActive) {
-                // START EXAM
-                resetExamState();
-                isExamActive = true;
-                const btn = document.getElementById("btn-exam-toggle");
-                if (btn) {
-                    btn.innerHTML = `<i class="fa-solid fa-stop"></i> To'xtatish`;
-                    btn.className = "px-4 py-2 rounded-xl font-black text-xs bg-rose-600 hover:bg-rose-500 text-white transition shadow flex items-center gap-1.5 cursor-pointer";
-                }
-                const finishBtn = document.getElementById("btn-exam-finish");
-                if (finishBtn) finishBtn.classList.remove("hidden");
-
-                const fb = document.getElementById("exam-live-feedback");
-                if (fb) fb.innerText = "Mashqni boshlang (Kompressiya va Nafas)!";
-
-                examTimerInterval = setInterval(() => {
-                    examTimeLeft--;
-                    updateTimerDisplay();
-                    if (examTimeLeft <= 0) {
-                        finishExamManually();
-                    }
-                }, 1000);
-            } else {
-                resetExamState();
-            }
-        }
-
         function finishExamManually() {
             if (examTimerInterval) clearInterval(examTimerInterval);
             isExamActive = false;
@@ -960,28 +1056,68 @@
             const timeSpentSecs = 120 - examTimeLeft;
             const isPassed = overallScore >= 80 && liveStats.totalComps >= 20;
 
-            // 1. Populate Screen Modal (Only shown in Exam mode)
-            document.getElementById("modal-student-header").innerText = `Talaba: ${studentInfo.name || "Noma'lum"} (${studentInfo.group || "Guruhsiz"})`;
-            document.getElementById("modal-total-score").innerText = `${overallScore}%`;
-            document.getElementById("modal-time-spent").innerText = `${timeSpentSecs} soniya`;
-            document.getElementById("modal-total-comps").innerText = `${liveStats.totalComps} ta`;
-            document.getElementById("modal-correct-comps").innerText = `${liveStats.correctComps} ta (${correctPct}%)`;
-            document.getElementById("modal-wrong-comps").innerText = `${liveStats.wrongComps} ta`;
-            document.getElementById("modal-bpm-avg").innerText = `${avgBpm} /min`;
+            const d = new Date();
+            const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth()+1).toString().padStart(2, '0')}.${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+            const protocolNo = `CPR-${d.getFullYear()}-${Math.floor(1000 + Math.random()*9000)}`;
+
+            const examRecord = {
+                id: protocolNo,
+                name: studentInfo.name || "Noma'lum Talaba",
+                group: studentInfo.group || "Guruhsiz",
+                ticket: studentInfo.id || "№ 01",
+                examiner: studentInfo.examiner || "Kafedra O'qituvchisi",
+                date: dateStr,
+                timeSpent: timeSpentSecs,
+                totalComps: liveStats.totalComps,
+                correctComps: liveStats.correctComps,
+                correctPct: correctPct,
+                wrongComps: liveStats.wrongComps,
+                shallowErrors: liveStats.shallowErrors,
+                excessErrors: liveStats.excessErrors,
+                posErrors: liveStats.posErrors,
+                recoilErrors: liveStats.recoilErrors,
+                totalVents: liveStats.totalVents,
+                correctVents: liveStats.correctVents,
+                stomachErrors: liveStats.stomachErrors,
+                bpm: avgBpm,
+                score: overallScore,
+                passed: isPassed
+            };
+
+            // Save to LocalStorage History
+            saveExamToHistory(examRecord);
+
+            // Populate Modal & Printable Sheet
+            renderProtocolFromRecord(examRecord);
+
+            if (currentAppMode === "exam") {
+                document.getElementById("exam-modal").classList.remove("hidden");
+            }
+        }
+
+        function renderProtocolFromRecord(record) {
+            // 1. Populate Screen Modal
+            document.getElementById("modal-student-header").innerText = `Talaba: ${record.name} (${record.group})`;
+            document.getElementById("modal-total-score").innerText = `${record.score}%`;
+            document.getElementById("modal-time-spent").innerText = `${record.timeSpent} soniya`;
+            document.getElementById("modal-total-comps").innerText = `${record.totalComps} ta`;
+            document.getElementById("modal-correct-comps").innerText = `${record.correctComps} ta (${record.correctPct}%)`;
+            document.getElementById("modal-wrong-comps").innerText = `${record.wrongComps} ta`;
+            document.getElementById("modal-bpm-avg").innerText = `${record.bpm} /min`;
 
             const errDiv = document.getElementById("modal-error-details");
             errDiv.innerHTML = `
-                <div>• ⚠️ Sayoz bosilgan (<38 kg): <b>${liveStats.shallowErrors} ta</b></div>
-                <div>• ⚠️ Ortiqcha qattiq bosilgan (>55 kg): <b>${liveStats.excessErrors} ta</b></div>
-                <div>• ❌ Qo'l noto'g'ri joyda bosilgan: <b>${liveStats.posErrors} ta</b></div>
-                <div>• 🔄 Ko'krak to'liq bo'shatilmagan (recoil): <b>${liveStats.recoilErrors} ta</b></div>
+                <div>• ⚠️ Sayoz bosilgan (<38 kg): <b>${record.shallowErrors} ta</b></div>
+                <div>• ⚠️ Ortiqcha qattiq bosilgan (>55 kg): <b>${record.excessErrors} ta</b></div>
+                <div>• ❌ Qo'l noto'g'ri joyda bosilgan: <b>${record.posErrors} ta</b></div>
+                <div>• 🔄 Ko'krak to'liq bo'shatilmagan (recoil): <b>${record.recoilErrors} ta</b></div>
             `;
 
             document.getElementById("modal-vent-summary").innerText = 
-                `Jami: ${liveStats.totalVents} ta | To'g'ri (2.0-3.0 kPa): ${liveStats.correctVents} ta | Oshqozon xatosi: ${liveStats.stomachErrors} ta`;
+                `Jami: ${record.totalVents} ta | To'g'ri (2.0-3.0 kPa): ${record.correctVents} ta | Oshqozon xatosi: ${record.stomachErrors} ta`;
 
             const badge = document.getElementById("modal-status-badge");
-            if (isPassed) {
+            if (record.passed) {
                 badge.innerText = "🏆 IMTIHONDAN O'TDI (PASSED)";
                 badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-300 inline-block mb-2";
             } else {
@@ -990,51 +1126,135 @@
             }
 
             // 2. Populate Printable Sheet
-            const d = new Date();
-            const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth()+1).toString().padStart(2, '0')}.${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-            
-            document.getElementById("print-protocol-no").innerText = `CPR-${d.getFullYear()}-${Math.floor(1000 + Math.random()*9000)}`;
-            document.getElementById("print-student-name").innerText = studentInfo.name || "Noma'lum";
-            document.getElementById("print-student-group").innerText = studentInfo.group || "-";
-            document.getElementById("print-student-id").innerText = studentInfo.id || "-";
-            document.getElementById("print-exam-date").innerText = dateStr;
-            document.getElementById("print-exam-duration").innerText = `${timeSpentSecs} soniya`;
-            document.getElementById("print-examiner").innerText = studentInfo.examiner || "Kafedra O'qituvchisi";
+            document.getElementById("print-protocol-no").innerText = record.id;
+            document.getElementById("print-student-name").innerText = record.name;
+            document.getElementById("print-student-group").innerText = record.group;
+            document.getElementById("print-student-id").innerText = record.ticket;
+            document.getElementById("print-exam-date").innerText = record.date;
+            document.getElementById("print-exam-duration").innerText = `${record.timeSpent} soniya`;
+            document.getElementById("print-examiner").innerText = record.examiner;
 
-            document.getElementById("print-status-text").innerText = isPassed ? "🏆 IMTIHONDAN O'TDI (PASSED)" : "❌ YIQILDI (FAILED)";
-            document.getElementById("print-status-text").style.color = isPassed ? "#15803d" : "#b91c1c";
-            document.getElementById("print-total-pct").innerText = `${overallScore}%`;
+            document.getElementById("print-status-text").innerText = record.passed ? "🏆 IMTIHONDAN O'TDI (PASSED)" : "❌ YIQILDI (FAILED)";
+            document.getElementById("print-status-text").style.color = record.passed ? "#15803d" : "#b91c1c";
+            document.getElementById("print-total-pct").innerText = `${record.score}%`;
 
-            document.getElementById("print-val-total-comps").innerText = `${liveStats.totalComps} ta`;
-            document.getElementById("print-res-total-comps").innerText = liveStats.totalComps >= 20 ? "Qoniqarli" : "Kam";
+            document.getElementById("print-val-total-comps").innerText = `${record.totalComps} ta`;
+            document.getElementById("print-res-total-comps").innerText = record.totalComps >= 20 ? "Qoniqarli" : "Kam";
 
-            document.getElementById("print-val-correct-comps").innerText = `${liveStats.correctComps} ta (${correctPct}%)`;
-            document.getElementById("print-res-correct-comps").innerText = correctPct >= 80 ? "A'lo" : "Yetarli emas";
+            document.getElementById("print-val-correct-comps").innerText = `${record.correctComps} ta (${record.correctPct}%)`;
+            document.getElementById("print-res-correct-comps").innerText = record.correctPct >= 80 ? "A'lo" : "Yetarli emas";
 
-            document.getElementById("print-val-recoil").innerText = `${liveStats.recoilErrors} ta xato`;
-            document.getElementById("print-res-recoil").innerText = liveStats.recoilErrors === 0 ? "Mukammal" : "E'tibor bering";
+            document.getElementById("print-val-recoil").innerText = `${record.recoilErrors} ta xato`;
+            document.getElementById("print-res-recoil").innerText = record.recoilErrors === 0 ? "Mukammal" : "E'tibor bering";
 
-            document.getElementById("print-val-bpm").innerText = `${avgBpm} /min`;
-            document.getElementById("print-res-bpm").innerText = (avgBpm >= 100 && avgBpm <= 120) ? "Me'yorda" : "Tuzatish lozim";
+            document.getElementById("print-val-bpm").innerText = `${record.bpm} /min`;
+            document.getElementById("print-res-bpm").innerText = (record.bpm >= 100 && record.bpm <= 120) ? "Me'yorda" : "Tuzatish lozim";
 
-            document.getElementById("print-val-vents").innerText = `${liveStats.correctVents} / ${liveStats.totalVents} to'g'ri`;
-            document.getElementById("print-res-vents").innerText = liveStats.correctVents > 0 ? "Muvaffaqiyatli" : "Nafas berilmadi";
+            document.getElementById("print-val-vents").innerText = `${record.correctVents} / ${record.totalVents} to'g'ri`;
+            document.getElementById("print-res-vents").innerText = record.correctVents > 0 ? "Muvaffaqiyatli" : "Nafas berilmadi";
 
-            document.getElementById("print-val-stomach").innerText = `${liveStats.stomachErrors} ta`;
-            document.getElementById("print-res-stomach").innerText = liveStats.stomachErrors === 0 ? "Toza" : "XATO (Oshqozon)";
+            document.getElementById("print-val-stomach").innerText = `${record.stomachErrors} ta`;
+            document.getElementById("print-res-stomach").innerText = record.stomachErrors === 0 ? "Toza" : "XATO (Oshqozon)";
 
             const printErrList = document.getElementById("print-error-list");
             printErrList.innerHTML = `
-                <div>• Sayoz bosilgan (<38 kg): <b>${liveStats.shallowErrors} ta</b></div>
-                <div>• Ortiqcha qattiq bosilgan (>55 kg): <b>${liveStats.excessErrors} ta</b></div>
-                <div>• Qo'l noto'g'ri nuqtada bosilgan: <b>${liveStats.posErrors} ta</b></div>
-                <div>• Ko'krak to'liq bo'shatilmagan (recoil): <b>${liveStats.recoilErrors} ta</b></div>
-                <div>• Oshqozonga havo qochishi: <b>${liveStats.stomachErrors} ta</b></div>
+                <div>• Sayoz bosilgan (<38 kg): <b>${record.shallowErrors} ta</b></div>
+                <div>• Ortiqcha qattiq bosilgan (>55 kg): <b>${record.excessErrors} ta</b></div>
+                <div>• Qo'l noto'g'ri nuqtada bosilgan: <b>${record.posErrors} ta</b></div>
+                <div>• Ko'krak to'liq bo'shatilmagan (recoil): <b>${record.recoilErrors} ta</b></div>
+                <div>• Oshqozonga havo qochishi: <b>${record.stomachErrors} ta</b></div>
             `;
+        }
 
-            if (currentAppMode === "exam") {
+        // ==================== PERSISTENT EXAM HISTORY STORAGE & MANAGEMENT ====================
+        function getExamHistory() {
+            try {
+                const raw = localStorage.getItem("cpr_exam_records");
+                return raw ? JSON.parse(raw) : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function saveExamToHistory(record) {
+            try {
+                const list = getExamHistory();
+                list.unshift(record); // Add to top
+                localStorage.setItem("cpr_exam_records", JSON.stringify(list));
+                renderExamHistory();
+            } catch(e) {}
+        }
+
+        function deleteSingleExamRecord(id) {
+            const list = getExamHistory().filter(r => r.id !== id);
+            localStorage.setItem("cpr_exam_records", JSON.stringify(list));
+            renderExamHistory();
+        }
+
+        function clearAllExamHistory() {
+            const list = getExamHistory();
+            if (list.length === 0) {
+                alert("Tarix allaqachon bo'sh!");
+                return;
+            }
+            if (confirm("Haqiqatan ham barcha saqlangan imtihon natijalarini o'chirmoqchimisiz?")) {
+                localStorage.removeItem("cpr_exam_records");
+                renderExamHistory();
+            }
+        }
+
+        function openHistoryRecord(id) {
+            const record = getExamHistory().find(r => r.id === id);
+            if (record) {
+                renderProtocolFromRecord(record);
                 document.getElementById("exam-modal").classList.remove("hidden");
             }
+        }
+
+        function renderExamHistory() {
+            const list = getExamHistory();
+            const container = document.getElementById("history-list-container");
+            const emptyEl = document.getElementById("history-empty-placeholder");
+            const badge = document.getElementById("history-count-badge");
+
+            if (badge) badge.innerText = `${list.length} ta`;
+
+            if (list.length === 0) {
+                if (container) container.innerHTML = "";
+                if (emptyEl) emptyEl.classList.remove("hidden");
+                return;
+            }
+
+            if (emptyEl) emptyEl.classList.add("hidden");
+            if (!container) return;
+
+            container.innerHTML = list.map(item => `
+                <div class="flex items-center justify-between p-2.5 rounded-xl border ${item.passed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'} text-xs">
+                    <div class="flex flex-col">
+                        <div class="font-black text-slate-900 flex items-center gap-1.5">
+                            <span>${item.name}</span>
+                            <span class="text-[11px] font-semibold text-slate-500">(${item.group})</span>
+                        </div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">
+                            📅 ${item.date} | Zarbalar: <b>${item.correctComps}/${item.totalComps}</b> | Nafas: <b>${item.correctVents}</b>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-lg text-xs font-black ${item.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${item.score}% (${item.passed ? "O'TDI" : "YIQILDI"})
+                        </span>
+                        
+                        <button type="button" onclick="openHistoryRecord('${item.id}')" title="Protokolni ko'rish va chop etish" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition shadow-sm cursor-pointer">
+                            <i class="fa-solid fa-print mr-1"></i> Protokol
+                        </button>
+                        
+                        <button type="button" onclick="deleteSingleExamRecord('${item.id}')" title="O'chirish" class="p-1 text-slate-400 hover:text-rose-600 transition cursor-pointer">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function printExamProtocol() {
@@ -1482,6 +1702,7 @@
 
         window.onload = () => {
             connectWS();
+            renderExamHistory();
             onSimInput();
         };
     </script>
