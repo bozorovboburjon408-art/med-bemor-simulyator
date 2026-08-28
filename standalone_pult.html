@@ -877,38 +877,49 @@
         // ==================== WEBSOCKET LIVE TELEMETRY ====================
         let ws;
         function connectWS() {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${protocol}//${window.location.host}/ws/telemetry`);
+            try {
+                let wsHost = window.location.host;
+                if (!wsHost || wsHost === "") wsHost = "127.0.0.1:8600";
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                ws = new WebSocket(`${protocol}//${wsHost}/ws/telemetry`);
 
-            ws.onopen = () => {
-                const dot = document.getElementById("conn-dot");
-                if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#22c55e]";
-                const st = document.getElementById("conn-status");
-                if (st) st.innerText = "ESP32 UART: JONLI ALOQA (0ms)";
-            };
+                ws.onopen = () => {
+                    const dot = document.getElementById("conn-dot");
+                    if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#22c55e]";
+                    const st = document.getElementById("conn-status");
+                    if (st) st.innerText = "ESP32 UART: JONLI ALOQA (0ms)";
+                };
 
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    const force = parseFloat(data.force !== undefined ? data.force : (data.f_curr || 0));
-                    const lungP = parseFloat(data.lung_p || 0);
-                    const stomachP = parseFloat(data.stomach_p || 0);
-                    const posBtn = data.pos_btn !== undefined ? data.pos_btn : (data.pos_ok ? 1 : 0);
-                    const injBtn = data.inj_btn !== undefined ? data.inj_btn : (data.inj_ok ? 1 : 0);
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        const force = parseFloat(data.force !== undefined ? data.force : (data.f_curr || 0));
+                        const lungP = parseFloat(data.lung_p || 0);
+                        const stomachP = parseFloat(data.stomach_p || 0);
+                        const posBtn = data.pos_btn !== undefined ? data.pos_btn : (data.pos_ok ? 1 : 0);
+                        const injBtn = data.inj_btn !== undefined ? data.inj_btn : (data.inj_ok ? 1 : 0);
 
-                    renderBars(force, lungP);
-                    updateIndicators(posBtn, stomachP, injBtn);
-                    processExamHardware(force, lungP, stomachP, posBtn);
-                } catch(e) {}
-            };
+                        renderBars(force, lungP);
+                        updateIndicators(posBtn, stomachP, injBtn);
+                        processExamHardware(force, lungP, stomachP, posBtn);
+                    } catch(e) {}
+                };
 
-            ws.onclose = () => {
-                const dot = document.getElementById("conn-dot");
-                if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-yellow-400";
-                const st = document.getElementById("conn-status");
-                if (st) st.innerText = "ESP32 UART: Qayta ulanmoqda...";
-                setTimeout(connectWS, 1500);
-            };
+                ws.onclose = () => {
+                    const dot = document.getElementById("conn-dot");
+                    if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-yellow-400";
+                    const st = document.getElementById("conn-status");
+                    if (st) st.innerText = "ESP32 UART: Qayta ulanmoqda...";
+                    setTimeout(connectWS, 1500);
+                };
+
+                ws.onerror = () => {
+                    const dot = document.getElementById("conn-dot");
+                    if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-yellow-400";
+                    const st = document.getElementById("conn-status");
+                    if (st) st.innerText = "ESP32: Dasturiy rejim (Lokal)";
+                };
+            } catch(e) {}
         }
 
         // ==================== MANUAL TEST HELPERS ====================
