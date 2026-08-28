@@ -192,28 +192,33 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <div class="text-[11px] font-black text-slate-800 uppercase tracking-tighter">MASSAJ</div>
                 </div>
 
-                <!-- CENTER: REALISTIC HIGH-INTEL MANIKIN PHOTO WITH DYNAMIC LED OVERLAYS -->
-                <div class="flex-1 relative flex items-center justify-center mx-1 overflow-hidden rounded-xl border border-slate-300 shadow-inner bg-slate-100">
+                <!-- CENTER: REALISTIC HIGH-INTEL MANIKIN PHOTO WITH PIXEL-PERFECT LED OVERLAYS -->
+                <div class="flex-1 relative flex items-center justify-center mx-1 overflow-hidden rounded-xl border border-slate-300 shadow-inner bg-slate-100 h-full">
                     
-                    <!-- Base Realistic Manikin Image -->
-                    <img src="/manikin_photo.png" alt="Maniken" class="w-full h-full object-contain pointer-events-none select-none">
+                    <!-- Aspect Ratio Locked Image Wrapper (Zero Shift Error) -->
+                    <div class="relative h-full flex items-center justify-center" style="aspect-ratio: 707 / 1024;">
+                        
+                        <!-- Base Manikin Photo -->
+                        <img src="/manikin_photo.png" alt="Maniken" class="w-full h-full block object-fill pointer-events-none select-none">
 
-                    <!-- ==================== DYNAMIC INTERACTIVE LED OVERLAYS ==================== -->
+                        <!-- ==================== PIXEL-PERFECT INTERACTIVE LED OVERLAYS ==================== -->
 
-                    <!-- 1. Airway / Throat LED (Bo'yin/Tomir nuqtasi) -->
-                    <div id="led-airway" class="photo-led airway-led-off absolute top-[31.5%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center">
-                    </div>
+                        <!-- 1. Airway / Throat LED (Bo'yin/Tomir nuqtasi) -->
+                        <div id="led-airway" class="photo-led airway-led-off absolute top-[33.0%] left-[53.0%] -translate-x-1/2 -translate-y-1/2 w-[9.5%] h-[6.5%] flex items-center justify-center">
+                        </div>
 
-                    <!-- 2. Chest Center Position LED (NUQTA PIN 13) -->
-                    <div id="led-position" onclick="toggleSimPos()" class="photo-led pos-led-off absolute top-[55.8%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center" title="Qo'l nuqtasi (Pin 13)">
-                    </div>
+                        <!-- 2. Chest Center Position LED (NUQTA PIN 13) -->
+                        <div id="led-position" onclick="toggleSimPos()" class="photo-led pos-led-off absolute top-[57.5%] left-[50.5%] -translate-x-1/2 -translate-y-1/2 w-[13.5%] h-[9.3%] flex items-center justify-center" title="Qo'l nuqtasi (Pin 13)">
+                        </div>
 
-                    <!-- 3. Right Arm Injection LED (UKOL PIN 4) -->
-                    <div id="led-injection" onclick="triggerSimInj()" class="photo-led inj-led-off absolute top-[68.2%] left-[91.5%] -translate-x-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center" title="Ukol / Inyeksiya (Pin 4)">
-                    </div>
+                        <!-- 3. Right Arm Injection LED (UKOL PIN 4) -->
+                        <div id="led-injection" onclick="triggerSimInj()" class="photo-led inj-led-off absolute top-[69.6%] left-[90.5%] -translate-x-1/2 -translate-y-1/2 w-[13.5%] h-[9.3%] flex items-center justify-center" title="Ukol / Inyeksiya (Pin 4)">
+                        </div>
 
-                    <!-- 4. Stomach Warning LED (OSHQOZON) -->
-                    <div id="led-stomach" class="photo-led stomach-led-off absolute top-[94%] left-[50.8%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center" title="Oshqozon bosimi">
+                        <!-- 4. Stomach Warning LED (OSHQOZON) -->
+                        <div id="led-stomach" class="photo-led stomach-led-off absolute top-[92.7%] left-[51.6%] -translate-x-1/2 -translate-y-1/2 w-[11.5%] h-[8.0%] flex items-center justify-center" title="Oshqozon bosimi">
+                        </div>
+
                     </div>
 
                 </div>
