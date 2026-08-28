@@ -4,7 +4,10 @@ import requests
 import serial
 import serial.tools.list_ports
 
-TARGET_URL = "http://localhost:8500/api/telemetry"
+TARGET_URLS = [
+    "http://localhost:8500/api/telemetry",
+    "http://localhost:8000/api/telemetry"
+]
 BAUD_RATE = 115200
 
 def find_esp32_port():
@@ -15,7 +18,7 @@ def find_esp32_port():
     
     for p in ports:
         desc = (p.description or "").lower()
-        if any(keyword in desc for keyword in ["ch340", "cp210", "usb-serial", "uart", "esp", "silicon", "prolific"]):
+        if any(keyword in desc for keyword in ["ch340", "cp210", "usb-serial", "uart", "esp", "silicon", "prolific", "ftdi"]):
             return p.device
             
     return ports[0].device
@@ -25,10 +28,9 @@ def main():
     print("  🔌 ESP32 UART -> REANIMATSIYA MONITORI KO'PRIGI (SERIAL BRIDGE)")
     print("=" * 68)
     print(f"  Baud tezligi:    {BAUD_RATE}")
-    print(f"  Monitor manzili: {TARGET_URL}")
     print("=" * 68)
     print("  ⚠️  MUHIM: Arduino IDE dagi 'Serial Monitor' oynasini yoping!")
-    print("  (Aks holda Windows portni boshqa dasturga ochishga ruxsat bermaydi)")
+    print("  (Aks holda Windows portni ochishga ruxsat bermaydi)")
     print("=" * 68 + "\n")
 
     while True:
@@ -54,20 +56,25 @@ def main():
                         try:
                             pkt = json.loads(line)
                             packet_count += 1
-                            # Send to Monitor Web App
-                            try:
-                                requests.post(TARGET_URL, json=pkt, timeout=0.1)
-                                f_curr = pkt.get('f_curr', 0.0)
-                                bpm = pkt.get('bpm', 0)
-                                d_ok = pkt.get('d_ok', False)
-                                pos_ok = pkt.get('pos_ok', False)
-                                lung_p = pkt.get('lung_p', 0.0)
-                                inj_ok = pkt.get('inj_ok', False)
-                                
-                                print(f"📡 [ESP32 #{packet_count}] Kuch: {f_curr}kg | BPM: {bpm} | Chuqurlik: {'✅' if d_ok else '❌'} | Joyi: {'✅' if pos_ok else '❌'} | O'pka: {lung_p} | Ukol: {'💉' if inj_ok else '-'}")
-                            except Exception as req_err:
-                                # Monitor might not be open yet
-                                pass
+                            
+                            # Send to active monitor instances
+                            for url in TARGET_URLS:
+                                try:
+                                    requests.post(url, json=pkt, timeout=0.05)
+                                except:
+                                    pass
+
+                            # Parse fields
+                            f_val = pkt.get('force', pkt.get('f_curr', 0.0))
+                            lung_p = pkt.get('lung_p', 0.0)
+                            stomach_p = pkt.get('stomach_p', 0.0)
+                            pos_btn = pkt.get('pos_btn', pkt.get('pos_ok', 0))
+                            inj_btn = pkt.get('inj_btn', pkt.get('inj_ok', 0))
+                            
+                            pos_str = "✅ TO'G'RI" if (pos_btn == 1 or pos_btn is True) else "❌ XATO"
+                            inj_str = "💉 UKOL" if (inj_btn == 1 or inj_btn is True) else "-"
+                            
+                            print(f"📡 [#{packet_count}] Kuch: {f_val:>4.1f} kg | Joyi: {pos_str} | O'pka: {lung_p:>4.1f} | Oshqozon: {stomach_p:>4.1f} | {inj_str}")
                         except json.JSONDecodeError:
                             pass
         except serial.SerialException as e:

@@ -477,19 +477,75 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        // Dynamic CPR Stroke analysis in frontend
+        let cprState = "idle";
+        let peakForce = 0;
+        let lastStrokeTime = 0;
+        let cprCount = 0;
+        let currentBpm = 0;
+        let lastDepthOk = false;
+        let lastRecoilOk = true;
+        let lastRateOk = false;
+
+        function processCPRStroke(forceKg) {
+            const now = Date.now();
+            if (cprState === "idle") {
+                if (forceKg > 4.0) {
+                    cprState = "compressing";
+                    peakForce = forceKg;
+                }
+            } else if (cprState === "compressing") {
+                if (forceKg > peakForce) {
+                    peakForce = forceKg;
+                }
+                if (forceKg < peakForce - 3.0) {
+                    cprState = "recoiling";
+                    if (lastStrokeTime > 0) {
+                        const delta = now - lastStrokeTime;
+                        if (delta > 200 && delta < 2000) {
+                            currentBpm = Math.round(60000 / delta);
+                        }
+                    }
+                    lastStrokeTime = now;
+                    cprCount++;
+                    lastDepthOk = (peakForce >= 38.0 && peakForce <= 55.0);
+                    lastRateOk = (currentBpm >= 100 && currentBpm <= 120);
+                }
+            } else if (cprState === "recoiling") {
+                if (forceKg <= 5.0) {
+                    lastRecoilOk = true;
+                    cprState = "idle";
+                } else if (forceKg > peakForce - 1.0 && forceKg > 4.0) {
+                    lastRecoilOk = false;
+                    cprState = "compressing";
+                    peakForce = forceKg;
+                }
+            }
+
+            if (now - lastStrokeTime > 2500) {
+                currentBpm = 0;
+            }
+        }
+
         // ==================== PROCESS INCOMING ESP32 JSON ====================
         function handleHardwareData(data) {
-            // ESP32 fields: f_curr, bpm, count, d_ok, r_ok, bpm_ok, pos_ok, lung_p, stomach_p, inj_ok
-            const fCurr = parseFloat(data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0));
-            const bpm = parseInt(data.bpm || 0);
-            const count = parseInt(data.count || 0);
-            const dOk = Boolean(data.d_ok);
-            const rOk = Boolean(data.r_ok);
-            const bpmOk = Boolean(data.bpm_ok);
-            const posOk = Boolean(data.pos_ok !== undefined ? data.pos_ok : data.pos_valid);
+            // Support all JSON variations: force / f_curr / force_kg
+            const fCurr = parseFloat(data.force !== undefined ? data.force : (data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0)));
+            const posBtn = (data.pos_btn === 1 || data.pos_btn === true || data.pos_ok === true || data.pos_valid === true);
+            const injBtn = (data.inj_btn === 1 || data.inj_btn === true || data.inj_ok === true);
             const lungP = parseFloat(data.lung_p || 0);
             const stomachP = parseFloat(data.stomach_p || 0);
-            const injOk = Boolean(data.inj_ok);
+
+            // Compute CPR in real time
+            processCPRStroke(fCurr);
+
+            const bpm = data.bpm !== undefined ? parseInt(data.bpm) : currentBpm;
+            const count = data.count !== undefined ? parseInt(data.count) : cprCount;
+            const dOk = data.d_ok !== undefined ? Boolean(data.d_ok) : lastDepthOk;
+            const rOk = data.r_ok !== undefined ? Boolean(data.r_ok) : lastRecoilOk;
+            const bpmOk = data.bpm_ok !== undefined ? Boolean(data.bpm_ok) : lastRateOk;
+            const posOk = posBtn;
+            const injOk = injBtn;
 
             // 1. Update Force Bar
             document.getElementById("cpr-force-val").innerText = `${fCurr.toFixed(1)} kg`;
@@ -497,15 +553,18 @@ HTML_CONTENT = """<!DOCTYPE html>
             const forceBar = document.getElementById("cpr-force-bar");
             forceBar.style.width = `${forcePct}%`;
 
-            if (fCurr >= 40.0 && fCurr <= 55.0) {
+            if (fCurr >= 38.0 && fCurr <= 55.0) {
                 forceBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-75";
                 document.getElementById("cpr-force-val").className = "mono text-emerald-400 font-bold text-sm";
             } else if (fCurr > 55.0) {
                 forceBar.className = "bg-rose-500 h-full rounded-full transition-all duration-75";
                 document.getElementById("cpr-force-val").className = "mono text-rose-400 font-bold text-sm";
-            } else if (fCurr > 10.0) {
+            } else if (fCurr > 8.0) {
                 forceBar.className = "bg-yellow-500 h-full rounded-full transition-all duration-75";
                 document.getElementById("cpr-force-val").className = "mono text-yellow-400 font-bold text-sm";
+            } else {
+                forceBar.className = "bg-slate-700 h-full rounded-full transition-all duration-75";
+                document.getElementById("cpr-force-val").className = "mono text-slate-400 font-bold text-sm";
             }
 
             // 2. Update Quality Badges
@@ -515,7 +574,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             updateQualityBadge("badge-d", "Chuqurlik", dOk, fCurr > 5);
             updateQualityBadge("badge-r", "Bo'shatish", rOk, fCurr > 5);
             updateQualityBadge("badge-bpm", "Tezlik", bpmOk, bpm > 0);
-            updateQualityBadge("badge-pos", "Joyi", posOk, fCurr > 5);
+            updateQualityBadge("badge-pos", "Joyi", posOk, true);
 
             // 3. CPR BPM
             document.getElementById("cpr-bpm-val").innerText = `${bpm} /min`;
