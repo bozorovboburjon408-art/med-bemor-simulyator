@@ -755,6 +755,14 @@ async def get_monitor():
 async def get_console():
     return HTMLResponse(content=CONSOLE_HTML)
 
+@app.get("/manikin_photo.png")
+async def get_photo():
+    photo_path = os.path.join(os.path.dirname(__file__), "manikin_photo.png")
+    if os.path.exists(photo_path):
+        return FileResponse(photo_path, media_type="image/png")
+    return JSONResponse(content={"error": "Photo not found"}, status_code=404)
+
+
 
 @app.post("/api/telemetry")
 async def post_telemetry(request: Request):
