@@ -122,6 +122,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <span>🎓 CPR Imtihon & Pult</span>
             </a>
 
+            <button id="btn-web-serial" onclick="connectDirectWebSerial()" class="px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 transition font-bold shadow cursor-pointer">
+                <i class="fa-brands fa-usb text-blue-400"></i>
+                <span id="web-serial-text">🔌 Maniken (USB) ga Ulanish</span>
+            </button>
+
             <div id="hw-badge" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 flex items-center gap-1.5">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span id="hw-text">ESP32 UART: Jonli oqim</span>
@@ -702,6 +707,39 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
         }
 
+        // ==================== DIRECT WEB SERIAL API (ONE-CLICK USB SYNC) ====================
+        let webSerialPort = null;
+        let webSerialWriter = null;
+
+        async function connectDirectWebSerial() {
+            if (!("serial" in navigator)) {
+                alert("Brauzeringiz Web Serial API-ni qo'llab-quvvatlamaydi. Iltimos Google Chrome yoki Microsoft Edge brauzeridan foydalaning!");
+                return;
+            }
+            try {
+                webSerialPort = await navigator.serial.requestPort();
+                await webSerialPort.open({ baudRate: 115200 });
+                const textEncoder = new TextEncoderStream();
+                const writableStreamClosed = textEncoder.readable.pipeTo(webSerialPort.writable);
+                webSerialWriter = textEncoder.writable.getWriter();
+
+                document.getElementById("web-serial-text").innerText = "✅ Maniken Ulandi (USB)";
+                document.getElementById("btn-web-serial").className = "px-2.5 py-1 rounded bg-emerald-900 text-emerald-200 border border-emerald-500 flex items-center gap-1.5 font-bold shadow";
+
+                sendWebSerialCommand("BPM:75\n");
+            } catch(err) {
+                console.error("Web Serial Ulanish xatosi:", err);
+            }
+        }
+
+        async function sendWebSerialCommand(cmd) {
+            if (webSerialWriter) {
+                try {
+                    await webSerialWriter.write(cmd);
+                } catch(e) {}
+            }
+        }
+
         function setScenario(type) {
             initAudio();
             totalSteps = 150;
@@ -711,26 +749,32 @@ HTML_CONTENT = """<!DOCTYPE html>
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                 updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-950/80 text-emerald-400 border-emerald-700");
                 stopAsystoleTone();
+                sendWebSerialCommand("NORMAL\n");
             } else if (type === "dying") {
                 target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 35.1, mode: "dying", rhythm: "asystole" };
                 updateBanner("🚨 DIQQAT: BEMORNI YO'QOTYAPMIZ! (KOLLAPS / ASISTOLIYA)", "bg-red-950 text-red-400 border-red-500 alarm-blink");
+                sendWebSerialCommand("DYING\n");
             } else if (type === "attack") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA VA GIPERTONIK KRIZ!", "bg-orange-950 text-orange-400 border-orange-500 alarm-blink");
                 stopAsystoleTone();
+                sendWebSerialCommand("ATTACK\n");
             } else if (type === "hypoxia") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
                 updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI!", "bg-cyan-950 text-cyan-400 border-cyan-500 alarm-blink");
                 stopAsystoleTone();
+                sendWebSerialCommand("BPM:135\n");
             } else if (type === "shock") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
                 updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI!", "bg-rose-950 text-rose-400 border-rose-500 alarm-blink");
                 stopAsystoleTone();
+                sendWebSerialCommand("BPM:145\n");
             }
         }
 
         function defibrillateShock() {
             initAudio();
+            sendWebSerialCommand("SHOCK\n");
             const flash = document.getElementById("flash-overlay");
             flash.classList.add("shock-active");
             setTimeout(() => flash.classList.remove("shock-active"), 600);
