@@ -49,7 +49,7 @@ def create_document():
     info_table = doc.add_table(rows=3, cols=2)
     info_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     info_data = [
-        ("Loyiha Nomi:", "GD/H126 Bemor Simulyatori va CPR Imtihon Pulti"),
+        ("Loyiha Nomi:", "MedLife: AI Bemor Simulyatori, Vital Monitor va Yurak-O'pka Reanimatsiyasi Tizimi"),
         ("Asosiy Manzillar:", "Web: https://med-bemor-simulyator.onrender.com/ | Portlar: 8000, 8500, 8600"),
         ("Tuzuvchilar:", "1-Ishtirokchi (Dasturiy Ta'minot) & 2-Ishtirokchi (Hardware / Datchiklar)")
     ]
@@ -89,22 +89,22 @@ def create_document():
         ("1. KIRISH VA TANISHTIRUV (~20 soniya)", [
             ("👤 1-Ishtirokchi (Dasturchi - Siz):", "Assalomu alaykum! Men [Ismingiz] — ushbu loyihaning dasturiy ta'minot muhandisiman."),
             ("👤 2-Ishtirokchi (Muhandis - Sherigingiz):", "Men esa [Sherigingiz ismi] — loyihaning apparat qismi, ya'ni maniken va sensorlar bo'yicha muhandisiman."),
-            ("👤 1-Ishtirokchi (Siz):", "Bugun sizlarga tibbiy ta'limni yangi bosqichga olib chiquvchi innovatsion platformamiz — Kompyuterlashgan Bemor Maniken Simulyatori va CPR Imtihon Tizimini taqdim etamiz.")
+            ("👤 1-Ishtirokchi (Siz):", "Bugun sizlarga tibbiy ta'limni yangi bosqichga olib chiquvchi innovatsion platformamiz — MedLife tibbiy simulyatorlar majmuasini taqdim etamiz.")
         ]),
         ("2. APPARAT VA DATCHIKLAR QISMI (~40 soniya)", [
             ("📹 Kadrda / Ekranda:", "[Maniken, ESP32 mikrokontrolleri, datchiklar va simlar montaji ko'rsatiladi]"),
             ("👤 2-Ishtirokchi (Sherigingiz):", "Loyihamizning apparat qismida biz GD/H126 tibbiy manikenini to'liq modernizatsiya qildik:\n"
                                                "• Ko'krak qafasiga massaj kuchini 0 dan 60 kg gacha o'lchovchi datchik;\n"
                                                "• Nafas yo'llari va oshqozonga yuqori aniqlikdagi pnevmatik bosim datchiklari;\n"
-                                               "• To'sh suyagi va qo'l tomiriga kontaktli sensorlar o'rnatdik.\n"
+                                               "• To'sh suyagi va qo'l tomiriga kontaktli sensorlar va pulsator o'rnatdik.\n"
                                                "Barcha datchiklardan kelayotgan ma'lumotlar ESP32 mikrokontrolleri orqali qayta ishlanib, 0 millisekundlik kechikish bilan dasturga uzatiladi. Dasturiy qismni esa sherigim tushuntiradi.")
         ]),
         ("3. DASTURIY MODULLAR (~30 soniya)", [
-            ("📹 Kadrda / Ekranda:", "[AI Bemor, ICU Vital Monitor va CPR Imtihon pulti navbatma-navbat ko'rsatiladi]"),
+            ("📹 Kadrda / Ekranda:", "[AI Bemor, ICU Vital Monitor va Yurak-O'pka Reanimatsiyasi simulyatori navbatma-navbat ko'rsatiladi]"),
             ("👤 1-Ishtirokchi (Siz):", "Dasturimiz 3 ta asosiy moduldan iborat:\n"
-                                       "1. Gemini Live AI Bemor — talaba 14 xil kasallik bo'yicha bemor bilan o'zbek tilida jonli muloqot qiladi.\n"
-                                       "2. Vital Monitor — bemorning EKG, puls, SpO2 va bosimini real vaqtda jonli ko'rsatadi.\n"
-                                       "3. CPR Imtihon va Pult Tizimi — datchiklar bilan integratsiyalashgan to'liq raqamli boshqaruv paneli.")
+                                       "1. MedLife: AI Bemor Simulyatori — talaba 14 xil kasallik bo'yicha bemor bilan o'zbek tilida jonli muloqot qiladi;\n"
+                                       "2. Vital Monitor — bemorning EKG, puls, SpO2 va bosimini real vaqtda jonli ko'rsatadi;\n"
+                                       "3. Yurak-O'pka Reanimatsiyasi Simulyatori — datchiklar bilan integratsiyalashgan to'liq raqamli CPR boshqaruv va imtihon tizimi.")
         ]),
         ("4. TEZKOR IMTIHON VA KLINIK FUNKSIYALAR (~40 soniya)", [
             ("📹 Kadrda / Ekranda:", "[Teskari hisob, datchiklar ko'rsatkichlari, Bemorning tirilishi va A4 Protokol ko'rsatiladi]"),

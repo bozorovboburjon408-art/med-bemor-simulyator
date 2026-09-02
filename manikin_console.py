@@ -16,7 +16,7 @@ try:
 except:
     pass
 
-app = FastAPI(title="Bemor Maniken Test va Imtihon Pulti")
+app = FastAPI(title="MedLife: Yurak-O'pka Reanimatsiyasi Simulyatori")
 
 active_websockets: List[WebSocket] = []
 
@@ -36,7 +36,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Bemor Maniken Test va Imtihon Pulti</title>
+    <title>MedLife — Yurak-O'pka Reanimatsiyasi (CPR) Simulyatori</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -202,11 +202,11 @@ HTML_CONTENT = """<!DOCTYPE html>
         <!-- Left: Logo & Hospital Badge -->
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-sm">
-                <i class="fa-solid fa-user-doctor"></i>
+                <i class="fa-solid fa-hand-holding-heart"></i>
             </div>
             <div>
-                <h1 class="font-extrabold text-slate-900 text-base leading-tight">GD/H126 CPR VA REANIMATSIYA MANIKEN TIZIMI</h1>
-                <p class="text-xs text-slate-500 font-medium">Tibbiy Ko'nikmalarni Baholash va Trening Markazi</p>
+                <h1 class="font-extrabold text-slate-900 text-base leading-tight">YURAK-O'PKA REANIMATSIYASI (CPR) SIMULYATORI</h1>
+                <p class="text-xs text-slate-500 font-medium">MedLife: Tibbiy Ko'nikmalarni Baholash va Trening Markazi</p>
             </div>
         </div>
 
@@ -222,7 +222,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <i class="fa-solid fa-heart-pulse text-emerald-600"></i> Vital Monitor
             </a>
             <a href="/" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-hospital-user text-blue-600"></i> Bemor
+                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor
             </a>
         </div>
 

@@ -117,9 +117,14 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <div class="flex items-center space-x-2 text-xs">
+            <a href="/" target="_blank" class="px-2.5 py-1 rounded bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-600 flex items-center gap-1.5 transition font-bold shadow">
+                <i class="fa-solid fa-hospital-user text-indigo-400"></i>
+                <span>AI Bemor</span>
+            </a>
+
             <a href="/console" target="_blank" class="px-2.5 py-1 rounded bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-600 flex items-center gap-1.5 transition font-bold shadow">
-                <i class="fa-solid fa-graduation-cap text-purple-400"></i>
-                <span>🎓 CPR Imtihon & Pult</span>
+                <i class="fa-solid fa-hand-holding-heart text-purple-400"></i>
+                <span>🫀 Yurak-O'pka Reanimatsiyasi</span>
             </a>
 
             <button id="btn-web-serial" onclick="connectDirectWebSerial()" class="px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 transition font-bold shadow cursor-pointer">
@@ -726,7 +731,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 document.getElementById("web-serial-text").innerText = "✅ Maniken Ulandi (USB)";
                 document.getElementById("btn-web-serial").className = "px-2.5 py-1 rounded bg-emerald-900 text-emerald-200 border border-emerald-500 flex items-center gap-1.5 font-bold shadow";
 
-                sendWebSerialCommand("BPM:75\n");
+                sendWebSerialCommand("BPM:75");
             } catch(err) {
                 console.error("Web Serial Ulanish xatosi:", err);
             }
@@ -735,7 +740,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         async function sendWebSerialCommand(cmd) {
             if (webSerialWriter) {
                 try {
-                    await webSerialWriter.write(cmd);
+                    await webSerialWriter.write(cmd + String.fromCharCode(10));
                 } catch(e) {}
             }
         }
@@ -749,32 +754,32 @@ HTML_CONTENT = """<!DOCTYPE html>
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                 updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-950/80 text-emerald-400 border-emerald-700");
                 stopAsystoleTone();
-                sendWebSerialCommand("NORMAL\n");
+                sendWebSerialCommand("NORMAL");
             } else if (type === "dying") {
                 target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 35.1, mode: "dying", rhythm: "asystole" };
                 updateBanner("🚨 DIQQAT: BEMORNI YO'QOTYAPMIZ! (KOLLAPS / ASISTOLIYA)", "bg-red-950 text-red-400 border-red-500 alarm-blink");
-                sendWebSerialCommand("DYING\n");
+                sendWebSerialCommand("DYING");
             } else if (type === "attack") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA VA GIPERTONIK KRIZ!", "bg-orange-950 text-orange-400 border-orange-500 alarm-blink");
                 stopAsystoleTone();
-                sendWebSerialCommand("ATTACK\n");
+                sendWebSerialCommand("ATTACK");
             } else if (type === "hypoxia") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
                 updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI!", "bg-cyan-950 text-cyan-400 border-cyan-500 alarm-blink");
                 stopAsystoleTone();
-                sendWebSerialCommand("BPM:135\n");
+                sendWebSerialCommand("BPM:135");
             } else if (type === "shock") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
                 updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI!", "bg-rose-950 text-rose-400 border-rose-500 alarm-blink");
                 stopAsystoleTone();
-                sendWebSerialCommand("BPM:145\n");
+                sendWebSerialCommand("BPM:145");
             }
         }
 
         function defibrillateShock() {
             initAudio();
-            sendWebSerialCommand("SHOCK\n");
+            sendWebSerialCommand("SHOCK");
             const flash = document.getElementById("flash-overlay");
             flash.classList.add("shock-active");
             setTimeout(() => flash.classList.remove("shock-active"), 600);

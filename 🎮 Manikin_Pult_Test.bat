@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 > nul
 cd /d "%~dp0"
-title GD/H126 Bemor Maniken Test va Imtihon Pulti
+title MedLife - Yurak-O'pka Reanimatsiyasi Simulyatori
 
 echo ====================================================================
-echo   🎮 GD/H126 BEMOR MANIKEN TEST VA IMTIHON PULTI
+echo   🫀 MEDLIFE: YURAK-O'PKA REANIMATSIYASI (CPR) SIMULYATORI
 echo ====================================================================
 echo.
 echo Server ishga tushmoqda va brauzer avtomatik ochiladi...

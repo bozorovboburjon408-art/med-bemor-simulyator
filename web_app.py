@@ -43,7 +43,7 @@ ALLERGIYA: Hech qanday dori yoki ovqatga allergiyang yo'q.
 HAYOT TARZI: Chekmaysan, ichmaysan. Ertalab yugurib turasan. Kuniga 1-2 piyola choy ichasan.
 IRSIYAT: Ota-onang sog'lom, uzoq umr ko'rishgan, surunkali kasalliklar yo'q.
 OVQAT VA UYQU: Bugun ertalab soat 8 da yaxshi nonushta qilgansan (tuxum, choy). Kechasi 8 soat tinch uxlagansan.
-Hamshira savollariga xotirjam, muloyim, aniq va samimiy javob ber."""
+Shifokor (yoki hamshira) savollariga xotirjam, muloyim, aniq va samimiy javob ber."""
     },
     "taxikardiya": {
         "nomi": "2. Taxikardiya (Yurak tez urishi)",
@@ -62,8 +62,8 @@ DORILAR: Doimiy dori ichmaysan. Bugun ham dori ichmagansan.
 ALLERGIYA: Yo'q.
 HAYOT TARZI: Kofe juda ko'p ichasan (kuniga 5-6 finjon), uyqung kam (kechalari 4-5 soat uxlaysan), chekmaysan.
 IRSIYAT: Onangda ham vaqti-vaqti bilan yurak o'ynashi bo'lib turgan.
-PSIXOLOGIYA: Xavotirdasan, qo'rqyapsan: 'Yuragim to'xtab qolmaydimi, opa?' deb so'raysan.
-Hamshira savollariga xansirab, qiynalib, qisqa-qisqa javob ber."""
+PSIXOLOGIYA: Xavotirdasan, qo'rqyapsan: 'Yuragim to'xtab qolmaydimi, doktor?' deb so'raysan.
+Shifokor savollariga xansirab, qiynalib, qisqa-qisqa javob ber."""
     },
     "bradikardiya": {
         "nomi": "3. Bradikardiya (Yurak sekin urishi)",
@@ -81,7 +81,7 @@ ALLERGIYA: Novokainga allergiyang bor (yoshlikda tish oldirganda toshma toshgan)
 O'TMISH: 8 yildan beri gipertoniya, 2015-yilda o't qopi toshini oldirgansan.
 HAYOT TARZI: Chekmaysan, ichmaysan. Harakating kam.
 IRSIYAT: Otangda ham qon bosimi bo'lgan.
-XULQ-ATVOR: Juda sekin, holsiz, pichirlab, zo'rg'a gapirasan: 'Madorim yo'q, opa... ko'zim tinib ketyapti...' deb uzuq-yuluq javob ber."""
+XULQ-ATVOR: Juda sekin, holsiz, pichirlab, zo'rg'a gapirasan: 'Madorim yo'q, doktor... ko'zim tinib ketyapti...' deb uzuq-yuluq javob ber."""
     },
     "aritmiya": {
         "nomi": "4. Aritmiya (Yurak ritmi buzilishi)",
@@ -99,7 +99,7 @@ DORILAR: Doimiy dori ichmaysan.
 HAYOT TARZI: 20 yildan beri chekasan (kuniga 1.5 quti), ko'p kofe va energetik ichasan.
 ALLERGIYA: Yo'q.
 IRSIYAT: Amakingda aritmiya bo'lgan.
-PSIXOLOGIYA: Yuraging to'xtab qolishidan qo'rqyapsan: 'Yuragim to'xtab-to'xtab uryapti opa, qo'rqyapman...' deb qisqa javob ber."""
+PSIXOLOGIYA: Yuraging to'xtab qolishidan qo'rqyapsan: 'Yuragim to'xtab-to'xtab uryapti doktor, qo'rqyapman...' deb qisqa javob ber."""
     },
     "infarkt": {
         "nomi": "5. Miokard Infarkti / Stenokardiya",
@@ -119,7 +119,7 @@ O'TMISH: 3 yildan beri stenokardiya bor, qon bosiming 140/90. Aspirin-kardio ich
 HAYOT TARZI: 25 yildan beri chekasan (kuniga 1 quti).
 ALLERGIYA: Yo'q.
 IRSIYAT: Otang 52 yoshida aynan infarktdan vafot etgan.
-PSIXOLOGIYA: Chap ko'kragingni ushlab, ingrab: 'Opa, tosh bosyapti... o'lib qolmaymanmi, tezroq yordam bering...' deb zo'rg'a gapir."""
+PSIXOLOGIYA: Chap ko'kragingni ushlab, ingrab: 'Doktor, tosh bosyapti... o'lib qolmaymanmi, tezroq yordam bering...' deb zo'rg'a gapir."""
     },
     "gipertoniya": {
         "nomi": "6. Gipertonik Kriz (Bosim oshishi)",
@@ -136,7 +136,7 @@ DORILAR: Aslida har kuni 'Lozartan 50 mg' ichishing kerak, lekin bugun ertalab i
 O'ZING NIMA QILDING: Uyda Kapoten 25 mg til tagiga qo'yding, lekin hali bosim tushmadi.
 ALLERGIYA: Aspirin ichsang oshqozoning og'riydi.
 IRSIYAT: Onang va opangda gipertoniya bor.
-XULQ-ATVOR: Yorug'likdan ko'zingni qisib, past ovozda: 'Boshingizni baland ko'taring... ensam yorilib ketay deyapti...' deb gapir."""
+XULQ-ATVOR: Yorug'likdan ko'zingni qisib, past ovozda: 'Doktor, yorug'lik yoqmayapti... ensam yorilib ketay deyapti...' deb gapir."""
     },
     "astma": {
         "nomi": "7. Bronxial Astma xuruji",
@@ -151,7 +151,7 @@ HOLATING: O'tirib, ikki qo'ling bilan tizzangga tayanib o'tiribsan (ortopnoe), y
 O'ZING NIMA QILDING: Ingalatoring (Salbutamol) ustaxonada qolib ketgan, yoningga olmagansan.
 O'TMISH: 5 yildan beri astma bilan og'riysan. Chang va gul hidlariga allergiyang bor.
 ALLERGIYA: Chang, lak-bo'yoq hidlari, polen.
-XULQ-ATVOR: Bo'g'ilib, xansirab, 1-2 so'z bilan: 'Havo... yetmayapti... ingalyator... bering...' deb zo'rg'a javob ber."""
+XULQ-ATVOR: Bo'g'ilib, xansirab, 1-2 so'z bilan: 'Havo... yetmayapti... doktor... ingalyator... bering...' deb zo'rg'a javob ber."""
     },
     "pnevmoniya": {
         "nomi": "8. Pnevmoniya (O'pka yallig'lanishi)",
@@ -165,7 +165,7 @@ SHIKOYATING: Tana harorating 39.3 °C, qattiq qaltirayapsan. Ko'krak o'ng tomoni
 O'ZING NIMA QILDING: Uyda Paratsetamol ichgansan, 2 soatga 38.0 ga tushib, keyin yana 39.5 ga ko'tarilgan. Antibiotik ichmagansan.
 ALLERGIYA: Penitsillin guruhiga allergiyang bor (Ampitsillindan toshma toshgan).
 HAYOT TARZI: Chekasan (kuniga yarim quti).
-XULQ-ATVOR: Yo'talib, titrab, darmonsiz: 'Isitma... qiynayapti opa, ich-etim qaltirab ketyapti...' deb javob ber."""
+XULQ-ATVOR: Yo'talib, titrab, darmonsiz: 'Isitma... qiynayapti doktor, ich-etim qaltirab ketyapti...' deb javob ber."""
     },
     "insult": {
         "nomi": "9. Bosh miya insulti (O'tkir)",
@@ -192,7 +192,7 @@ BOSHLANISHI: Bugun soat 15:00 larda zinapoyadan sirpanib yiqilib, boshingning or
 SHIKOYATING: Qanday yiqilganingni eslolmaysan (amneziya). Boshing qattiq lo'qillab og'riyapti, 2 marta qusding. Yorug'lik va shovqin boshingni battar og'rityapti. Ko'zlaring oldi ikkita bo'lib ko'rinyapti.
 O'TMISH: Ilgari travma olmagansan, sog'lom yigit.
 ALLERGIYA: Yo'q.
-XULQ-ATVOR: Boshingni ushlab, ko'zingni yumib: 'Yorug'likni o'chiring... boshim yorilib ketyapti... ko'nglim aynyapti...' deb past ovozda gapir."""
+XULQ-ATVOR: Boshingni ushlab, ko'zingni yumib: 'Yorug'likni o'chiring, doktor... boshim yorilib ketyapti... ko'nglim aynyapti...' deb past ovozda gapir."""
     },
     "appenditsit": {
         "nomi": "11. O'tkir Appenditsit",
@@ -206,7 +206,7 @@ SHIKOYATING: Qorinning o'ng pastida o'tkir pichoqdek sanchuvchi og'riq. Yurganin
 HAMROH BELGILAR: Tana harorating 37.8 °C, ko'ngling aynyapti (1 marta qusding), og'zing qurigan.
 O'ZING NIMA QILDING: Kechasi No-shpa ichgansan, foyda bermagan. Qorningga issiq grelka qo'ymoqchi bo'lgansan, lekin qo'ymagansan.
 ALLERGIYA: Yo'q.
-XULQ-ATVOR: Qorning o'ng tomonini ushlab, egilib: 'Asta bosing opa... o'ng tomonim pichoq suqqandek sanchyapti... qimirlolmayapman...' deb ingra."""
+XULQ-ATVOR: Qorning o'ng tomonini ushlab, egilib: 'Asta bosing, doktor... o'ng tomonim pichoq suqqandek sanchyapti... qimirlolmayapman...' deb ingra."""
     },
     "zaharlanish": {
         "nomi": "12. O'tkir Ovqatdan Zaharlanish",
@@ -220,7 +220,7 @@ SHIKOYATING: Tinmay ko'ngling aynyapti, 5 marta ketma-ket safro bilan qusding. Q
 HAMROH BELGILAR: Kuchli chanqoqlik, og'iz qurishi, ko'zlar ichga cho'kkan, bosh aylanyapti, oyog'ingda turolmaysan, isitma 38.2 °C.
 O'ZING NIMA QILDING: 2 ta ko'mir tabletkasi ichganding, uni ham qusib yubording.
 ALLERGIYA: Yo'q.
-XULQ-ATVOR: Juda madorsiz, zo'rg'a: 'Suv bering... tinmay ichim ketyapti... qornim burab buralib og'riyapti...' deb ingrab javob ber."""
+XULQ-ATVOR: Juda madorsiz, zo'rg'a: 'Suv bering doktor... tinmay ichim ketyapti... qornim burab buralib og'riyapti...' deb ingrab javob ber."""
     },
     "gipoglikemiya": {
         "nomi": "13. Gipoglikemiya (Qand tushishi)",
@@ -235,7 +235,7 @@ ENG ASOSIY ISTAGING: Juda qattiq och qolgansan va shirinlik (qand/shakar) yeging
 QAND MIQDORI: 2.1 mmol/l ga tushib ketgan.
 DORILAR: Har kuni Insulin (Novorapid) olasan.
 ALLERGIYA: Yo'q.
-XULQ-ATVOR: Titrab, tili g'uldirab: 'Opa... shakar bering... qand bering... titrab ketyapman... qornim och...' deb javob ber."""
+XULQ-ATVOR: Titrab, tili g'uldirab: 'Doktor... shakar bering... qand bering... titrab ketyapman... qornim och...' deb javob ber."""
     },
     "allergiya": {
         "nomi": "14. Anafilaktik shok (O'tkir allergiya)",
@@ -248,7 +248,7 @@ BOSHLANISHI: 15 daqiqa oldin stomatolog tishingga Novokain/Lidokain ukol qilgand
 SHIKOYATING: Tomog'ing ichi va tiling shishib ketdi, havo kirmay bo'g'ilyapsan (Kvinke shishi). Yuzing, lablaring shishgan. Butun badaningga qichimaydigan qizil toshmalar toshgan.
 QON BOSIMING: 70/40 mmHg ga tushib ketgan, ko'zlaring qorayib hushdan ketay deyapsan.
 ALLERGIYA: Yoshligingda Novokainga allergiyang bo'lgan, lekin do'xtirga aytish esingdan chiqqandi!
-XULQ-ATVOR: Bo'g'ilib, xirillab: 'Bo'g'ilyapman... tomog'im... shishyapti... havo... yetmayapti...' deb zo'rg'a pichirlab gapir."""
+XULQ-ATVOR: Bo'g'ilib, xirillab: 'Bo'g'ilyapman... tomog'im... shishyapti... havo... yetmayapti... doktor...' deb zo'rg'a pichirlab gapir."""
     }
 }
 
@@ -257,11 +257,15 @@ UMUMIY_PROMPT = """QAT'IY QOIDALAR:
 2. FAQAT O'ZBEK TILIDA GAPIR!
 3. Har bir savolga 1 ta aniq va qisqa gap bilan javob ber (1-2 gapdan oshmasin).
 4. Tibbiy tashxis nomini aytma (masalan 'menda appenditsit' dema, 'qornim o'ng tomoni pichoqdek sanchyapti' de).
-5. Hamshiraga hurmat bilan 'opa' deb murojaat qil.
+5. MUROJAAT VA HUSHMUOMALALIK:
+   - Suhbatdoshing shifokor, tibbiyot talabasi yoki hamshira bo'lishi mumkin.
+   - Agar suhbatdosh erkak kishi bo'lsa unga: 'doktor', 'doktor aka', 'shifokor' deb murojaat qil.
+   - Agar suhbatdosh ayol kishi bo'lsa unga: 'doktor opa', 'opa', 'hamshira opa' deb murojaat qil.
+   - Umumiy holatda hurmat bilan 'doktor' deb murojaat qil.
 6. QAT'IYAN TAQIQLANADI: Harakat nomlarini (masalan, '(yo'taladi)', '(aksiradi)', '(ingraydi)', '(xansiraydi)') qavsda yoki so'z sifatida aslo yozma va aytma!
 """
 
-app = FastAPI(title="Bemor Maniken Simulyatori Web App")
+app = FastAPI(title="MedLife: AI Bemor Simulyatori")
 
 # HTML Content (Single Page Responsive App)
 HTML_CONTENT = """<!DOCTYPE html>
@@ -269,10 +273,11 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedLife — AI Bemor Simulyatori</title>
     <meta name="theme-color" content="#4338ca">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Bemor Simulyatori">
+    <meta name="apple-mobile-web-app-title" content="MedLife AI Bemor">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="https://cdn-icons-png.flatsome.org/512/2966/2966327.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -293,8 +298,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <i class="fa-solid fa-hospital-user"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight">Bemor Maniken Simulyatori</h1>
-                    <p class="text-xs text-indigo-200">Gemini Live AI — Erkak ovozi (Anvar, 40 yosh)</p>
+                    <h1 class="font-bold text-lg leading-tight">MedLife: AI Bemor Simulyatori</h1>
+                    <p class="text-xs text-indigo-200">Gemini Live AI — Jonli muloqot va klinik holatlar</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -303,8 +308,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span>📊 Vital Monitor</span>
                 </a>
                 <a href="/console" target="_blank" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <span>🎓 CPR Imtihon & Pult</span>
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span>🫀 Yurak-O'pka Reanimatsiyasi</span>
                 </a>
                 <div id="top-status" class="flex items-center space-x-2 bg-indigo-800/60 px-3 py-1.5 rounded-full text-xs">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
@@ -383,7 +388,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Messages Log -->
             <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-[380px] max-h-[500px]">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
-                    🟢 <b>Jonli simulyatsiya faol!</b> Hamshira sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Bemor gapirib javob qaytaradi.
+                    🟢 <b>Jonli simulyatsiya faol!</b> Shifokor yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Bemor gapirib javob qaytaradi.
                 </div>
             </div>
 
@@ -403,9 +408,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                             class="w-11 h-11 rounded-xl bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 transition flex items-center justify-center">
                         <i class="fa-solid fa-microphone text-base"></i>
                     </button>
-                    <input type="text" id="user-input" placeholder="Hamshira savolini yozing (yoki mikrofondan gapiring)..." 
-                           autocomplete="off"
-                           class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing (yoki mikrofondan gapiring)..." 
+                            autocomplete="off"
+                            class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <button type="submit" id="send-btn" 
                             class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition flex items-center gap-1.5 shadow-sm">
                         <span>Yuborish</span>
@@ -614,11 +619,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             msg.className = "flex items-start justify-end gap-2.5";
             msg.innerHTML = `
                 <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
-                    <div class="font-bold text-xs text-indigo-200 mb-0.5"><i class="fa-solid fa-user-nurse mr-1"></i> Hamshira</div>
+                    <div class="font-bold text-xs text-indigo-200 mb-0.5"><i class="fa-solid fa-user-doctor mr-1"></i> Shifokor / Talaba</div>
                     <div>${escapeHtml(text)}</div>
                 </div>
                 <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
-                    <i class="fa-solid fa-user-nurse"></i>
+                    <i class="fa-solid fa-user-doctor"></i>
                 </div>
             `;
             box.appendChild(msg);

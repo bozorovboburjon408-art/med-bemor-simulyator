@@ -44,7 +44,7 @@ def generate_dgu_1():
     p1.runs[0].font.size = Pt(14)
     p1.runs[0].font.bold = True
 
-    p2 = doc.add_paragraph("EHM uchun dastur (Ma’lumotlar bazasi) nomi:\n“Gemini Live Sun'iy Intellekt Asosidagi Interaktiv Virtual Bemor Simulyatori va Klinik Muloqot Dasturi”")
+    p2 = doc.add_paragraph("EHM uchun dastur (Ma’lumotlar bazasi) nomi:\n“MedLife: Sun'iy Intellekt Asosidagi Interaktiv Virtual Bemor Simulyatori va Klinik Muloqot Dasturi”")
     p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p2.runs[0].font.size = Pt(12)
     p2.runs[0].font.bold = True
@@ -91,7 +91,7 @@ def generate_dgu_2():
     p1.runs[0].font.size = Pt(14)
     p1.runs[0].font.bold = True
 
-    p2 = doc.add_paragraph("EHM uchun dastur (Ma’lumotlar bazasi) nomi:\n“GD/H126 Reanimatsiya Vital Monitori, ESP32 Telemetriyali Maniken Pulti va CPR OSCE Imtihon Baholash Dasturi”")
+    p2 = doc.add_paragraph("EHM uchun dastur (Ma’lumotlar bazasi) nomi:\n“MedLife: Reanimatsiya Vital Monitori, ESP32 Telemetriyali Maniken va Yurak-O'pka Reanimatsiyasi (CPR) Baholash Dasturi”")
     p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p2.runs[0].font.size = Pt(12)
     p2.runs[0].font.bold = True
