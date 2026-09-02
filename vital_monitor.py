@@ -715,6 +715,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         // ==================== DIRECT WEB SERIAL API (ONE-CLICK USB SYNC) ====================
         let webSerialPort = null;
         let webSerialWriter = null;
+        let webSerialBuffer = "";
 
         async function connectDirectWebSerial() {
             if (!("serial" in navigator)) {
@@ -732,8 +733,41 @@ HTML_CONTENT = """<!DOCTYPE html>
                 document.getElementById("btn-web-serial").className = "px-2.5 py-1 rounded bg-emerald-900 text-emerald-200 border border-emerald-500 flex items-center gap-1.5 font-bold shadow";
 
                 sendWebSerialCommand("BPM:75");
+                readWebSerialTelemetryLoop();
             } catch(err) {
                 console.error("Web Serial Ulanish xatosi:", err);
+            }
+        }
+
+        async function readWebSerialTelemetryLoop() {
+            try {
+                const textDecoder = new TextDecoderStream();
+                webSerialPort.readable.pipeTo(textDecoder.writable);
+                const reader = textDecoder.readable.getReader();
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    if (value) {
+                        webSerialBuffer += value;
+                        let lines = webSerialBuffer.split(String.fromCharCode(10));
+                        webSerialBuffer = lines.pop();
+                        for (let line of lines) {
+                            line = line.trim();
+                            if (line.startsWith("{") && line.endsWith("}")) {
+                                try {
+                                    const data = JSON.parse(line);
+                                    handleHardwareData(data);
+                                    if (ws && ws.readyState === WebSocket.OPEN) {
+                                        ws.send(line);
+                                    }
+                                } catch(e) {}
+                            }
+                        }
+                    }
+                }
+            } catch(err) {
+                console.warn("Web serial oqimi uzildi:", err);
             }
         }
 
