@@ -365,8 +365,9 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Chat Header -->
             <div id="chat-header" class="bg-emerald-600 text-white px-5 py-3.5 flex items-center justify-between shadow-sm transition-all duration-300">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl relative">
                         <i class="fa-solid fa-user-injured"></i>
+                        <span id="call-active-badge" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-ping"></span>
                     </div>
                     <div>
                         <div class="font-bold text-base leading-tight" id="patient-name">Bemor: Anvar (40 yosh)</div>
@@ -374,6 +375,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <button id="live-call-btn" onclick="toggleLiveCall()" title="Bemor bilan real vaqtda jonli ovozli muloqot"
+                            class="px-3.5 py-1.5 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                        <i class="fa-solid fa-phone-volume text-emerald-600"></i>
+                        <span id="live-call-text">Jonli Qo'ng'iroq</span>
+                    </button>
                     <button id="speaker-btn" onclick="toggleSpeaker()" title="Ovozni yoqish/o'chirish"
                             class="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm">
                         <i class="fa-solid fa-volume-high"></i>
@@ -388,7 +394,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Messages Log -->
             <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-[380px] max-h-[500px]">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
-                    🟢 <b>Jonli simulyatsiya faol!</b> Shifokor yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Bemor gapirib javob qaytaradi.
+                    🟢 <b>Jonli simulyatsiya faol!</b> Shifokor yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). <b>"Jonli Qo'ng'iroq"</b> tugmasi orqali uzluksiz ovozli suhbat qurishingiz mumkin.
                 </div>
             </div>
 
@@ -398,7 +404,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span>Tayyor</span>
                 </div>
-                <div class="text-slate-400">Gemini Live Native Audio (Puck)</div>
+                <div class="flex items-center gap-2 text-slate-400">
+                    <span id="call-indicator" class="hidden text-red-600 font-bold animate-pulse text-[11px] flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span> Jonli Efir Faol
+                    </span>
+                    <span>Gemini Live Real-Time</span>
+                </div>
             </div>
 
             <!-- Input area -->
@@ -530,6 +541,170 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        // Output Audio (24kHz Gemini Live Stream Player)
+        let outAudioCtx = null;
+        let outNextStartTime = 0;
+        let activeSources = [];
+
+        function initOutputAudio() {
+            if (!outAudioCtx) {
+                outAudioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+            }
+            if (outAudioCtx.state === 'suspended') {
+                outAudioCtx.resume();
+            }
+        }
+
+        function playStreamingPcm(arrayBuffer) {
+            if (!speakerEnabled) return;
+            initOutputAudio();
+
+            const int16 = new Int16Array(arrayBuffer);
+            if (int16.length === 0) return;
+
+            const float32 = new Float32Array(int16.length);
+            for (let i = 0; i < int16.length; i++) {
+                float32[i] = int16[i] / 32768.0;
+            }
+
+            const audioBuf = outAudioCtx.createBuffer(1, float32.length, 24000);
+            audioBuf.copyToChannel(float32, 0);
+
+            const src = outAudioCtx.createBufferSource();
+            src.buffer = audioBuf;
+            src.connect(outAudioCtx.destination);
+
+            const now = outAudioCtx.currentTime;
+            if (outNextStartTime < now) {
+                outNextStartTime = now + 0.03; // 30ms smooth lead-in
+            }
+            src.start(outNextStartTime);
+            outNextStartTime += audioBuf.duration;
+
+            activeSources.push(src);
+            src.onended = () => {
+                const idx = activeSources.indexOf(src);
+                if (idx !== -1) activeSources.splice(idx, 1);
+            };
+        }
+
+        function stopAllAudioPlayback() {
+            for (let s of activeSources) {
+                try { s.stop(); } catch(e) {}
+            }
+            activeSources = [];
+            if (outAudioCtx) {
+                outNextStartTime = outAudioCtx.currentTime;
+            }
+        }
+
+        // Live Microphone Input (16kHz PCM Streamer)
+        let micStream = null;
+        let micAudioContext = null;
+        let micProcessor = null;
+        let isCallActive = false;
+
+        async function toggleLiveCall() {
+            if (isCallActive) {
+                stopLiveCall();
+            } else {
+                await startLiveCall();
+            }
+        }
+
+        async function startLiveCall() {
+            try {
+                initOutputAudio();
+                
+                micStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        channelCount: 1,
+                        sampleRate: 16000,
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+
+                micAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                const source = micAudioContext.createMediaStreamSource(micStream);
+
+                // 2048 samples = ~128ms chunk
+                micProcessor = micAudioContext.createScriptProcessor(2048, 1, 1);
+                micProcessor.onaudioprocess = (e) => {
+                    if (!isCallActive || !ws || ws.readyState !== WebSocket.OPEN) return;
+                    const input = e.inputBuffer.getChannelData(0);
+                    const pcm16 = new Int16Array(input.length);
+                    for (let i = 0; i < input.length; i++) {
+                        let s = Math.max(-1, Math.min(1, input[i]));
+                        pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    }
+                    ws.send(pcm16.buffer);
+                };
+
+                source.connect(micProcessor);
+                micProcessor.connect(micAudioContext.destination);
+
+                isCallActive = true;
+                updateCallUI(true);
+            } catch(err) {
+                console.error("Live call error:", err);
+                alert("Mikrofonga ulanishda xatolik yuz berdi: " + err.message);
+            }
+        }
+
+        function stopLiveCall() {
+            isCallActive = false;
+            if (micProcessor) {
+                try { micProcessor.disconnect(); } catch(e) {}
+                micProcessor = null;
+            }
+            if (micAudioContext) {
+                try { micAudioContext.close(); } catch(e) {}
+                micAudioContext = null;
+            }
+            if (micStream) {
+                micStream.getTracks().forEach(t => t.stop());
+                micStream = null;
+            }
+            stopAllAudioPlayback();
+            updateCallUI(false);
+        }
+
+        function updateCallUI(active) {
+            const btn = document.getElementById("live-call-btn");
+            const txt = document.getElementById("live-call-text");
+            const callBadge = document.getElementById("call-active-badge");
+            const callIndicator = document.getElementById("call-indicator");
+            const header = document.getElementById("chat-header");
+            
+            if (active) {
+                if (btn) {
+                    btn.className = "px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer animate-pulse";
+                }
+                if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-slash mr-1"></i> Qo'ng'iroqni Tugatish`;
+                if (callBadge) callBadge.classList.remove("hidden");
+                if (callIndicator) callIndicator.classList.remove("hidden");
+                if (header) {
+                    header.classList.remove("bg-emerald-600");
+                    header.classList.add("bg-rose-700");
+                }
+                updateStatus("🎙️ Jonli muloqot faol — gapiravering, bemor sizni eshitmoqda...", "red");
+            } else {
+                if (btn) {
+                    btn.className = "px-3.5 py-1.5 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer";
+                }
+                if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-volume text-emerald-600 mr-1"></i> Jonli Qo'ng'iroq`;
+                if (callBadge) callBadge.classList.add("hidden");
+                if (callIndicator) callIndicator.classList.add("hidden");
+                if (header) {
+                    header.classList.remove("bg-rose-700");
+                    header.classList.add("bg-emerald-600");
+                }
+                updateStatus("🟢 Tayyor", "green");
+            }
+        }
+
         // Connect WebSocket
         function connectWebSocket() {
             if (ws) {
@@ -542,6 +717,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             updateStatus("⏳ Ulanmoqda...", "orange");
             
             ws = new WebSocket(wsUrl);
+            ws.binaryType = "arraybuffer";
             
             ws.onopen = () => {
                 updateStatus("✅ Tayyor", "emerald");
@@ -551,9 +727,9 @@ HTML_CONTENT = """<!DOCTYPE html>
             let currentStreamingBubble = null;
             let currentStreamingText = "";
 
-            function appendStreamText(chunk, isFirst) {
+            function appendStreamText(chunk) {
                 const box = document.getElementById("chat-box");
-                if (isFirst || !currentStreamingBubble) {
+                if (!currentStreamingBubble) {
                     currentStreamingText = chunk;
                     currentStreamingBubble = document.createElement("div");
                     currentStreamingBubble.className = "flex items-start gap-2.5";
@@ -578,22 +754,39 @@ HTML_CONTENT = """<!DOCTYPE html>
                 box.scrollTop = box.scrollHeight;
             }
 
+            function finalizeStreamText() {
+                const dot = document.getElementById("streaming-pulse-dot");
+                if (dot) dot.remove();
+                currentStreamingBubble = null;
+                currentStreamingText = "";
+            }
+
             ws.onmessage = (event) => {
+                if (event.data instanceof ArrayBuffer) {
+                    playStreamingPcm(event.data);
+                    return;
+                }
                 const data = JSON.parse(event.data);
-                if (data.type === "text_chunk") {
-                    appendStreamText(data.text, data.is_first);
-                    updateStatus("🗣️ Bemor javob bermoqda...", "green");
-                } else if (data.type === "response") {
-                    if (currentStreamingBubble) {
-                        const textEl = document.getElementById("streaming-text-content");
-                        if (textEl && data.text) textEl.innerText = data.text;
-                        const dot = document.getElementById("streaming-pulse-dot");
-                        if (dot) dot.remove();
-                        currentStreamingBubble = null;
-                        currentStreamingText = "";
+                if (data.type === "text_stream") {
+                    appendStreamText(data.text);
+                    updateStatus("🗣️ Bemor gapirmoqda...", "green");
+                } else if (data.type === "turn_complete") {
+                    finalizeStreamText();
+                    if (isCallActive) {
+                        updateStatus("🎙️ Siz gapiring (Bemor tinglamoqda)...", "red");
                     } else {
-                        addPatientMessage(data.text);
+                        setProcessing(false);
+                        updateStatus("🟢 Tayyor", "green");
                     }
+                } else if (data.type === "interrupted") {
+                    stopAllAudioPlayback();
+                    finalizeStreamText();
+                    if (isCallActive) {
+                        updateStatus("🎙️ Bemor to'xtadi, siz gapiryapsiz...", "red");
+                    }
+                } else if (data.type === "response") {
+                    // Fallback full response
+                    addPatientMessage(data.text);
                     if (data.audio && speakerEnabled) {
                         playBase64Audio(data.audio, data.format || "wav");
                     }
@@ -629,9 +822,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             inputEl.value = "";
             addNurseMessage(text);
-            
-            currentStreamingBubble = null;
-            currentStreamingText = "";
+            initOutputAudio();
             
             setProcessing(true);
             updateStatus("⏳ Bemor javob bermoqda...", "orange");
@@ -936,110 +1127,68 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
             model="gemini-2.5-flash-native-audio-latest",
             config=config
         ) as session:
-            while True:
-                data = await websocket.receive_json()
-                user_text = data.get("text", "").strip()
-                if not user_text:
-                    continue
-                
-                # Send to Live API
-                await session.send_client_content(
-                    turns=[types.Content(
-                        role="user",
-                        parts=[types.Part(text=user_text)]
-                    )]
-                )
-                
-                audio_chunks = []
-                transcription_parts = []
-                first_text_sent = False
-                
+            
+            # 1. Background task to stream Gemini audio & text output to browser
+            async def gemini_stream_worker():
                 try:
-                    async def receive_turn():
-                        nonlocal first_text_sent
-                        async for response in session.receive():
-                            server_content = response.server_content
-                            if server_content is not None:
-                                if server_content.output_transcription and server_content.output_transcription.text:
-                                    txt = server_content.output_transcription.text
-                                    transcription_parts.append(txt)
-                                    await websocket.send_json({
-                                        "type": "text_chunk",
-                                        "text": txt,
-                                        "is_first": not first_text_sent
-                                    })
-                                    first_text_sent = True
-                                
-                                if server_content.model_turn is not None:
-                                    for part in server_content.model_turn.parts:
-                                        if part.inline_data and part.inline_data.data:
-                                            audio_chunks.append(part.inline_data.data)
-                                
-                                if server_content.turn_complete:
-                                    break
+                    async for response in session.receive():
+                        sc = response.server_content
+                        if sc is not None:
+                            if sc.interrupted:
+                                await websocket.send_json({"type": "interrupted"})
+                            
+                            if sc.output_transcription and sc.output_transcription.text:
+                                await websocket.send_json({
+                                    "type": "text_stream",
+                                    "text": sc.output_transcription.text
+                                })
+                            
+                            if sc.model_turn is not None:
+                                for part in sc.model_turn.parts:
+                                    if part.inline_data and part.inline_data.data:
+                                        await websocket.send_bytes(part.inline_data.data)
+                            
+                            if sc.turn_complete:
+                                await websocket.send_json({"type": "turn_complete"})
+                except asyncio.CancelledError:
+                    pass
+                except Exception as e:
+                    print(f"Gemini output stream error: {e}")
+
+            stream_task = asyncio.create_task(gemini_stream_worker())
+            
+            # 2. Receive loop from browser (streaming 16kHz PCM or text)
+            try:
+                while True:
+                    msg = await websocket.receive()
                     
-                    await asyncio.wait_for(receive_turn(), timeout=20.0)
-                    
-                    audio_bytes = b''.join(audio_chunks)
-                    clean_text = "".join(transcription_parts).strip()
-                    
-                    if not clean_text or len(audio_bytes) == 0:
-                        clean_text = "Eslolmayapman, doktor... juda qiynalyapman..."
-                        # Edge-TTS fallback
-                        tts_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web_fallback.mp3")
-                        comm = edge_tts.Communicate(text=clean_text, voice="uz-UZ-SardorNeural")
-                        await comm.save(tts_file)
-                        with open(tts_file, "rb") as f:
-                            mp3_base64 = base64.b64encode(f.read()).decode('utf-8')
+                    if "bytes" in msg and msg["bytes"]:
+                        # Realtime 16kHz PCM audio chunk from microphone
+                        pcm_bytes = msg["bytes"]
+                        await session.send_realtime_input(
+                            media=types.Blob(data=pcm_bytes, mime_type="audio/pcm;rate=16000")
+                        )
+                    elif "text" in msg and msg["text"]:
                         try:
-                            os.remove(tts_file)
-                        except:
+                            payload = json.loads(msg["text"])
+                            user_text = payload.get("text", "").strip()
+                            if user_text:
+                                await session.send_client_content(
+                                    turns=[types.Content(
+                                        role="user",
+                                        parts=[types.Part(text=user_text)]
+                                    )]
+                                )
+                        except json.JSONDecodeError:
                             pass
-                        
-                        await websocket.send_json({
-                            "type": "response",
-                            "text": clean_text,
-                            "audio": mp3_base64,
-                            "format": "mp3"
-                        })
-                        continue
-                    
-                    # Convert PCM to WAV in memory with 250ms silence prefix to eliminate browser DAC clipping
-                    silence_prefix = b'\x00' * 12000  # 250ms clean silence (24000 samples/sec * 2 bytes * 0.25s)
-                    full_audio_bytes = silence_prefix + audio_bytes
-                    
-                    wav_io = io.BytesIO()
-                    with wave.open(wav_io, 'wb') as wf:
-                        wf.setnchannels(1)
-                        wf.setsampwidth(2)
-                        wf.setframerate(24000)
-                        wf.writeframes(full_audio_bytes)
-                    
-                    wav_base64 = base64.b64encode(wav_io.getvalue()).decode('utf-8')
-                    
-                    await websocket.send_json({
-                        "type": "response",
-                        "text": clean_text,
-                        "audio": wav_base64,
-                        "format": "wav"
-                    })
-                    
-                except asyncio.TimeoutError:
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": "Javob kutish vaqti tugadi. Qaytadan urinib ko'ring."
-                    })
-                    break
+            finally:
+                stream_task.cancel()
+                await asyncio.gather(stream_task, return_exceptions=True)
+
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        try:
-            await websocket.send_json({
-                "type": "error",
-                "message": str(e)
-            })
-        except:
-            pass
+        print(f"WebSocket session error: {e}")
 
 def get_local_ip():
     """Lokal tarmoqdagi (Wi-Fi) IP manzilni aniqlash"""
