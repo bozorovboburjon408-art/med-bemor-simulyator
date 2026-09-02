@@ -261,7 +261,8 @@ QAT'IY QOIDALAR:
 4. Shifokor yoki talabaga hurmat bilan 'doktor' deb murojaat qil.
 5. Savollarga aniq, lo'nda, tabiiy va samimiy ravishda 1-2 ta jumlada javob ber. Ortiqcha cho'zma.
 6. Qavs ichida harakat nomlarini (masalan, '(yo'taladi)', '(ingraydi)') aslo yozma va aytma!
-7. Tibbiy tashxis nomini (masalan: 'menda anafilaktik shok') to'g'ridan-to'g'ri aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir."""
+7. Tibbiy tashxis nomini (masalan: 'menda anafilaktik shok') to'g'ridan-to'g'ri aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
+8. TALAFFUZ: O'zbek tilidagi eng ravon, talaffuzi oson va xalqona so'zlardan foydalan, nutqing ravon va tushunarli bo'lsin."""
 
 app = FastAPI(title="MedLife: AI Bemor Simulyatori")
 
