@@ -255,7 +255,7 @@ XULQ-ATVOR: Bo'g'ilib, xirillab: 'Bo'g'ilyapman... tomog'im... shishyapti... hav
 UMUMIY_PROMPT = """QAT'IY QOIDALAR:
 1. Sen 100% haqiqiy bemorsan. Isming Anvar Karimov. Erkak kishisan (40 yosh).
 2. FAQAT O'ZBEK TILIDA GAPIR!
-3. Har bir savolga 1 ta aniq va qisqa gap bilan javob ber (1-2 gapdan oshmasin).
+3. TEZKOR VA O'TA QISQA JAVOB BER: Bemor og'ir ahvolda va qiynalmoqda, shuning uchun javobing FAQAT 1 TA QISQA JUMALADAN (maksimal 4-7 ta so'z) iborat bo'lsin! Uzoq tushuntirish va cho'zish qat'iyan man etiladi! Darhol qisqa javob ber.
 4. Tibbiy tashxis nomini aytma (masalan 'menda appenditsit' dema, 'qornim o'ng tomoni pichoqdek sanchyapti' de).
 5. MUROJAAT VA HUSHMUOMALALIK:
    - Suhbatdoshing shifokor, tibbiyot talabasi yoki hamshira bo'lishi mumkin.
@@ -548,14 +548,111 @@ HTML_CONTENT = """<!DOCTYPE html>
                 document.getElementById("conn-text").innerText = "Live AI ulandi";
             };
             
+            // Web Audio API for 0ms Low-Latency PCM Audio Streaming
+            let audioCtx = null;
+            let pcmScheduledTime = 0;
+            let currentStreamingBubble = null;
+            let currentStreamingText = "";
+
+            function initAudioContext() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playPcmChunk(base64Data) {
+                if (!speakerEnabled) return;
+                try {
+                    initAudioContext();
+                    const binaryString = window.atob(base64Data);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const int16Array = new Int16Array(bytes.buffer);
+                    const float32Array = new Float32Array(int16Array.length);
+                    for (let i = 0; i < int16Array.length; i++) {
+                        float32Array[i] = int16Array[i] / 32768.0;
+                    }
+
+                    const audioBuffer = audioCtx.createBuffer(1, float32Array.length, 24000);
+                    audioBuffer.copyToChannel(float32Array, 0);
+
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioCtx.destination);
+
+                    const now = audioCtx.currentTime;
+                    if (pcmScheduledTime < now) {
+                        pcmScheduledTime = now + 0.05;
+                    }
+                    source.start(pcmScheduledTime);
+                    pcmScheduledTime += audioBuffer.duration;
+                } catch(e) {
+                    console.error("PCM play error:", e);
+                }
+            }
+
+            function appendStreamText(chunk, isFirst) {
+                const box = document.getElementById("chat-box");
+                if (isFirst || !currentStreamingBubble) {
+                    currentStreamingText = chunk;
+                    currentStreamingBubble = document.createElement("div");
+                    currentStreamingBubble.className = "flex items-start gap-2.5";
+                    currentStreamingBubble.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold shrink-0">
+                            <i class="fa-solid fa-user-injured"></i>
+                        </div>
+                        <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
+                            <div class="font-bold text-xs text-red-600 mb-0.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-volume-high"></i> <span>Bemor (Anvar)</span>
+                                <span id="streaming-pulse-dot" class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                            </div>
+                            <div id="streaming-text-content">${escapeHtml(currentStreamingText)}</div>
+                        </div>
+                    `;
+                    box.appendChild(currentStreamingBubble);
+                } else {
+                    currentStreamingText += chunk;
+                    const textEl = document.getElementById("streaming-text-content");
+                    if (textEl) textEl.innerText = currentStreamingText;
+                }
+                box.scrollTop = box.scrollHeight;
+            }
+
+            function finalizeStreamText(fullText) {
+                if (fullText && currentStreamingBubble) {
+                    const textEl = document.getElementById("streaming-text-content");
+                    if (textEl) textEl.innerText = fullText;
+                    const dot = document.getElementById("streaming-pulse-dot");
+                    if (dot) dot.remove();
+                }
+                currentStreamingBubble = null;
+                currentStreamingText = "";
+            }
+
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                if (data.type === "response") {
+                if (data.type === "text_chunk") {
+                    appendStreamText(data.text, data.is_first);
+                    updateStatus("🗣️ Bemor gapirmoqda...", "green");
+                } else if (data.type === "audio_chunk") {
+                    playPcmChunk(data.chunk);
+                } else if (data.type === "turn_complete") {
+                    finalizeStreamText(data.text);
+                    setProcessing(false);
+                    updateStatus("🟢 Tayyor", "green");
+                } else if (data.type === "response") {
                     addPatientMessage(data.text);
                     if (data.audio && speakerEnabled) {
                         playBase64Audio(data.audio, data.format || "wav");
                     }
                     setProcessing(false);
+                    updateStatus("🟢 Tayyor", "green");
                 } else if (data.type === "status") {
                     updateStatus(data.message, "indigo");
                 } else if (data.type === "error") {
@@ -587,6 +684,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             inputEl.value = "";
             addNurseMessage(text);
             
+            pcmScheduledTime = 0;
+            currentStreamingBubble = null;
+            currentStreamingText = "";
+            
             setProcessing(true);
             updateStatus("⏳ Bemor javob bermoqda...", "orange");
             
@@ -605,7 +706,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Play Audio (Base64 WAV / MP3)
+        // Play Audio (Base64 WAV / MP3 Fallback)
         function playBase64Audio(base64Data, format = "wav") {
             const player = document.getElementById("audio-player");
             player.src = `data:audio/${format};base64,` + base64Data;
@@ -860,6 +961,9 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
         response_modalities=["AUDIO"],
         output_audio_transcription=types.AudioTranscriptionConfig(),
         system_instruction=system_prompt,
+        max_output_tokens=50,
+        temperature=0.3,
+        thinking_config=types.ThinkingConfig(thinking_budget=0),
         speech_config=types.SpeechConfig(
             voice_config=types.VoiceConfig(
                 prebuilt_voice_config=types.PrebuiltVoiceConfig(
@@ -890,30 +994,46 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                 
                 audio_chunks = []
                 transcription_parts = []
+                first_text_sent = False
                 
                 try:
                     async def receive_turn():
+                        nonlocal first_text_sent
                         async for response in session.receive():
                             server_content = response.server_content
                             if server_content is not None:
                                 if server_content.output_transcription and server_content.output_transcription.text:
-                                    transcription_parts.append(server_content.output_transcription.text)
+                                    txt = server_content.output_transcription.text
+                                    transcription_parts.append(txt)
+                                    await websocket.send_json({
+                                        "type": "text_chunk",
+                                        "text": txt,
+                                        "is_first": not first_text_sent
+                                    })
+                                    first_text_sent = True
                                 
                                 if server_content.model_turn is not None:
                                     for part in server_content.model_turn.parts:
                                         if part.inline_data and part.inline_data.data:
                                             audio_chunks.append(part.inline_data.data)
+                                            await websocket.send_json({
+                                                "type": "audio_chunk",
+                                                "chunk": base64.b64encode(part.inline_data.data).decode('utf-8')
+                                            })
                                 
                                 if server_content.turn_complete:
                                     break
                     
-                    await asyncio.wait_for(receive_turn(), timeout=20.0)
+                    await asyncio.wait_for(receive_turn(), timeout=12.0)
                     
-                    audio_bytes = b''.join(audio_chunks)
                     clean_text = "".join(transcription_parts).strip()
-                    
-                    if not clean_text or len(audio_bytes) == 0:
-                        clean_text = "Eslolmayapman, opa... juda qiynalyapman..."
+                    if clean_text:
+                        await websocket.send_json({
+                            "type": "turn_complete",
+                            "text": clean_text
+                        })
+                    else:
+                        clean_text = "Eslolmayapman, doktor... juda qiynalyapman..."
                         # Edge-TTS fallback
                         tts_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web_fallback.mp3")
                         comm = edge_tts.Communicate(text=clean_text, voice="uz-UZ-SardorNeural")
@@ -931,24 +1051,6 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                             "audio": mp3_base64,
                             "format": "mp3"
                         })
-                        continue
-                    
-                    # Convert PCM to WAV in memory
-                    wav_io = io.BytesIO()
-                    with wave.open(wav_io, 'wb') as wf:
-                        wf.setnchannels(1)
-                        wf.setsampwidth(2)
-                        wf.setframerate(24000)
-                        wf.writeframes(audio_bytes)
-                    
-                    wav_base64 = base64.b64encode(wav_io.getvalue()).decode('utf-8')
-                    
-                    await websocket.send_json({
-                        "type": "response",
-                        "text": clean_text,
-                        "audio": wav_base64,
-                        "format": "wav"
-                    })
                     
                 except asyncio.TimeoutError:
                     await websocket.send_json({
