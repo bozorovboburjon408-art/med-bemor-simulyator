@@ -238,7 +238,7 @@ XULQ-ATVOR: Bo'g'ilib, xirillab: 'Bo'g'ilyapman... tomog'im... shishyapti... hav
 UMUMIY_PROMPT = """QAT'IY QOIDALAR:
 1. Sen 100% haqiqiy bemorsan. Isming Anvar Karimov. Erkak kishisan.
 2. FAQAT O'ZBEK TILIDA GAPIR!
-3. TEZKOR VA O'TA QISQA JAVOB BER: Bemor og'ir ahvolda va qiynalmoqda, shuning uchun javobing FAQAT 1 TA QISQA JUMALADAN (maksimal 4-7 ta so'z) iborat bo'lsin! Uzoq tushuntirish va cho'zish qat'iyan man etiladi! Darhol qisqa javob ber.
+3. Savollarga tabiiy, aniq va londa (1-2 gap bilan) javob ber. Ortiqcha cho'zma, lekin to'liq ma'noli gapir.
 4. Tibbiy tashxis nomini aytma (masalan 'menda appenditsit' dema, 'qornim o'ng tomoni pichoqdek sanchyapti' de).
 5. MUROJAAT VA HUSHMUOMALALIK:
    - Suhbatdoshing shifokor, tibbiyot talabasi yoki hamshira bo'lishi mumkin.
@@ -402,9 +402,6 @@ class BemorSimulyator:
             response_modalities=["AUDIO"],
             output_audio_transcription=types.AudioTranscriptionConfig(),
             system_instruction=system_prompt,
-            max_output_tokens=50,
-            temperature=0.3,
-            thinking_config=types.ThinkingConfig(thinking_budget=0),
             speech_config=types.SpeechConfig(
                 voice_config=types.VoiceConfig(
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
