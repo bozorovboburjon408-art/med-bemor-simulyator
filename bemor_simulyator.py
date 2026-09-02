@@ -461,7 +461,8 @@ class BemorSimulyator:
                     
                     await asyncio.wait_for(receive_turn(), timeout=20.0)
                     
-                    audio_data = b''.join(audio_chunks)
+                    # Add 250ms silence prefix to eliminate initial consonant clipping
+                    audio_data = (b'\x00' * 12000) + b''.join(audio_chunks)
                     raw_text = "".join(transcription_parts).strip()
                     clean_text = clean_speech_text(raw_text)
                     

@@ -255,7 +255,7 @@ XULQ-ATVOR: Bo'g'ilib, xirillab: 'Bo'g'ilyapman... tomog'im... shishyapti... hav
 UMUMIY_PROMPT = """QAT'IY QOIDALAR:
 1. Sen 100% haqiqiy bemorsan. Isming Anvar Karimov. Erkak kishisan (40 yosh).
 2. FAQAT O'ZBEK TILIDA GAPIR!
-3. Savollarga tabiiy, aniq va londa (1-2 gap bilan) javob ber. Ortiqcha cho'zma, lekin to'liq ma'noli gapir.
+3. Shifokor yoki talabaning savollariga erkin, samimiy va to'liq ma'noli qilib (2-3 gap bilan) javob ber. O'z shikoyatlaring va his-tuyg'ularingni bemor kabi erkin ifoda et.
 4. Tibbiy tashxis nomini aytma (masalan 'menda appenditsit' dema, 'qornim o'ng tomoni pichoqdek sanchyapti' de).
 5. MUROJAAT VA HUSHMUOMALALIK:
    - Suhbatdoshing shifokor, tibbiyot talabasi yoki hamshira bo'lishi mumkin.
@@ -630,7 +630,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             inputEl.value = "";
             addNurseMessage(text);
             
-            pcmScheduledTime = 0;
             currentStreamingBubble = null;
             currentStreamingText = "";
             
@@ -638,13 +637,22 @@ HTML_CONTENT = """<!DOCTYPE html>
             updateStatus("⏳ Bemor javob bermoqda...", "orange");
             
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ text: text }));
+                try {
+                    ws.send(JSON.stringify({ text: text }));
+                } catch(err) {
+                    console.error("WS yuborish xatosi:", err);
+                    setProcessing(false);
+                }
             } else {
                 addSystemMessage("❌ Ulanish yo'q. Qaytadan ulanmoqda...");
                 connectWebSocket();
                 setTimeout(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({ text: text }));
+                        try {
+                            ws.send(JSON.stringify({ text: text }));
+                        } catch(err) {
+                            setProcessing(false);
+                        }
                     } else {
                         setProcessing(false);
                     }
@@ -710,10 +718,17 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function setProcessing(state) {
             isProcessing = state;
-            document.getElementById("send-btn").disabled = state;
+            const btn = document.getElementById("send-btn");
+            if (btn) btn.disabled = state;
             if (!state) {
                 updateStatus("✅ Tayyor", "emerald");
-                document.getElementById("user-input").focus();
+                const input = document.getElementById("user-input");
+                if (input) input.focus();
+                if (isRecording) {
+                    isRecording = false;
+                    const micBtn = document.getElementById("mic-btn");
+                    if (micBtn) micBtn.classList.remove("bg-red-500", "text-white", "animate-pulse");
+                }
             }
         }
 
@@ -989,13 +1004,16 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                         })
                         continue
                     
-                    # Convert PCM to WAV in memory
+                    # Convert PCM to WAV in memory with 250ms silence prefix to eliminate browser DAC clipping
+                    silence_prefix = b'\x00' * 12000  # 250ms clean silence (24000 samples/sec * 2 bytes * 0.25s)
+                    full_audio_bytes = silence_prefix + audio_bytes
+                    
                     wav_io = io.BytesIO()
                     with wave.open(wav_io, 'wb') as wf:
                         wf.setnchannels(1)
                         wf.setsampwidth(2)
                         wf.setframerate(24000)
-                        wf.writeframes(audio_bytes)
+                        wf.writeframes(full_audio_bytes)
                     
                     wav_base64 = base64.b64encode(wav_io.getvalue()).decode('utf-8')
                     
