@@ -604,12 +604,56 @@ HTML_CONTENT = """<!DOCTYPE html>
         let micProcessor = null;
         let isCallActive = false;
         let isPatientSpeaking = false;
+        let liveCallRecognition = null;
 
         async function toggleLiveCall() {
             if (isCallActive) {
                 stopLiveCall();
             } else {
                 await startLiveCall();
+            }
+        }
+
+        function startLiveRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            try {
+                liveCallRecognition = new SpeechRec();
+                liveCallRecognition.lang = 'uz-UZ';
+                liveCallRecognition.continuous = true;
+                liveCallRecognition.interimResults = true;
+                
+                liveCallRecognition.onresult = (event) => {
+                    if (isPatientSpeaking) return;
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    if (transcript.trim()) {
+                        appendUserStreamText(transcript.trim(), true);
+                    }
+                };
+                
+                liveCallRecognition.onerror = (e) => {
+                    console.log("Live recognition notice:", e);
+                };
+                
+                liveCallRecognition.onend = () => {
+                    if (isCallActive) {
+                        try { liveCallRecognition.start(); } catch(e) {}
+                    }
+                };
+                
+                liveCallRecognition.start();
+            } catch(e) {
+                console.log("Live speech start notice:", e);
+            }
+        }
+
+        function stopLiveRecognition() {
+            if (liveCallRecognition) {
+                try { liveCallRecognition.stop(); } catch(e) {}
+                liveCallRecognition = null;
             }
         }
 
@@ -655,6 +699,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                 isCallActive = true;
                 updateCallUI(true);
+                startLiveRecognition();
             } catch(err) {
                 console.error("Live call error:", err);
                 alert("Mikrofonga ulanishda xatolik yuz berdi: " + err.message);
@@ -663,6 +708,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function stopLiveCall() {
             isCallActive = false;
+            stopLiveRecognition();
             if (micProcessor) {
                 try { micProcessor.disconnect(); } catch(e) {}
                 micProcessor = null;
@@ -713,11 +759,16 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Connect WebSocket
+        // Connect WebSocket with Heartbeat Keep-Alive
+        let pingInterval = null;
+        let reconnectTimeout = null;
+
         function connectWebSocket() {
             if (ws) {
-                ws.close();
+                try { ws.close(); } catch(e) {}
             }
+            if (pingInterval) clearInterval(pingInterval);
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
             
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/chat/${currentKey}`;
@@ -730,6 +781,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             ws.onopen = () => {
                 updateStatus("✅ Tayyor", "emerald");
                 document.getElementById("conn-text").innerText = "Live AI ulandi";
+                // Render timeout bo'lib uzilib qolmasligi uchun har 15 sekundda heartbeat ping
+                pingInterval = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: "ping" }));
+                    }
+                }, 15000);
             };
             
             // User and Patient Streaming Chat Bubbles (Ordered Chronology)
@@ -742,7 +799,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             let currentPatientDot = null;
             let currentPatientText = "";
 
-            function appendUserStreamText(chunk) {
+            function appendUserStreamText(chunk, isFullReplacement = false) {
                 const box = document.getElementById("chat-box");
                 if (!currentUserBubble) {
                     finalizePatientText();
@@ -763,7 +820,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                     box.appendChild(currentUserBubble);
                     currentUserTextEl = currentUserBubble.querySelector(".user-bubble-content");
                 } else {
-                    currentUserText += chunk;
+                    if (isFullReplacement) {
+                        currentUserText = chunk;
+                    } else {
+                        currentUserText += chunk;
+                    }
                     if (currentUserTextEl) currentUserTextEl.innerText = currentUserText;
                 }
                 box.scrollTop = box.scrollHeight;
@@ -821,6 +882,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                     return;
                 }
                 const data = JSON.parse(event.data);
+                if (data.type === "pong") {
+                    return; // Heartbeat keepalive javobi
+                }
                 if (data.type === "user_text_stream") {
                     appendUserStreamText(data.text);
                 } else if (data.type === "text_stream") {
@@ -865,8 +929,13 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
             
             ws.onclose = () => {
+                if (pingInterval) clearInterval(pingInterval);
                 updateStatus("🔄 Qayta ulanilmoqda...", "orange");
                 document.getElementById("conn-text").innerText = "Ulanish kutilmoqda";
+                // Render free tier uzilib qolsa avtomatik qayta ulanish
+                reconnectTimeout = setTimeout(() => {
+                    connectWebSocket();
+                }, 2000);
             };
             
             ws.onerror = (err) => {
@@ -1175,7 +1244,6 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     
     config = types.LiveConnectConfig(
         response_modalities=["AUDIO"],
-        input_audio_transcription=types.AudioTranscriptionConfig(),
         output_audio_transcription=types.AudioTranscriptionConfig(),
         system_instruction=system_prompt,
         speech_config=types.SpeechConfig(
@@ -1203,12 +1271,6 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                 if sc.interrupted:
                                     await websocket.send_json({"type": "interrupted"})
                                 
-                                if sc.input_transcription and sc.input_transcription.text:
-                                    await websocket.send_json({
-                                        "type": "user_text_stream",
-                                        "text": sc.input_transcription.text
-                                    })
-                                
                                 if sc.output_transcription and sc.output_transcription.text:
                                     await websocket.send_json({
                                         "type": "text_stream",
@@ -1229,10 +1291,12 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
 
             stream_task = asyncio.create_task(gemini_stream_worker())
             
-            # 2. Receive loop from browser (streaming 16kHz PCM or text)
+            # 2. Receive loop from browser (streaming 16kHz PCM, text, or keepalive ping)
             try:
                 while True:
                     msg = await websocket.receive()
+                    if msg.get("type") == "websocket.disconnect":
+                        break
                     
                     if "bytes" in msg and msg["bytes"]:
                         # Realtime 16kHz PCM audio chunk from microphone
@@ -1243,6 +1307,11 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                     elif "text" in msg and msg["text"]:
                         try:
                             payload = json.loads(msg["text"])
+                            # Heartbeat keep-alive to keep Render connection open
+                            if payload.get("type") == "ping":
+                                await websocket.send_json({"type": "pong"})
+                                continue
+                                
                             user_text = payload.get("text", "").strip()
                             if user_text:
                                 await session.send_client_content(
