@@ -732,41 +732,86 @@ HTML_CONTENT = """<!DOCTYPE html>
                 document.getElementById("conn-text").innerText = "Live AI ulandi";
             };
             
-            let currentStreamingBubble = null;
-            let currentStreamingText = "";
+            // User and Patient Streaming Chat Bubbles (Ordered Chronology)
+            let currentUserBubble = null;
+            let currentUserTextEl = null;
+            let currentUserText = "";
 
-            function appendStreamText(chunk) {
+            let currentPatientBubble = null;
+            let currentPatientTextEl = null;
+            let currentPatientDot = null;
+            let currentPatientText = "";
+
+            function appendUserStreamText(chunk) {
                 const box = document.getElementById("chat-box");
-                if (!currentStreamingBubble) {
-                    currentStreamingText = chunk;
-                    currentStreamingBubble = document.createElement("div");
-                    currentStreamingBubble.className = "flex items-start gap-2.5";
-                    currentStreamingBubble.innerHTML = `
+                if (!currentUserBubble) {
+                    finalizePatientText();
+                    currentUserText = chunk;
+                    currentUserBubble = document.createElement("div");
+                    currentUserBubble.className = "flex items-start justify-end gap-2.5";
+                    currentUserBubble.innerHTML = `
+                        <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
+                            <div class="font-bold text-xs text-indigo-200 mb-0.5 flex items-center gap-1">
+                                <i class="fa-solid fa-user-doctor"></i> <span>Shifokor / Talaba</span>
+                            </div>
+                            <div class="user-bubble-content">${escapeHtml(currentUserText)}</div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
+                            <i class="fa-solid fa-user-doctor"></i>
+                        </div>
+                    `;
+                    box.appendChild(currentUserBubble);
+                    currentUserTextEl = currentUserBubble.querySelector(".user-bubble-content");
+                } else {
+                    currentUserText += chunk;
+                    if (currentUserTextEl) currentUserTextEl.innerText = currentUserText;
+                }
+                box.scrollTop = box.scrollHeight;
+            }
+
+            function finalizeUserText() {
+                currentUserBubble = null;
+                currentUserTextEl = null;
+                currentUserText = "";
+            }
+
+            function appendPatientStreamText(chunk) {
+                const box = document.getElementById("chat-box");
+                if (!currentPatientBubble) {
+                    finalizeUserText();
+                    currentPatientText = chunk;
+                    currentPatientBubble = document.createElement("div");
+                    currentPatientBubble.className = "flex items-start gap-2.5";
+                    currentPatientBubble.innerHTML = `
                         <div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold shrink-0">
                             <i class="fa-solid fa-user-injured"></i>
                         </div>
                         <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
                             <div class="font-bold text-xs text-red-600 mb-0.5 flex items-center gap-1.5">
                                 <i class="fa-solid fa-volume-high"></i> <span>Bemor (Anvar)</span>
-                                <span id="streaming-pulse-dot" class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                <span class="patient-pulse-dot inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
                             </div>
-                            <div id="streaming-text-content">${escapeHtml(currentStreamingText)}</div>
+                            <div class="patient-bubble-content">${escapeHtml(currentPatientText)}</div>
                         </div>
                     `;
-                    box.appendChild(currentStreamingBubble);
+                    box.appendChild(currentPatientBubble);
+                    currentPatientTextEl = currentPatientBubble.querySelector(".patient-bubble-content");
+                    currentPatientDot = currentPatientBubble.querySelector(".patient-pulse-dot");
                 } else {
-                    currentStreamingText += chunk;
-                    const textEl = document.getElementById("streaming-text-content");
-                    if (textEl) textEl.innerText = currentStreamingText;
+                    currentPatientText += chunk;
+                    if (currentPatientTextEl) currentPatientTextEl.innerText = currentPatientText;
                 }
                 box.scrollTop = box.scrollHeight;
             }
 
-            function finalizeStreamText() {
-                const dot = document.getElementById("streaming-pulse-dot");
-                if (dot) dot.remove();
-                currentStreamingBubble = null;
-                currentStreamingText = "";
+            function finalizePatientText() {
+                if (currentPatientDot) {
+                    currentPatientDot.remove();
+                    currentPatientDot = null;
+                }
+                currentPatientBubble = null;
+                currentPatientTextEl = null;
+                currentPatientText = "";
             }
 
             ws.onmessage = (event) => {
@@ -776,12 +821,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                     return;
                 }
                 const data = JSON.parse(event.data);
-                if (data.type === "text_stream") {
+                if (data.type === "user_text_stream") {
+                    appendUserStreamText(data.text);
+                } else if (data.type === "text_stream") {
                     isPatientSpeaking = true;
-                    appendStreamText(data.text);
+                    appendPatientStreamText(data.text);
                     updateStatus("🗣️ Bemor gapirmoqda...", "green");
                 } else if (data.type === "turn_complete") {
-                    finalizeStreamText();
+                    finalizePatientText();
+                    finalizeUserText();
                     // Audio to'liq yangrab bo'lgach, foydalanuvchiga mikrofon navbatini ochish
                     setTimeout(() => {
                         isPatientSpeaking = false;
@@ -795,7 +843,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 } else if (data.type === "interrupted") {
                     isPatientSpeaking = false;
                     stopAllAudioPlayback();
-                    finalizeStreamText();
+                    finalizePatientText();
+                    finalizeUserText();
                     if (isCallActive) {
                         updateStatus("🎙️ Bemor to'xtadi, siz gapiryapsiz...", "red");
                     }
@@ -1126,6 +1175,7 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     
     config = types.LiveConnectConfig(
         response_modalities=["AUDIO"],
+        input_audio_transcription=types.AudioTranscriptionConfig(),
         output_audio_transcription=types.AudioTranscriptionConfig(),
         system_instruction=system_prompt,
         speech_config=types.SpeechConfig(
@@ -1152,6 +1202,12 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                             if sc is not None:
                                 if sc.interrupted:
                                     await websocket.send_json({"type": "interrupted"})
+                                
+                                if sc.input_transcription and sc.input_transcription.text:
+                                    await websocket.send_json({
+                                        "type": "user_text_stream",
+                                        "text": sc.input_transcription.text
+                                    })
                                 
                                 if sc.output_transcription and sc.output_transcription.text:
                                     await websocket.send_json({
