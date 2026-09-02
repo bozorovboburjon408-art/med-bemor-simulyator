@@ -6,6 +6,8 @@ import base64
 import asyncio
 import socket
 import json
+from pydantic import BaseModel
+import edge_tts
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from google import genai
@@ -598,62 +600,18 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Live Microphone Input (16kHz PCM Streamer)
+        // Live Microphone Input (16kHz PCM Streamer for Gemini Live)
         let micStream = null;
         let micAudioContext = null;
         let micProcessor = null;
         let isCallActive = false;
         let isPatientSpeaking = false;
-        let liveCallRecognition = null;
 
         async function toggleLiveCall() {
             if (isCallActive) {
                 stopLiveCall();
             } else {
                 await startLiveCall();
-            }
-        }
-
-        function startLiveRecognition() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            try {
-                liveCallRecognition = new SpeechRec();
-                liveCallRecognition.lang = 'uz-UZ';
-                liveCallRecognition.continuous = true;
-                liveCallRecognition.interimResults = true;
-                
-                liveCallRecognition.onresult = (event) => {
-                    if (isPatientSpeaking) return;
-                    let transcript = '';
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        transcript += event.results[i][0].transcript;
-                    }
-                    if (transcript.trim()) {
-                        appendUserStreamText(transcript.trim(), true);
-                    }
-                };
-                
-                liveCallRecognition.onerror = (e) => {
-                    console.log("Live recognition notice:", e);
-                };
-                
-                liveCallRecognition.onend = () => {
-                    if (isCallActive) {
-                        try { liveCallRecognition.start(); } catch(e) {}
-                    }
-                };
-                
-                liveCallRecognition.start();
-            } catch(e) {
-                console.log("Live speech start notice:", e);
-            }
-        }
-
-        function stopLiveRecognition() {
-            if (liveCallRecognition) {
-                try { liveCallRecognition.stop(); } catch(e) {}
-                liveCallRecognition = null;
             }
         }
 
@@ -699,7 +657,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                 isCallActive = true;
                 updateCallUI(true);
-                startLiveRecognition();
+                addSystemMessage("📞 <b>Jonli ovozli muloqot faol.</b> Bemor sizni eshitmoqda, to'g'ridan-to'g'ri gapiravering.");
             } catch(err) {
                 console.error("Live call error:", err);
                 alert("Mikrofonga ulanishda xatolik yuz berdi: " + err.message);
@@ -708,7 +666,6 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function stopLiveCall() {
             isCallActive = false;
-            stopLiveRecognition();
             if (micProcessor) {
                 try { micProcessor.disconnect(); } catch(e) {}
                 micProcessor = null;
@@ -723,6 +680,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
             stopAllAudioPlayback();
             updateCallUI(false);
+            addSystemMessage("📞 <b>Jonli muloqot yakunlandi.</b>");
         }
 
         function updateCallUI(active) {
@@ -799,82 +757,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             let currentPatientDot = null;
             let currentPatientText = "";
 
-            function appendUserStreamText(chunk, isFullReplacement = false) {
-                const box = document.getElementById("chat-box");
-                if (!currentUserBubble) {
-                    finalizePatientText();
-                    currentUserText = chunk;
-                    currentUserBubble = document.createElement("div");
-                    currentUserBubble.className = "flex items-start justify-end gap-2.5";
-                    currentUserBubble.innerHTML = `
-                        <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
-                            <div class="font-bold text-xs text-indigo-200 mb-0.5 flex items-center gap-1">
-                                <i class="fa-solid fa-user-doctor"></i> <span>Shifokor / Talaba</span>
-                            </div>
-                            <div class="user-bubble-content">${escapeHtml(currentUserText)}</div>
-                        </div>
-                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
-                            <i class="fa-solid fa-user-doctor"></i>
-                        </div>
-                    `;
-                    box.appendChild(currentUserBubble);
-                    currentUserTextEl = currentUserBubble.querySelector(".user-bubble-content");
-                } else {
-                    if (isFullReplacement) {
-                        currentUserText = chunk;
-                    } else {
-                        currentUserText += chunk;
-                    }
-                    if (currentUserTextEl) currentUserTextEl.innerText = currentUserText;
-                }
-                box.scrollTop = box.scrollHeight;
-            }
-
-            function finalizeUserText() {
-                currentUserBubble = null;
-                currentUserTextEl = null;
-                currentUserText = "";
-            }
-
-            function appendPatientStreamText(chunk) {
-                const box = document.getElementById("chat-box");
-                if (!currentPatientBubble) {
-                    finalizeUserText();
-                    currentPatientText = chunk;
-                    currentPatientBubble = document.createElement("div");
-                    currentPatientBubble.className = "flex items-start gap-2.5";
-                    currentPatientBubble.innerHTML = `
-                        <div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold shrink-0">
-                            <i class="fa-solid fa-user-injured"></i>
-                        </div>
-                        <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
-                            <div class="font-bold text-xs text-red-600 mb-0.5 flex items-center gap-1.5">
-                                <i class="fa-solid fa-volume-high"></i> <span>Bemor (Anvar)</span>
-                                <span class="patient-pulse-dot inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                            </div>
-                            <div class="patient-bubble-content">${escapeHtml(currentPatientText)}</div>
-                        </div>
-                    `;
-                    box.appendChild(currentPatientBubble);
-                    currentPatientTextEl = currentPatientBubble.querySelector(".patient-bubble-content");
-                    currentPatientDot = currentPatientBubble.querySelector(".patient-pulse-dot");
-                } else {
-                    currentPatientText += chunk;
-                    if (currentPatientTextEl) currentPatientTextEl.innerText = currentPatientText;
-                }
-                box.scrollTop = box.scrollHeight;
-            }
-
-            function finalizePatientText() {
-                if (currentPatientDot) {
-                    currentPatientDot.remove();
-                    currentPatientDot = null;
-                }
-                currentPatientBubble = null;
-                currentPatientTextEl = null;
-                currentPatientText = "";
-            }
-
             ws.onmessage = (event) => {
                 if (event.data instanceof ArrayBuffer) {
                     isPatientSpeaking = true;
@@ -885,46 +767,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (data.type === "pong") {
                     return; // Heartbeat keepalive javobi
                 }
-                if (data.type === "user_text_stream") {
-                    appendUserStreamText(data.text);
-                } else if (data.type === "text_stream") {
-                    isPatientSpeaking = true;
-                    appendPatientStreamText(data.text);
-                    updateStatus("🗣️ Bemor gapirmoqda...", "green");
-                } else if (data.type === "turn_complete") {
-                    finalizePatientText();
-                    finalizeUserText();
-                    // Audio to'liq yangrab bo'lgach, foydalanuvchiga mikrofon navbatini ochish
+                if (data.type === "turn_complete") {
                     setTimeout(() => {
                         isPatientSpeaking = false;
                         if (isCallActive) {
-                            updateStatus("🎙️ Siz gapiring (Bemor tinglamoqda)...", "red");
-                        } else {
-                            setProcessing(false);
-                            updateStatus("🟢 Tayyor", "green");
+                            updateStatus("🎙️ Bemor tinglamoqda — gapiravering...", "red");
                         }
                     }, 400);
                 } else if (data.type === "interrupted") {
                     isPatientSpeaking = false;
                     stopAllAudioPlayback();
-                    finalizePatientText();
-                    finalizeUserText();
                     if (isCallActive) {
                         updateStatus("🎙️ Bemor to'xtadi, siz gapiryapsiz...", "red");
                     }
-                } else if (data.type === "response") {
-                    // Fallback full response
-                    addPatientMessage(data.text);
-                    if (data.audio && speakerEnabled) {
-                        playBase64Audio(data.audio, data.format || "wav");
-                    }
-                    setProcessing(false);
-                    updateStatus("🟢 Tayyor", "green");
-                } else if (data.type === "status") {
-                    updateStatus(data.message, "indigo");
-                } else if (data.type === "error") {
-                    addSystemMessage(`❌ Xatolik: ${data.message}`);
-                    setProcessing(false);
                 }
             };
             
@@ -940,12 +795,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             ws.onerror = (err) => {
                 console.error("WS error:", err);
-                setProcessing(false);
             };
         }
 
-        // Send Message
-        function sendMessage(e) {
+        // Send Message (HTTP POST /api/chat with High-Fidelity Edge-TTS Uzbek Voice)
+        async function sendMessage(e) {
             if (e) e.preventDefault();
             if (isProcessing) return;
             
@@ -955,37 +809,42 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             inputEl.value = "";
             addNurseMessage(text);
-            initOutputAudio();
             
             setProcessing(true);
             updateStatus("⏳ Bemor javob bermoqda...", "orange");
             
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                try {
-                    ws.send(JSON.stringify({ text: text }));
-                } catch(err) {
-                    console.error("WS yuborish xatosi:", err);
-                    setProcessing(false);
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        kasallik_id: currentKey,
+                        text: text
+                    })
+                });
+                
+                if (!res.ok) {
+                    throw new Error("Server xatoligi: " + res.status);
                 }
-            } else {
-                addSystemMessage("❌ Ulanish yo'q. Qaytadan ulanmoqda...");
-                connectWebSocket();
-                setTimeout(() => {
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        try {
-                            ws.send(JSON.stringify({ text: text }));
-                        } catch(err) {
-                            setProcessing(false);
-                        }
-                    } else {
-                        setProcessing(false);
-                    }
-                }, 1000);
+                
+                const data = await res.json();
+                addPatientMessage(data.text);
+                
+                if (data.audio && speakerEnabled) {
+                    playBase64Audio(data.audio, data.format || "mp3");
+                }
+            } catch(err) {
+                console.error("Chat error:", err);
+                addSystemMessage("❌ Javob olishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
+            } finally {
+                setProcessing(false);
+                updateStatus("✅ Tayyor", "emerald");
             }
         }
 
-        // Play Audio (Base64 WAV / MP3 Fallback)
-        function playBase64Audio(base64Data, format = "wav") {
+        // Play Audio (Base64 MP3)
+        function playBase64Audio(base64Data, format = "mp3") {
+            if (!base64Data) return;
             const player = document.getElementById("audio-player");
             player.src = `data:audio/${format};base64,` + base64Data;
             player.play().catch(e => console.log("Audio play error:", e));
@@ -1232,6 +1091,75 @@ async def get_audio_file(filename: str):
     if os.path.exists(file_path):
         return FileResponse(file_path, media_type="audio/wav")
     return JSONResponse(content={"error": "File not found"}, status_code=404)
+
+class ChatRequest(BaseModel):
+    kasallik_id: str
+    text: str
+
+@app.post("/api/chat")
+async def api_chat(req: ChatRequest):
+    kasallik = KASALLIKLAR.get(req.kasallik_id, KASALLIKLAR["normal"])
+    
+    # Boyitilgan klinik prompt: yo'talish, xirillash, ingrash effektlari bilan
+    system_prompt = f"""Sen tibbiy simulyator bemorisan. Isming Anvar.
+KASALLIK VA SHIKOYATING:
+{kasallik['prompt']}
+
+QAT'IY QOIDALAR:
+1. FAQAT O'ZBEK TILIDA GAPIR!
+2. Har bir javobingda bemorning dardini, holatini ifodalovchi tabiiy klinik tovushlarni so'zlar bilan ifoda et:
+   - Agar nafas qisishi yoki infarkt bo'lsa: 'Hff... nafasim...', 'Ahh... ko'kragim qattiq sanchyapti...'
+   - Agar o'pka yallig'lanishi, bronxit, pnevmoniya bo'lsa: 'Kxx-kxx... (yo'tal) ... kxx-kxx...', 'Xirillab ketyapti ko'kragim...'
+   - Agar qorin og'rig'i, appenditsit bo'lsa: 'Ohh... qornim... pichoqday tiryapti...'
+   - Agar bosh aylanishi, bradikardiya yoki zaiflik bo'lsa: 'Uff... ko'zim tinib... madorim yo'q doktor...'
+3. Shifokor yoki talabaga hurmat bilan 'doktor' deb murojaat qil.
+4. Javobing 1-2 ta tabiiy, dardli, aniq gap bo'lsin. Ortiqcha tibbiy kitobiy gaplarni aytma."""
+
+    client = genai.Client(api_key=API_KEY)
+    
+    reply_text = ""
+    for model_name in ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"]:
+        try:
+            resp = await client.aio.models.generate_content(
+                model=model_name,
+                contents=req.text,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    temperature=0.7,
+                )
+            )
+            if resp and resp.text:
+                reply_text = resp.text.strip()
+                break
+        except Exception as e:
+            print(f"API chat model error ({model_name}): {e}")
+            
+    if not reply_text:
+        reply_text = "Eslolmayapman, doktor... ahvolim og'ir..."
+        
+    # Kasallik og'irligiga qarab Edge-TTS talaffuz sur'ati (rate)
+    rate = "-5%"
+    if req.kasallik_id in ["infarkt", "astma", "opka_shishi", "allergiya", "bradikardiya"]:
+        rate = "-12%" # Og'ir xasta, zo'riqib, hansirab gapiradi
+    elif req.kasallik_id in ["taxikardiya", "vahima"]:
+        rate = "+5%"  # Tez-tez, xavotir bilan gapiradi
+
+    mp3_base64 = ""
+    try:
+        mp3_io = io.BytesIO()
+        comm = edge_tts.Communicate(reply_text, voice="uz-UZ-SardorNeural", rate=rate)
+        async for chunk in comm.stream():
+            if chunk["type"] == "audio":
+                mp3_io.write(chunk["data"])
+        mp3_base64 = base64.b64encode(mp3_io.getvalue()).decode('utf-8')
+    except Exception as e:
+        print(f"Edge-TTS synthesis error: {e}")
+
+    return JSONResponse(content={
+        "text": reply_text,
+        "audio": mp3_base64,
+        "format": "mp3"
+    })
 
 @app.websocket("/ws/chat/{kasallik_id}")
 async def websocket_chat(websocket: WebSocket, kasallik_id: str):
