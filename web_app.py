@@ -522,12 +522,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             renderDiseases(document.getElementById("search-box").value);
             
-            // Agar jonli qo'ng'iroq ketayotgan bo'lsa, yangi kasallik oqimiga ulaymiz
-            if (isCallActive) {
-                connectWebSocket();
-            } else {
-                updateStatus("✅ Tayyor", "emerald");
-            }
+            // Yangi kasallik profiliga ulanamiz
+            connectWebSocket();
             
             addSystemMessage(`🩺 Kasallik holati o'zgartirildi: <b>${item.nomi}</b>.`);
         }
@@ -777,9 +773,49 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Live Call WebSocket with Heartbeat Keep-Alive
+        // Live Call & Chat WebSocket with Heartbeat Keep-Alive
         let pingInterval = null;
         let reconnectTimeout = null;
+        let currentPatientBubble = null;
+        let currentPatientTextEl = null;
+        let currentPatientText = "";
+
+        function appendPatientStreamText(chunk) {
+            const box = document.getElementById("chat-box");
+            if (!currentPatientBubble) {
+                currentPatientText = chunk;
+                currentPatientBubble = document.createElement("div");
+                currentPatientBubble.className = "flex items-start gap-2.5";
+                currentPatientBubble.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold shrink-0">
+                        <i class="fa-solid fa-user-injured"></i>
+                    </div>
+                    <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
+                        <div class="font-bold text-xs text-red-600 mb-0.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-volume-high"></i> <span>Bemor (Anvar)</span>
+                            <span class="patient-pulse-dot inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                        </div>
+                        <div class="patient-bubble-content">${escapeHtml(currentPatientText)}</div>
+                    </div>
+                `;
+                box.appendChild(currentPatientBubble);
+                currentPatientTextEl = currentPatientBubble.querySelector(".patient-bubble-content");
+            } else {
+                currentPatientText += chunk;
+                if (currentPatientTextEl) currentPatientTextEl.innerText = currentPatientText;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function finalizePatientText() {
+            if (currentPatientBubble) {
+                const dot = currentPatientBubble.querySelector(".patient-pulse-dot");
+                if (dot) dot.remove();
+            }
+            currentPatientBubble = null;
+            currentPatientTextEl = null;
+            currentPatientText = "";
+        }
 
         function closeLiveWebSocket() {
             if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
@@ -798,7 +834,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/chat/${currentKey}`;
             
-            updateStatus("⏳ Jonli aloqa ulanmoqda...", "orange");
+            updateStatus("⏳ Ulanmoqda...", "orange");
             
             ws = new WebSocket(wsUrl);
             ws.binaryType = "arraybuffer";
@@ -829,34 +865,41 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (data.type === "pong") {
                     return; // Heartbeat keepalive javobi
                 }
-                if (data.type === "turn_complete") {
+                if (data.type === "text_stream") {
+                    isPatientSpeaking = true;
+                    appendPatientStreamText(data.text);
+                    updateStatus("🗣️ Bemor javob bermoqda...", "green");
+                } else if (data.type === "turn_complete") {
+                    finalizePatientText();
+                    setProcessing(false);
                     setTimeout(() => {
                         isPatientSpeaking = false;
                         if (isCallActive) {
                             updateStatus("🎙️ Bemor tinglamoqda — gapiravering...", "red");
+                        } else {
+                            updateStatus("✅ Tayyor", "emerald");
                         }
                     }, 400);
                 } else if (data.type === "interrupted") {
                     isPatientSpeaking = false;
                     stopAllAudioPlayback();
+                    finalizePatientText();
+                    setProcessing(false);
                     if (isCallActive) {
                         updateStatus("🎙️ Bemor to'xtadi, siz gapiryapsiz...", "red");
+                    } else {
+                        updateStatus("✅ Tayyor", "emerald");
                     }
                 }
             };
             
             ws.onclose = () => {
                 if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
-                if (!isCallActive) return; // Agar qo'ng'iroq to'xtatilgan bo'lsa qayta ulanish kerak emas
-                
                 updateStatus("🔄 Qayta ulanilmoqda...", "orange");
                 document.getElementById("conn-text").innerText = "Ulanish kutilmoqda";
                 
-                // Faqat jonli qo'ng'iroq davom etayotgan bo'lsa qayta ulanish
                 reconnectTimeout = setTimeout(() => {
-                    if (isCallActive) {
-                        connectWebSocket();
-                    }
+                    connectWebSocket();
                 }, 2000);
             };
             
@@ -865,8 +908,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
         }
 
-        // Send Message (HTTP POST /api/chat with High-Fidelity Edge-TTS Uzbek Voice)
-        async function sendMessage(e) {
+        // Send Message (Ultra-Fast 1.5s Real-Time Gemini Live Native Voice & Text)
+        function sendMessage(e) {
             if (e) e.preventDefault();
             if (isProcessing) return;
             
@@ -876,36 +919,32 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             inputEl.value = "";
             addNurseMessage(text);
+            initOutputAudio();
             
             setProcessing(true);
             updateStatus("⏳ Bemor javob bermoqda...", "orange");
             
-            try {
-                const res = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        kasallik_id: currentKey,
-                        text: text
-                    })
-                });
-                
-                if (!res.ok) {
-                    throw new Error("Server xatoligi: " + res.status);
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    ws.send(JSON.stringify({ text: text }));
+                } catch(err) {
+                    console.error("WS yuborish xatosi:", err);
+                    setProcessing(false);
                 }
-                
-                const data = await res.json();
-                addPatientMessage(data.text);
-                
-                if (data.audio && speakerEnabled) {
-                    playBase64Audio(data.audio, data.format || "mp3");
-                }
-            } catch(err) {
-                console.error("Chat error:", err);
-                addSystemMessage("❌ Javob olishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
-            } finally {
-                setProcessing(false);
-                updateStatus("✅ Tayyor", "emerald");
+            } else {
+                connectWebSocket();
+                setTimeout(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        try {
+                            ws.send(JSON.stringify({ text: text }));
+                        } catch(err) {
+                            setProcessing(false);
+                        }
+                    } else {
+                        setProcessing(false);
+                        addSystemMessage("❌ Ulanish yo'q. Qaytadan urinib ko'ring.");
+                    }
+                }, 1000);
             }
         }
 
@@ -1186,7 +1225,8 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                     voice_name="Puck"
                 )
             )
-        )
+        ),
+        thinking_config=types.ThinkingConfig(thinking_budget=0)
     )
     
     try:
