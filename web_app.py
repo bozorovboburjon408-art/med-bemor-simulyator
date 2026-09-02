@@ -528,8 +528,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             renderDiseases(document.getElementById("search-box").value);
             
-            // Connect WebSocket
-            connectWebSocket();
+            // Agar jonli qo'ng'iroq ketayotgan bo'lsa, yangi kasallik oqimiga ulaymiz
+            if (isCallActive) {
+                connectWebSocket();
+            } else {
+                updateStatus("✅ Tayyor", "emerald");
+            }
             
             addSystemMessage(`🩺 Kasallik holati o'zgartirildi: <b>${item.nomi}</b>.`);
         }
@@ -716,6 +720,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                 isCallActive = true;
                 updateCallUI(true);
+                connectWebSocket();
                 addSystemMessage("📞 <b>Jonli ovozli muloqot faol.</b> Bemor sizni eshitmoqda, to'g'ridan-to'g'ri gapiravering.");
             } catch(err) {
                 console.error("Live call error:", err);
@@ -725,6 +730,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function stopLiveCall() {
             isCallActive = false;
+            closeLiveWebSocket();
             if (micProcessor) {
                 try { micProcessor.disconnect(); } catch(e) {}
                 micProcessor = null;
@@ -739,6 +745,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
             stopAllAudioPlayback();
             updateCallUI(false);
+            updateStatus("✅ Tayyor", "emerald");
             addSystemMessage("📞 <b>Jonli muloqot yakunlandi.</b>");
         }
 
@@ -776,28 +783,40 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Connect WebSocket with Heartbeat Keep-Alive
+        // Live Call WebSocket with Heartbeat Keep-Alive
         let pingInterval = null;
         let reconnectTimeout = null;
 
-        function connectWebSocket() {
+        function closeLiveWebSocket() {
+            if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
+            if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null; }
             if (ws) {
+                ws.onclose = null; // Muhim: eski soket yopilganda onclose qayta ulanishni chaqirmasligi kerak
+                ws.onerror = null;
                 try { ws.close(); } catch(e) {}
+                ws = null;
             }
-            if (pingInterval) clearInterval(pingInterval);
-            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        }
+
+        function connectWebSocket() {
+            closeLiveWebSocket();
             
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/chat/${currentKey}`;
             
-            updateStatus("⏳ Ulanmoqda...", "orange");
+            updateStatus("⏳ Jonli aloqa ulanmoqda...", "orange");
             
             ws = new WebSocket(wsUrl);
             ws.binaryType = "arraybuffer";
             
             ws.onopen = () => {
-                updateStatus("✅ Tayyor", "emerald");
                 document.getElementById("conn-text").innerText = "Live AI ulandi";
+                if (isCallActive) {
+                    updateStatus("🎙️ Jonli muloqot faol — gapiravering, bemor sizni eshitmoqda...", "red");
+                } else {
+                    updateStatus("✅ Tayyor", "emerald");
+                }
+                
                 // Render timeout bo'lib uzilib qolmasligi uchun har 15 sekundda heartbeat ping
                 pingInterval = setInterval(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -805,16 +824,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     }
                 }, 15000);
             };
-            
-            // User and Patient Streaming Chat Bubbles (Ordered Chronology)
-            let currentUserBubble = null;
-            let currentUserTextEl = null;
-            let currentUserText = "";
-
-            let currentPatientBubble = null;
-            let currentPatientTextEl = null;
-            let currentPatientDot = null;
-            let currentPatientText = "";
 
             ws.onmessage = (event) => {
                 if (event.data instanceof ArrayBuffer) {
@@ -843,12 +852,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
             
             ws.onclose = () => {
-                if (pingInterval) clearInterval(pingInterval);
+                if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
+                if (!isCallActive) return; // Agar qo'ng'iroq to'xtatilgan bo'lsa qayta ulanish kerak emas
+                
                 updateStatus("🔄 Qayta ulanilmoqda...", "orange");
                 document.getElementById("conn-text").innerText = "Ulanish kutilmoqda";
-                // Render free tier uzilib qolsa avtomatik qayta ulanish
+                
+                // Faqat jonli qo'ng'iroq davom etayotgan bo'lsa qayta ulanish
                 reconnectTimeout = setTimeout(() => {
-                    connectWebSocket();
+                    if (isCallActive) {
+                        connectWebSocket();
+                    }
                 }, 2000);
             };
             
