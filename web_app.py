@@ -382,10 +382,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <i class="fa-solid fa-phone-volume text-emerald-600"></i>
                         <span id="live-call-text">Jonli Qo'ng'iroq</span>
                     </button>
-                    <button id="speaker-btn" onclick="toggleSpeaker()" title="Ovozni yoqish/o'chirish"
-                            class="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm">
-                        <i class="fa-solid fa-volume-high"></i>
-                    </button>
+                    
+                    <!-- Volume Control with Slider -->
+                    <div class="flex items-center bg-white/20 hover:bg-white/25 rounded-xl px-2.5 py-1.5 space-x-2 transition" title="Bemor ovozi balandligi">
+                        <button id="speaker-btn" type="button" onclick="toggleSpeaker()" class="text-white hover:text-emerald-100 transition text-sm cursor-pointer">
+                            <i id="speaker-icon" class="fa-solid fa-volume-low"></i>
+                        </button>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.35"
+                               oninput="changeVolume(this.value)"
+                               class="w-16 md:w-20 h-1.5 bg-white/50 rounded-lg appearance-none cursor-pointer accent-white">
+                        <span id="volume-val" class="text-[11px] font-mono text-white/90 w-7 text-right">35%</span>
+                    </div>
+
                     <button onclick="resetChat()" title="Suhbatni tozalash"
                             class="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm">
                         <i class="fa-solid fa-rotate-right"></i>
@@ -543,14 +551,19 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Output Audio (24kHz Gemini Live Stream Player)
+        // Output Audio (24kHz Gemini Live Stream Player & Master Gain)
         let outAudioCtx = null;
+        let outGainNode = null;
+        let currentVolume = 0.35; // Default comfortable 35%
         let outNextStartTime = 0;
         let activeSources = [];
 
         function initOutputAudio() {
             if (!outAudioCtx) {
                 outAudioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+                outGainNode = outAudioCtx.createGain();
+                outGainNode.gain.setValueAtTime(speakerEnabled ? currentVolume : 0, outAudioCtx.currentTime);
+                outGainNode.connect(outAudioCtx.destination);
             }
             if (outAudioCtx.state === 'suspended') {
                 outAudioCtx.resume();
@@ -558,7 +571,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function playStreamingPcm(arrayBuffer) {
-            if (!speakerEnabled) return;
+            if (!speakerEnabled || currentVolume <= 0) return;
             initOutputAudio();
 
             const int16 = new Int16Array(arrayBuffer);
@@ -574,7 +587,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             const src = outAudioCtx.createBufferSource();
             src.buffer = audioBuf;
-            src.connect(outAudioCtx.destination);
+            // Real-time ovoz balandligini to'g'ri boshqarish uchun outGainNode ga ulaymiz
+            src.connect(outGainNode);
 
             const now = outAudioCtx.currentTime;
             if (outNextStartTime < now) {
@@ -597,6 +611,51 @@ HTML_CONTENT = """<!DOCTYPE html>
             activeSources = [];
             if (outAudioCtx) {
                 outNextStartTime = outAudioCtx.currentTime;
+            }
+        }
+
+        function changeVolume(val) {
+            currentVolume = parseFloat(val);
+            speakerEnabled = (currentVolume > 0);
+            applyVolume();
+        }
+
+        function toggleSpeaker() {
+            speakerEnabled = !speakerEnabled;
+            applyVolume();
+        }
+
+        function applyVolume() {
+            const effectiveVol = speakerEnabled ? currentVolume : 0;
+            
+            if (outGainNode && outAudioCtx) {
+                outGainNode.gain.setValueAtTime(effectiveVol, outAudioCtx.currentTime);
+            }
+            
+            const player = document.getElementById("audio-player");
+            if (player) {
+                player.volume = effectiveVol;
+            }
+            
+            const slider = document.getElementById("volume-slider");
+            if (slider && speakerEnabled) {
+                slider.value = currentVolume;
+            }
+            
+            const valEl = document.getElementById("volume-val");
+            if (valEl) {
+                valEl.innerText = `${Math.round(effectiveVol * 100)}%`;
+            }
+            
+            const icon = document.getElementById("speaker-icon");
+            if (icon) {
+                if (!speakerEnabled || effectiveVol === 0) {
+                    icon.className = "fa-solid fa-volume-xmark";
+                } else if (effectiveVol < 0.4) {
+                    icon.className = "fa-solid fa-volume-low";
+                } else {
+                    icon.className = "fa-solid fa-volume-high";
+                }
             }
         }
 
@@ -915,11 +974,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        function toggleSpeaker() {
-            speakerEnabled = !speakerEnabled;
-            const btn = document.getElementById("speaker-btn");
-            btn.innerHTML = speakerEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
-        }
 
         function resetChat() {
             document.getElementById("chat-box").innerHTML = `
