@@ -425,15 +425,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Input area -->
             <div class="p-3 bg-white border-t border-slate-200">
                 <form id="chat-form" onsubmit="sendMessage(event)" class="flex items-center gap-2">
-                    <button type="button" id="mic-btn" onclick="toggleVoiceInput()" title="Ovoz bilan gapirish"
-                            class="w-11 h-11 rounded-xl bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-600 transition flex items-center justify-center">
-                        <i class="fa-solid fa-microphone text-base"></i>
-                    </button>
-                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing (yoki mikrofondan gapiring)..." 
+                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing..." 
                             autocomplete="off"
                             class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <button type="submit" id="send-btn" 
-                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition flex items-center gap-1.5 shadow-sm">
+                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                         <span>Yuborish</span>
                         <i class="fa-solid fa-paper-plane text-xs"></i>
                     </button>
@@ -453,8 +449,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         let speakerEnabled = true;
         let isHeartPlaying = false;
         let ws = null;
-        let recognition = null;
-        let isRecording = false;
         let diseases = {};
 
         // Fetch disease database from backend API
@@ -980,14 +974,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 updateStatus("✅ Tayyor", "emerald");
                 const input = document.getElementById("user-input");
                 if (input) input.focus();
-                if (isRecording) {
-                    isRecording = false;
-                    const micBtn = document.getElementById("mic-btn");
-                    if (micBtn) micBtn.classList.remove("bg-red-500", "text-white", "animate-pulse");
-                }
             }
         }
-
 
         function resetChat() {
             document.getElementById("chat-box").innerHTML = `
@@ -995,56 +983,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     🟢 <b>Suhbat tozalandi.</b> Bemorga savol berishingiz mumkin.
                 </div>
             `;
-        }
-
-        // Voice Input (Web Speech API)
-        function toggleVoiceInput() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Brauzeringiz mikrofondan ovozni matnga aylantirishni qo'llab-quvvatlamaydi. Chrome yoki Edge brauzeridan foydalaning.");
-                return;
-            }
-            
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
-            if (isRecording) {
-                if (recognition) recognition.stop();
-                isRecording = false;
-                document.getElementById("mic-btn").classList.remove("bg-red-500", "text-white", "animate-pulse");
-                return;
-            }
-            
-            recognition = new SpeechRec();
-            recognition.lang = 'uz-UZ';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
-            recognition.onstart = () => {
-                isRecording = true;
-                const btn = document.getElementById("mic-btn");
-                btn.classList.add("bg-red-500", "text-white", "animate-pulse");
-                updateStatus("🎙️ Tinglamoqda...", "red");
-            };
-            
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById("user-input").value = transcript;
-                sendMessage();
-            };
-            
-            recognition.onend = () => {
-                isRecording = false;
-                const btn = document.getElementById("mic-btn");
-                btn.classList.remove("bg-red-500", "text-white", "animate-pulse");
-                updateStatus("✅ Tayyor", "emerald");
-            };
-            
-            recognition.onerror = (e) => {
-                console.log("Speech err:", e);
-                isRecording = false;
-                document.getElementById("mic-btn").classList.remove("bg-red-500", "text-white", "animate-pulse");
-            };
-            
-            recognition.start();
         }
 
         function escapeHtml(str) {
