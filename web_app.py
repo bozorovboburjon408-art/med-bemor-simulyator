@@ -603,6 +603,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         let micAudioContext = null;
         let micProcessor = null;
         let isCallActive = false;
+        let isPatientSpeaking = false;
 
         async function toggleLiveCall() {
             if (isCallActive) {
@@ -633,6 +634,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                 micProcessor = micAudioContext.createScriptProcessor(2048, 1, 1);
                 micProcessor.onaudioprocess = (e) => {
                     if (!isCallActive || !ws || ws.readyState !== WebSocket.OPEN) return;
+                    // Bemor gapirayotganda dinamikdan chiqqan ovozni o'ziga qaytarib echo qilmaslik
+                    if (isPatientSpeaking) return;
+                    
                     const input = e.inputBuffer.getChannelData(0);
                     const pcm16 = new Int16Array(input.length);
                     for (let i = 0; i < input.length; i++) {
@@ -642,8 +646,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                     ws.send(pcm16.buffer);
                 };
 
+                // Mikrofonni dinamikka to'g'ridan-to'g'ri ulamaslik (aks-sado va qichqiriqni oldini olish)
+                const muteGain = micAudioContext.createGain();
+                muteGain.gain.value = 0;
                 source.connect(micProcessor);
-                micProcessor.connect(micAudioContext.destination);
+                micProcessor.connect(muteGain);
+                muteGain.connect(micAudioContext.destination);
 
                 isCallActive = true;
                 updateCallUI(true);
@@ -763,22 +771,29 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             ws.onmessage = (event) => {
                 if (event.data instanceof ArrayBuffer) {
+                    isPatientSpeaking = true;
                     playStreamingPcm(event.data);
                     return;
                 }
                 const data = JSON.parse(event.data);
                 if (data.type === "text_stream") {
+                    isPatientSpeaking = true;
                     appendStreamText(data.text);
                     updateStatus("🗣️ Bemor gapirmoqda...", "green");
                 } else if (data.type === "turn_complete") {
                     finalizeStreamText();
-                    if (isCallActive) {
-                        updateStatus("🎙️ Siz gapiring (Bemor tinglamoqda)...", "red");
-                    } else {
-                        setProcessing(false);
-                        updateStatus("🟢 Tayyor", "green");
-                    }
+                    // Audio to'liq yangrab bo'lgach, foydalanuvchiga mikrofon navbatini ochish
+                    setTimeout(() => {
+                        isPatientSpeaking = false;
+                        if (isCallActive) {
+                            updateStatus("🎙️ Siz gapiring (Bemor tinglamoqda)...", "red");
+                        } else {
+                            setProcessing(false);
+                            updateStatus("🟢 Tayyor", "green");
+                        }
+                    }, 400);
                 } else if (data.type === "interrupted") {
+                    isPatientSpeaking = false;
                     stopAllAudioPlayback();
                     finalizeStreamText();
                     if (isCallActive) {
@@ -1131,25 +1146,26 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
             # 1. Background task to stream Gemini audio & text output to browser
             async def gemini_stream_worker():
                 try:
-                    async for response in session.receive():
-                        sc = response.server_content
-                        if sc is not None:
-                            if sc.interrupted:
-                                await websocket.send_json({"type": "interrupted"})
-                            
-                            if sc.output_transcription and sc.output_transcription.text:
-                                await websocket.send_json({
-                                    "type": "text_stream",
-                                    "text": sc.output_transcription.text
-                                })
-                            
-                            if sc.model_turn is not None:
-                                for part in sc.model_turn.parts:
-                                    if part.inline_data and part.inline_data.data:
-                                        await websocket.send_bytes(part.inline_data.data)
-                            
-                            if sc.turn_complete:
-                                await websocket.send_json({"type": "turn_complete"})
+                    while True:
+                        async for response in session.receive():
+                            sc = response.server_content
+                            if sc is not None:
+                                if sc.interrupted:
+                                    await websocket.send_json({"type": "interrupted"})
+                                
+                                if sc.output_transcription and sc.output_transcription.text:
+                                    await websocket.send_json({
+                                        "type": "text_stream",
+                                        "text": sc.output_transcription.text
+                                    })
+                                
+                                if sc.model_turn is not None:
+                                    for part in sc.model_turn.parts:
+                                        if part.inline_data and part.inline_data.data:
+                                            await websocket.send_bytes(part.inline_data.data)
+                                
+                                if sc.turn_complete:
+                                    await websocket.send_json({"type": "turn_complete"})
                 except asyncio.CancelledError:
                     pass
                 except Exception as e:
