@@ -10,11 +10,13 @@ from pydantic import BaseModel
 import edge_tts
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from google import genai
 from google.genai import types
 import uvicorn
 from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
+from kiosk_hub import HUB_HTML
 
 
 # Console encodingni to'g'rilash (Windows uchun)
@@ -271,17 +273,18 @@ HTML_CONTENT = """<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MedLife — AI Bemor Simulyatori</title>
     <meta name="theme-color" content="#4338ca">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MedLife AI Bemor">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="https://cdn-icons-png.flatsome.org/512/2966/2966327.png">
+    <meta name="apple-mobile-web-app-title" content="Bemor AI">
+    <link rel="manifest" href="/manifest_bemor.json">
+    <link rel="icon" href="/static/icons/bemor_192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * { -webkit-touch-callout: none; touch-action: manipulation; }
         .chat-scroll::-webkit-scrollbar { width: 6px; }
         .chat-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .chat-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -291,7 +294,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     <!-- Header -->
     <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
                     <i class="fa-solid fa-hospital-user"></i>
@@ -301,18 +304,29 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <p class="text-xs text-indigo-200">Gemini Live AI — Jonli muloqot va klinik holatlar</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <a href="/monitor" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="/hub" class="px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-cyan-300 font-bold text-xs flex items-center gap-1.5 shadow transition border border-cyan-500/30">
+                    <i class="fa-solid fa-hospital"></i>
+                    <span>Kiosk Hub</span>
+                </a>
+                <a href="/vital" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
                     <i class="fa-solid fa-heart-pulse"></i>
-                    <span>📊 Vital Monitor</span>
+                    <span>Vital Monitor</span>
                 </a>
-                <a href="/console" target="_blank" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
+                <a href="/console" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
                     <i class="fa-solid fa-hand-holding-heart"></i>
-                    <span>🫀 Yurak-O'pka Reanimatsiyasi</span>
+                    <span>Pult & CPR</span>
                 </a>
-                <div id="top-status" class="flex items-center space-x-2 bg-indigo-800/60 px-3 py-1.5 rounded-full text-xs">
+                <button id="pwa-bemor-btn" onclick="installCurrentPWA()" class="hidden px-2.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1 shadow transition cursor-pointer">
+                    <i class="fa-solid fa-download"></i>
+                    <span>O'rnatish</span>
+                </button>
+                <button onclick="toggleFullScreen()" class="px-2 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1 cursor-pointer transition">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <div id="top-status" class="flex items-center space-x-1.5 bg-indigo-800/60 px-2.5 py-1.5 rounded-full text-xs">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                    <span id="conn-text">Tizim tayyor</span>
+                    <span id="conn-text">Tayyor</span>
                 </div>
             </div>
         </div>
@@ -1039,6 +1053,40 @@ HTML_CONTENT = """<!DOCTYPE html>
             renderDiseases(e.target.value);
         });
 
+        // ==================== PWA INSTALL & FULLSCREEN (SENSORLI KIOSK) ====================
+        let deferredPrompt = null;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('pwa-bemor-btn');
+            if (btn) btn.classList.remove('hidden');
+        });
+        async function installCurrentPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    const btn = document.getElementById('pwa-bemor-btn');
+                    if (btn) btn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            } else {
+                alert("Ilovani o'rnatish uchun brauzer menyusidagi 'O'rnatish' (Install App) tugmasini bosing yoki Chrome/Edge manzil satridagi belgi orqali o'rnating.");
+            }
+        }
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+            }
+        }
+
         // Initialize on load
         window.onload = () => {
             loadDiseases();
@@ -1047,6 +1095,35 @@ HTML_CONTENT = """<!DOCTYPE html>
 </body>
 </html>
 """
+
+# Static files and PWA assets
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/hub", response_class=HTMLResponse)
+@app.get("/apps", response_class=HTMLResponse)
+async def get_hub():
+    return HTMLResponse(content=HUB_HTML)
+
+@app.get("/manifest_bemor.json")
+async def get_manifest_bemor():
+    return FileResponse("static/manifest_bemor.json", media_type="application/json")
+
+@app.get("/manifest_vital.json")
+async def get_manifest_vital():
+    return FileResponse("static/manifest_vital.json", media_type="application/json")
+
+@app.get("/manifest_console.json")
+async def get_manifest_console():
+    return FileResponse("static/manifest_console.json", media_type="application/json")
+
+@app.get("/manifest_hub.json")
+async def get_manifest_hub():
+    return FileResponse("static/manifest_hub.json", media_type="application/json")
+
+@app.get("/sw.js")
+async def get_sw():
+    return FileResponse("static/sw.js", media_type="application/javascript")
 
 @app.get("/", response_class=HTMLResponse)
 async def get_index():

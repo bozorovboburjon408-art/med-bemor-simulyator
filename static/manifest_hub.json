@@ -1,0 +1,24 @@
+﻿{
+  "name": "MedLife — Sensorli Tibbiyot Kiosk Markazi",
+  "short_name": "MedLife Kiosk",
+  "description": "Barcha 3 ta tibbiy simulyatsiya ilovalari markazi va sensorli ekran boshqaruvi",
+  "start_url": "/hub?source=pwa",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/static/icons/hub_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/hub_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

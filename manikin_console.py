@@ -32,16 +32,22 @@ HTML_CONTENT = """<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>MedLife — Yurak-O'pka Reanimatsiyasi (CPR) Simulyatori</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Maniken Pulti">
+    <link rel="manifest" href="/manifest_console.json">
+    <link rel="icon" href="/static/icons/console_192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800;900&display=swap');
-
+        * { -webkit-touch-callout: none; touch-action: manipulation; }
         body {
             background-color: #f8fafc;
             color: #0f172a;
@@ -224,13 +230,22 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <!-- Right: Mode Switches and Links -->
-        <div class="flex items-center gap-2">
-            <a href="/monitor" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1.5 shadow-sm">
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="/hub" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-cyan-300 font-bold rounded-xl transition border border-cyan-500/40 text-xs flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-hospital text-cyan-400"></i> Kiosk Hub
+            </a>
+            <button id="pwa-console-btn" onclick="installConsolePWA()" class="hidden px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl transition text-xs flex items-center gap-1.5 shadow cursor-pointer">
+                <i class="fa-solid fa-download"></i> O'rnatish
+            </button>
+            <a href="/vital" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-heart-pulse text-emerald-600"></i> Vital Monitor
             </a>
             <a href="/" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor
             </a>
+            <button onclick="toggleFullScreenConsole()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-expand"></i>
+            </button>
         </div>
 
     </header>
@@ -2195,6 +2210,40 @@ HTML_CONTENT = """<!DOCTYPE html>
                     clearInterval(iv);
                 }
             }, 80);
+        }
+
+        // ==================== PWA INSTALL & FULLSCREEN (SENSORLI KIOSK) ====================
+        let deferredPromptConsole = null;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPromptConsole = e;
+            const btn = document.getElementById('pwa-console-btn');
+            if (btn) btn.classList.remove('hidden');
+        });
+        async function installConsolePWA() {
+            if (deferredPromptConsole) {
+                deferredPromptConsole.prompt();
+                const { outcome } = await deferredPromptConsole.userChoice;
+                if (outcome === 'accepted') {
+                    const btn = document.getElementById('pwa-console-btn');
+                    if (btn) btn.classList.add('hidden');
+                }
+                deferredPromptConsole = null;
+            } else {
+                alert("Ilovani o'rnatish uchun brauzer menyusidagi 'O'rnatish' (Install App) tugmasini bosing.");
+            }
+        }
+        function toggleFullScreenConsole() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+            }
         }
 
         window.onload = () => {

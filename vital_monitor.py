@@ -45,13 +45,19 @@ HTML_CONTENT = """<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ICU Bemor Hayotiy Ko'rsatkichlari Monitori (ESP32)</title>
+    <meta name="theme-color" content="#030712">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vital Monitor">
+    <link rel="manifest" href="/manifest_vital.json">
+    <link rel="icon" href="/static/icons/vital_192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
-        
+        * { -webkit-touch-callout: none; touch-action: manipulation; }
         body {
             background-color: #05070d;
             color: #f1f5f9;
@@ -123,7 +129,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
         </div>
 
-        <div class="flex items-center space-x-2 text-xs">
+        <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            <a href="/hub" class="px-2.5 py-1 rounded bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 transition font-bold shadow">
+                <i class="fa-solid fa-hospital text-cyan-400"></i>
+                <span>Kiosk Hub</span>
+            </a>
+
+            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2.5 py-1 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow cursor-pointer transition">
+                <i class="fa-solid fa-download"></i>
+                <span>O'rnatish</span>
+            </button>
+
             <a href="/" target="_blank" class="px-2.5 py-1 rounded bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-600 flex items-center gap-1.5 transition font-bold shadow">
                 <i class="fa-solid fa-hospital-user text-indigo-400"></i>
                 <span>AI Bemor</span>
@@ -131,7 +147,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             <a href="/console" target="_blank" class="px-2.5 py-1 rounded bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-600 flex items-center gap-1.5 transition font-bold shadow">
                 <i class="fa-solid fa-hand-holding-heart text-purple-400"></i>
-                <span>🫀 Yurak-O'pka Reanimatsiyasi</span>
+                <span>Pult & CPR</span>
             </a>
 
             <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 transition font-bold shadow cursor-pointer">
@@ -1314,6 +1330,33 @@ HTML_CONTENT = """<!DOCTYPE html>
                 document.documentElement.requestFullscreen();
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // ==================== PWA INSTALL (SENSORLI KIOSK) ====================
+        let deferredPromptVital = null;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPromptVital = e;
+            const btn = document.getElementById('pwa-vital-btn');
+            if (btn) btn.classList.remove('hidden');
+        });
+        async function installVitalPWA() {
+            if (deferredPromptVital) {
+                deferredPromptVital.prompt();
+                const { outcome } = await deferredPromptVital.userChoice;
+                if (outcome === 'accepted') {
+                    const btn = document.getElementById('pwa-vital-btn');
+                    if (btn) btn.classList.add('hidden');
+                }
+                deferredPromptVital = null;
+            } else {
+                alert("Ilovani o'rnatish uchun brauzer menyusidagi 'O'rnatish' (Install App) tugmasini bosing.");
             }
         }
 
