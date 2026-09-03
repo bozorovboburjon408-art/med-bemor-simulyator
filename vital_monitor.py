@@ -165,10 +165,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <span id="hw-text">ESP32 UART: Jonli oqim</span>
             </div>
 
-            <button id="btn-audio" onclick="toggleAudio()" class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 flex items-center gap-1.5 transition">
-                <i id="audio-icon" class="fa-solid fa-volume-high text-emerald-400"></i>
-                <span id="audio-text">Ovoz: Yoniq</span>
-            </button>
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-2.5 py-1 rounded">
+                <button id="btn-audio" onclick="toggleAudio()" class="text-slate-200 hover:text-white flex items-center gap-1 cursor-pointer transition">
+                    <i id="audio-icon" class="fa-solid fa-volume-high text-emerald-400 text-xs"></i>
+                    <span id="audio-text" class="text-xs font-bold">100%</span>
+                </button>
+                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="1.0" oninput="changeMonitorVolume(this.value)" class="w-16 accent-emerald-500 h-1.5 bg-slate-700 rounded cursor-pointer" title="Yurak urish ovoz balandligi (100% Maksimal)">
+            </div>
             <button onclick="toggleFullScreen()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600">
                 <i class="fa-solid fa-expand"></i>
             </button>
@@ -495,66 +498,126 @@ HTML_CONTENT = """<!DOCTYPE html>
         let totalSteps = 0;
 
         let audioCtx = null;
+        let masterGain = null;
+        let masterCompressor = null;
         let soundEnabled = true;
+        let monitorVolume = 1.0; // 100% MAKSIMAL BALAND OVOZ
         let asystoleOsc = null;
         let lastBeatTime = 0;
 
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Dinamik kompressor: Ovozni to'yinishga (saturation) yetkazib, eng baland jarangdorlik beradi
+                masterCompressor = audioCtx.createDynamicsCompressor();
+                masterCompressor.threshold.setValueAtTime(-14, audioCtx.currentTime);
+                masterCompressor.knee.setValueAtTime(30, audioCtx.currentTime);
+                masterCompressor.ratio.setValueAtTime(12, audioCtx.currentTime);
+                masterCompressor.attack.setValueAtTime(0.002, audioCtx.currentTime);
+                masterCompressor.release.setValueAtTime(0.25, audioCtx.currentTime);
+
+                masterGain = audioCtx.createGain();
+                masterGain.gain.setValueAtTime(soundEnabled ? monitorVolume : 0, audioCtx.currentTime);
+
+                masterCompressor.connect(masterGain);
+                masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
         }
 
+        function changeMonitorVolume(val) {
+            initAudio();
+            monitorVolume = parseFloat(val);
+            soundEnabled = monitorVolume > 0;
+            if (masterGain && audioCtx) {
+                masterGain.gain.setValueAtTime(soundEnabled ? monitorVolume : 0, audioCtx.currentTime);
+            }
+            const icon = document.getElementById("audio-icon");
+            const text = document.getElementById("audio-text");
+            if (icon) {
+                if (!soundEnabled || monitorVolume === 0) {
+                    icon.className = "fa-solid fa-volume-xmark text-red-400 text-xs";
+                } else if (monitorVolume < 0.5) {
+                    icon.className = "fa-solid fa-volume-low text-yellow-400 text-xs";
+                } else {
+                    icon.className = "fa-solid fa-volume-high text-emerald-400 text-xs";
+                }
+            }
+            if (text) {
+                text.innerText = soundEnabled ? `${Math.round(monitorVolume * 100)}%` : "O'chiq";
+            }
+        }
+
         function toggleAudio() {
             initAudio();
             soundEnabled = !soundEnabled;
-            const icon = document.getElementById("audio-icon");
-            const text = document.getElementById("audio-text");
-            if (soundEnabled) {
-                icon.className = "fa-solid fa-volume-high text-emerald-400";
-                text.innerText = "Ovoz: Yoniq";
-            } else {
-                icon.className = "fa-solid fa-volume-xmark text-red-400";
-                text.innerText = "Ovoz: O'chiq";
+            if (soundEnabled && monitorVolume === 0) {
+                monitorVolume = 1.0;
+            }
+            const slider = document.getElementById("monitor-volume-slider");
+            if (slider) slider.value = soundEnabled ? monitorVolume : 0;
+            changeMonitorVolume(soundEnabled ? monitorVolume : 0);
+            if (!soundEnabled) {
                 stopAsystoleTone();
             }
         }
 
         function playQRSBeep() {
-            if (!soundEnabled || current.hr <= 0) return;
+            if (!soundEnabled || current.hr <= 0 || monitorVolume <= 0) return;
             initAudio();
             try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                const minFreq = 400;
-                const maxFreq = 950;
+                const now = audioCtx.currentTime;
+                const minFreq = 480;
+                const maxFreq = 960;
+                // SpO2 ga bog'liq chastota: SpO2 pasaysa ovoz pasti (chuqurlashadi), yuqori bo'lsa jaranglaydi
                 const freq = minFreq + ((Math.max(50, current.spo2) - 50) / 50) * (maxFreq - minFreq);
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.08);
+
+                // 1. Asosiy ton (Fundamental Sine) — MAKSIMAL 1.0 AMPLITUDA
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = "sine";
+                osc1.frequency.setValueAtTime(freq, now);
+                gain1.gain.setValueAtTime(1.0, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
+
+                // 2. Tibbiy Garmonika (Triangle) — Jarangdorlik va xona ichida yaqqol eshitilish kuchi
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = "triangle";
+                osc2.frequency.setValueAtTime(freq * 1.5, now);
+                gain2.gain.setValueAtTime(0.45, now);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+
+                osc1.connect(gain1);
+                osc2.connect(gain2);
+
+                const dest = masterCompressor || audioCtx.destination;
+                gain1.connect(dest);
+                gain2.connect(dest);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 0.095);
+                osc2.stop(now + 0.095);
             } catch (e) {}
         }
 
         function startAsystoleTone() {
-            if (!soundEnabled || asystoleOsc) return;
+            if (!soundEnabled || asystoleOsc || monitorVolume <= 0) return;
             initAudio();
             try {
+                const now = audioCtx.currentTime;
                 asystoleOsc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                asystoleOsc.type = "sine";
-                asystoleOsc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                asystoleOsc.type = "triangle";
+                asystoleOsc.frequency.setValueAtTime(850, now);
+                gain.gain.setValueAtTime(0.85, now); // MAKSIMAL ASISTOLIYA SIGNAL BALANDLIGI
                 asystoleOsc.connect(gain);
-                gain.connect(audioCtx.destination);
-                asystoleOsc.start();
+                gain.connect(masterCompressor || audioCtx.destination);
+                asystoleOsc.start(now);
             } catch (e) {}
         }
 
