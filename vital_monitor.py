@@ -46,7 +46,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ICU Bemor Hayotiy Ko'rsatkichlari Monitori (ESP32)</title>
+    <title>ICU Bemor Hayotiy Ko'rsatkichlari & CPR Simulyatori</title>
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -56,7 +56,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700;800;900&display=swap');
         * { -webkit-touch-callout: none; touch-action: manipulation; box-sizing: border-box; }
         html, body {
             margin: 0;
@@ -64,7 +64,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-color: #f1f5f9;
+            background-color: #f8fafc;
             color: #0f172a;
             font-family: 'Rajdhani', sans-serif;
             user-select: none;
@@ -92,7 +92,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         @keyframes alarmBlink {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            50% { opacity: 0.25; }
         }
         .alarm-blink {
             animation: alarmBlink 0.8s infinite;
@@ -103,17 +103,17 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
-    <!-- 1. TOP MEDICAL HEADER -->
+    <!-- 1. TOP MEDICAL NAVIGATION BAR (COMPACT ~36px) -->
     <header class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-xs shrink-0">
         <div class="flex items-center space-x-3">
-            <div class="flex items-center space-x-2">
-                <span class="w-3 h-3 rounded-full bg-emerald-500 alarm-blink"></span>
-                <span class="font-extrabold text-base tracking-wider text-slate-900">ICU PATIENT MONITOR</span>
+            <div class="flex items-center space-x-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 alarm-blink"></span>
+                <span class="font-black text-sm tracking-wider text-slate-900">ICU CPR MONITOR</span>
             </div>
-            <div class="text-xs text-slate-500 border-l border-slate-300 pl-3">
-                KOYKA: <span class="text-slate-900 font-bold">#04 (Reanimatsiya)</span>
+            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5">
+                KOYKA: <span class="text-slate-900 font-bold">#04</span>
             </div>
-            <div class="text-xs text-slate-500 border-l border-slate-300 pl-3">
+            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5">
                 BEMOR: <span class="text-emerald-700 font-bold">Anvar Karimov (40 yosh)</span>
             </div>
         </div>
@@ -123,41 +123,37 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <div class="flex flex-wrap items-center gap-1.5 text-xs">
-            <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 transition font-bold shadow-xs">
-                <i class="fa-solid fa-hospital text-cyan-600"></i>
-                <span>Hub</span>
+            <a href="/hub" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs">
+                <i class="fa-solid fa-hospital text-cyan-600"></i> Hub
             </a>
 
-            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow-xs cursor-pointer transition">
-                <i class="fa-solid fa-download"></i>
-                <span>O'rnatish</span>
+            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2 py-0.5 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow-xs cursor-pointer">
+                <i class="fa-solid fa-download"></i> O'rnatish
             </button>
 
-            <a href="/" target="_blank" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 transition font-bold shadow-xs">
-                <i class="fa-solid fa-hospital-user text-indigo-600"></i>
-                <span>AI Bemor</span>
+            <a href="/" target="_blank" class="px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 font-bold shadow-xs">
+                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor
             </a>
 
-            <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 transition font-bold shadow-xs">
-                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i>
-                <span>Pult & CPR</span>
+            <a href="/console" target="_blank" class="px-2 py-0.5 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs">
+                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> Pult
             </a>
 
-            <div id="hw-badge" class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1.5 font-bold">
+            <div id="hw-badge" class="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1 font-bold">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span id="hw-text">ESP32 UART: Jonli</span>
             </div>
 
-            <!-- VOLUME CONTROL (100% MAKSIMAL) -->
-            <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2 py-1 rounded-lg">
-                <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer transition">
+            <!-- Volume Control -->
+            <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded">
+                <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
                     <i id="audio-icon" class="fa-solid fa-volume-high text-emerald-600 text-xs"></i>
                     <span id="audio-text" class="text-xs font-bold">100%</span>
                 </button>
-                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="1.0" oninput="changeMonitorVolume(this.value)" class="w-14 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Yurak urish ovoz balandligi (100% Maksimal)">
+                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="1.0" oninput="changeMonitorVolume(this.value)" class="w-12 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi (100% Maksimal)">
             </div>
 
-            <button onclick="toggleFullScreen()" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
+            <button onclick="toggleFullScreen()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
                 <i class="fa-solid fa-expand"></i>
             </button>
             <span id="clock" class="mono text-xs font-bold text-slate-700">00:00:00</span>
@@ -165,234 +161,253 @@ HTML_CONTENT = """<!DOCTYPE html>
     </header>
 
     <!-- INJECTION NOTIFICATION POPUP -->
-    <div id="inj-banner" class="hidden my-1 bg-purple-100 border border-purple-400 rounded-xl p-2 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink">
+    <div id="inj-banner" class="hidden my-0.5 bg-purple-100 border border-purple-400 rounded-xl p-1.5 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink">
         <i class="fa-solid fa-syringe text-purple-600 text-sm mr-1"></i> 
         <span>💉 UKOL QILINDI (ADRENALIN 1mg)! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
-    <!-- 2. LIVE MANIKEN SENSOR TELEMETRY & CPR 30:2 HUD -->
-    <div id="cpr-hud" class="bg-white border border-slate-200 rounded-xl p-2 my-1 shadow-xs grid grid-cols-2 md:grid-cols-5 gap-2 items-center text-xs shrink-0">
+    <!-- 2. COMPACT VITAL SIGNS & OSCILLOSCOPE RIBBON (~130px TOTAL HEIGHT) -->
+    <div class="bg-white border border-slate-200 rounded-xl p-2 my-1 shadow-xs grid grid-cols-1 lg:grid-cols-12 gap-2 shrink-0">
         
-        <!-- 1. CPR Compression Force -->
-        <div class="flex flex-col border-r border-slate-200 pr-2">
-            <div class="flex justify-between items-center text-xs font-bold text-slate-700 mb-0.5">
-                <span><i class="fa-solid fa-hand-fist mr-1 text-rose-600"></i> KUCH:</span>
-                <div class="flex items-center gap-1">
-                    <span id="cpr-force-val" class="mono text-rose-600 font-extrabold text-sm">0.0 kg</span>
-                    <button type="button" onclick="tareCprForce()" title="Boshlang'ich vaznni 0 qilish (Tare)" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-300 text-[9px] font-bold cursor-pointer active:scale-95 transition flex items-center gap-0.5">
-                        <i class="fa-solid fa-scale-balanced text-[8px]"></i> 0 qilish
-                    </button>
+        <!-- Left: 2 Compact Oscilloscope Canvases (EKG Lead II & SpO2 Pleth) -->
+        <div class="lg:col-span-8 flex flex-col justify-between gap-1 border-r border-slate-200 pr-2">
+            <!-- ECG Wave Strip -->
+            <div class="flex items-center gap-2">
+                <div class="w-24 shrink-0">
+                    <div class="text-[10px] font-black text-emerald-800 flex items-center gap-1">
+                        <i class="fa-solid fa-bolt text-emerald-600"></i> EKG II
+                    </div>
+                    <div id="ecg-rhythm-name" class="text-[10px] font-bold text-emerald-700 truncate">Sinus</div>
                 </div>
-            </div>
-            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden relative">
-                <div id="cpr-force-bar" class="bg-rose-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
-                <div class="absolute inset-y-0 left-[63%] w-[28%] bg-emerald-500/20 border-x border-emerald-500/50 pointer-events-none"></div>
-            </div>
-            <div class="flex justify-between text-[9px] text-slate-500 mt-0.5">
-                <span>0 kg</span>
-                <span class="text-emerald-700 font-bold">Me'yor (38-55 kg)</span>
-                <span>60 kg</span>
-            </div>
-        </div>
-
-        <!-- 2. CPR 30:2 Cycle Tracker & Quality -->
-        <div class="flex flex-col border-r border-slate-200 pr-2 justify-between">
-            <div class="text-[11px] font-bold text-slate-700 mb-0.5 flex items-center justify-between">
-                <span><i class="fa-solid fa-clipboard-check text-indigo-600"></i> SIKL (30:2):</span>
-                <span id="cpr-cycle-badge" class="text-xs mono font-black text-indigo-700">0/30 zarba | 0/2 nafas</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1 text-[9px]">
-                <span id="badge-d" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Chuqurlik: -</span>
-                <span id="badge-r" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Bo'shatish: -</span>
-                <span id="badge-bpm" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Tezlik: -</span>
-                <span id="badge-pos" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Joyi: -</span>
-            </div>
-        </div>
-
-        <!-- 3. CPR BPM Speed -->
-        <div class="flex flex-col border-r border-slate-200 pr-2 justify-center">
-            <div class="flex justify-between items-center text-xs font-bold text-slate-700 mb-0.5">
-                <span><i class="fa-solid fa-gauge text-slate-600"></i> CPR TEZLIK:</span>
-                <span id="cpr-bpm-val" class="mono text-emerald-700 font-bold text-sm">0 /min</span>
-            </div>
-            <div id="cpr-rate-badge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center">
-                Standart: 100 - 120 /min
-            </div>
-        </div>
-
-        <!-- 4. Lung Pressure -->
-        <div class="flex flex-col border-r border-slate-200 pr-2">
-            <div class="flex justify-between items-center text-xs font-bold text-sky-800 mb-0.5">
-                <span><i class="fa-solid fa-lungs mr-1 text-sky-600"></i> O'PKA (lung_p):</span>
-                <span id="lung-p-val" class="mono text-sky-700 font-extrabold text-sm">0.0 kPa</span>
-            </div>
-            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                <div id="lung-p-bar" class="bg-sky-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
-            </div>
-            <div id="lung-status-text" class="text-[9px] text-sky-700 mt-0.5 font-bold">Me'yor: 0.8 - 2.2 kPa</div>
-        </div>
-
-        <!-- 5. Stomach Alert & Injection Action -->
-        <div class="flex flex-col justify-between">
-            <div class="flex justify-between items-center text-xs font-bold text-slate-700 mb-0.5">
-                <span><i class="fa-solid fa-circle-exclamation text-amber-500"></i> OSHQOZON:</span>
-                <span id="stomach-p-val" class="mono text-slate-700 font-bold text-xs">0.0</span>
-            </div>
-            <div id="stomach-alert" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center">
-                Oshqozon toza
-            </div>
-            <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-1 w-full py-0.5 px-1.5 rounded bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 font-bold text-[10px] flex items-center justify-center gap-1 transition cursor-pointer active:scale-95 shadow-xs">
-                <i class="fa-solid fa-syringe text-purple-600"></i> 💉 Ukol Qilish (Adrenalin)
-            </button>
-        </div>
-
-    </div>
-
-    <!-- 3. MAIN MONITOR DISPLAY (WAVEFORMS + VITAL NUMERICS - ZERO SCROLL FIT) -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-2 my-0.5 flex-1 min-h-0 overflow-hidden">
-        
-        <!-- LEFT 3 COLUMNS: LIVE MEDICAL OSCILLOSCOPE (WHITE CLINICAL BACKGROUND) -->
-        <div class="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-2 flex flex-col justify-between shadow-xs overflow-hidden">
-            
-            <!-- 1. ECG WAVEFORM (Deep Medical Green) -->
-            <div class="flex-1 flex flex-col min-h-0 pb-1 border-b border-slate-100">
-                <div class="flex justify-between items-center text-xs font-bold text-emerald-800 mb-0.5 shrink-0">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-bolt text-emerald-600"></i> EKG Lead II (mV)
-                        <span class="text-[10px] text-slate-400 font-normal">25mm/s 10mm/mV</span>
-                    </span>
-                    <span id="ecg-rhythm-name" class="font-extrabold text-emerald-700">Sinus Ritmi</span>
-                </div>
-                <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
+                <div class="flex-1 h-[48px] rounded-lg bg-white border border-slate-200 overflow-hidden relative">
                     <canvas id="ecgCanvas" class="w-full h-full block"></canvas>
                 </div>
             </div>
 
-            <!-- 2. SpO2 PLETHYSMOGRAM WAVEFORM (Deep Medical Cyan/Blue) -->
-            <div class="flex-1 flex flex-col min-h-0 py-1 border-b border-slate-100">
-                <div class="flex justify-between items-center text-xs font-bold text-sky-800 mb-0.5 shrink-0">
-                    <span class="flex items-center gap-1.5">
+            <!-- SpO2 Pleth Strip -->
+            <div class="flex items-center gap-2">
+                <div class="w-24 shrink-0">
+                    <div class="text-[10px] font-black text-sky-800 flex items-center gap-1">
                         <i class="fa-solid fa-wave-square text-sky-600"></i> SpO2 Pleth
-                        <span class="text-[10px] text-slate-400 font-normal">Puls to'lqini</span>
-                    </span>
-                    <span id="pleth-status" class="font-extrabold text-sky-700">Normal perfuziya</span>
+                    </div>
+                    <div id="pleth-status" class="text-[10px] font-bold text-sky-700 truncate">Normal</div>
                 </div>
-                <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
+                <div class="flex-1 h-[44px] rounded-lg bg-white border border-slate-200 overflow-hidden relative">
                     <canvas id="plethCanvas" class="w-full h-full block"></canvas>
                 </div>
             </div>
 
-            <!-- 3. RESPIRATION WAVEFORM (Deep Medical Amber) -->
-            <div class="flex-1 flex flex-col min-h-0 pt-1">
-                <div class="flex justify-between items-center text-xs font-bold text-amber-800 mb-0.5 shrink-0">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-lungs text-amber-600"></i> RESP (Nafas olish)
-                        <span class="text-[10px] text-slate-400 font-normal">Pneumography</span>
-                    </span>
-                    <span id="resp-status" class="font-extrabold text-amber-700">Ritmli nafas</span>
-                </div>
-                <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
-                    <canvas id="respCanvas" class="w-full h-full block"></canvas>
-                </div>
-            </div>
-
+            <!-- Hidden Resp Canvas for calculations -->
+            <canvas id="respCanvas" class="hidden" width="10" height="10"></canvas>
         </div>
 
-        <!-- RIGHT 1 COLUMN: VITAL NUMERIC BOXES (COMPACT CLINICAL WHITE CARDS) -->
-        <div class="flex flex-col justify-between gap-1.5 min-h-0 overflow-hidden">
+        <!-- Right: 4 Compact Vital Numeric Cards (HR, SpO2, NIBP, RR/Temp) -->
+        <div class="lg:col-span-4 grid grid-cols-4 gap-1.5 items-center">
             
-            <!-- HR / PULSE (Green Card) -->
-            <div class="bg-white border border-emerald-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
-                <div class="flex justify-between items-center text-emerald-800 font-bold text-xs">
-                    <span><i class="fa-solid fa-heart-pulse mr-1 text-emerald-600"></i> HR / PULS</span>
-                    <span class="text-[10px] text-slate-400">bpm</span>
+            <!-- HR -->
+            <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-1.5 text-center flex flex-col justify-between h-full">
+                <div class="text-[10px] font-extrabold text-emerald-800 flex items-center justify-between">
+                    <span>PULS</span>
+                    <span class="text-[9px] text-slate-400">bpm</span>
                 </div>
-                <div class="flex items-baseline justify-between my-0.5">
-                    <span id="num-hr" class="mono text-4xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
-                    <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
-                        <div>YUQ: 120</div>
-                        <div>PAS: 50</div>
-                    </div>
-                </div>
-                <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-0.5">
-                    <span>Kompressiyalar: <span id="num-count" class="font-bold text-emerald-700">0</span></span>
-                    <span>Puls: Normal</span>
-                </div>
+                <div id="num-hr" class="mono text-3xl font-black text-emerald-600 my-0.5 leading-none">75</div>
+                <div class="text-[9px] text-emerald-700 font-bold">50 - 120</div>
             </div>
 
-            <!-- SpO2 (Blue Card) -->
-            <div class="bg-white border border-sky-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
-                <div class="flex justify-between items-center text-sky-800 font-bold text-xs">
-                    <span><i class="fa-solid fa-droplet mr-1 text-sky-600"></i> SpO2 (Kislorod)</span>
-                    <span class="text-[10px] text-slate-400">%</span>
+            <!-- SpO2 -->
+            <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-1.5 text-center flex flex-col justify-between h-full">
+                <div class="text-[10px] font-extrabold text-sky-800 flex items-center justify-between">
+                    <span>SpO2</span>
+                    <span class="text-[9px] text-slate-400">%</span>
                 </div>
-                <div class="flex items-baseline justify-between my-0.5">
-                    <span id="num-spo2" class="mono text-4xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
-                    <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
-                        <div>PI: 4.2%</div>
-                        <div>PAS: 90%</div>
-                    </div>
-                </div>
-                <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-0.5">
-                    <span>Puls: <span id="num-pr" class="font-bold text-sky-700">75</span></span>
-                    <span>Signal: Kuchli</span>
-                </div>
+                <div id="num-spo2" class="mono text-3xl font-black text-sky-600 my-0.5 leading-none">98</div>
+                <div class="text-[9px] text-sky-700 font-bold">Puls: <span id="num-pr">75</span></div>
             </div>
 
-            <!-- NIBP (Blood Pressure Card) -->
-            <div class="bg-white border border-slate-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
-                <div class="flex justify-between items-center text-slate-800 font-bold text-xs">
-                    <span><i class="fa-solid fa-gauge-high mr-1 text-indigo-600"></i> NIBP (Davleniya)</span>
-                    <span class="text-[10px] text-slate-400">mmHg</span>
+            <!-- NIBP -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5 text-center flex flex-col justify-between h-full">
+                <div class="text-[10px] font-extrabold text-slate-800 flex items-center justify-between">
+                    <span>NIBP</span>
+                    <span class="text-[9px] text-slate-400">mmHg</span>
                 </div>
-                <div class="flex items-baseline justify-between my-0.5">
-                    <div class="text-slate-800 font-black leading-none">
-                        <span id="num-sys" class="mono text-2xl lg:text-3xl font-black">120</span>
-                        <span class="text-slate-400 text-lg">/</span>
-                        <span id="num-dia" class="mono text-2xl lg:text-3xl font-black">80</span>
-                    </div>
-                    <div class="text-right text-[11px] text-slate-600 font-bold">
-                        MAP: <span id="num-map" class="text-emerald-700">93</span>
-                    </div>
+                <div class="mono font-black text-slate-800 leading-none my-0.5">
+                    <span id="num-sys" class="text-xl">120</span><span class="text-xs text-slate-400">/</span><span id="num-dia" class="text-base">80</span>
                 </div>
-                <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-0.5">
-                    <span>Avto: 15min</span>
-                    <span>Holat: Barqaror</span>
-                </div>
+                <div class="text-[9px] text-slate-600 font-bold">MAP: <span id="num-map" class="text-emerald-700">93</span></div>
             </div>
 
-            <!-- RR & TEMP (Mini Split Card) -->
-            <div class="grid grid-cols-2 gap-1.5">
-                <div class="bg-white border border-amber-300 rounded-xl p-1.5 text-center shadow-xs flex flex-col justify-between">
-                    <div class="text-[10px] font-bold text-amber-800 flex items-center justify-between">
-                        <span><i class="fa-solid fa-lungs mr-0.5 text-amber-600"></i> RR</span>
-                        <span class="text-slate-400">rpm</span>
-                    </div>
-                    <span id="num-rr" class="mono text-2xl font-black text-amber-600 my-0.5">16</span>
-                    <div class="text-[9px] text-slate-400">Ritmli nafas</div>
+            <!-- RR & TEMP -->
+            <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-1.5 text-center flex flex-col justify-between h-full">
+                <div class="text-[10px] font-extrabold text-amber-800 flex items-center justify-between">
+                    <span>RESP</span>
+                    <span class="text-[9px] text-slate-400">rpm</span>
                 </div>
-
-                <div class="bg-white border border-purple-300 rounded-xl p-1.5 text-center shadow-xs flex flex-col justify-between">
-                    <div class="text-[10px] font-bold text-purple-800 flex items-center justify-between">
-                        <span><i class="fa-solid fa-temperature-three-quarters mr-0.5 text-purple-600"></i> TEMP</span>
-                        <span class="text-slate-400">°C</span>
-                    </div>
-                    <span id="num-temp" class="mono text-2xl font-black text-purple-600 my-0.5">36.6</span>
-                    <div class="text-[9px] text-slate-400">T1 Teri</div>
-                </div>
+                <div id="num-rr" class="mono text-2xl font-black text-amber-600 my-0.5 leading-none">16</div>
+                <div class="text-[9px] text-purple-700 font-bold"><span id="num-temp">36.6</span>°C</div>
             </div>
 
         </div>
+
     </div>
 
-    <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (NO COMPRESSOR / PURE SIMULATOR) -->
-    <footer class="bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs shrink-0 flex flex-wrap items-center justify-between gap-1.5 text-xs">
-        <div class="flex items-center gap-1.5 text-slate-700 font-bold">
-            <i class="fa-solid fa-stethoscope text-indigo-600"></i>
-            <span>Klinik Ssenariylar:</span>
+    <!-- 3. PROMINENT & LARGE CPR & REANIMATSIYA ARENA (MAIN STAGE / TAKES MAXIMUM SPACE) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-3 my-0.5 shadow-xs flex-1 flex flex-col justify-between min-h-0 overflow-hidden">
+        
+        <!-- Top Title Bar with Stage & Cycle Status -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200 shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center font-black shadow-xs">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-black text-slate-900 leading-none uppercase tracking-wide">YURAK-O'PKA REANIMATSIYASI (CPR) BOSHQARUVI</h2>
+                    <span class="text-xs font-semibold text-slate-500">Standart: 30 ta kompressiya va 2 ta to'g'ri nafas sikli</span>
+                </div>
+            </div>
+
+            <!-- Stage Badge -->
+            <div id="cpr-stage-badge" class="px-3 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1.5 shadow-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                <span>0-BOSQICH: BEMOR ASISTOLIYADA (CPR KUTILMOQDA)</span>
+            </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-1.5">
+        <!-- Middle 3 Big Columns: (A: Large Force Meter | B: 30:2 Cycle Hub | C: Airway & Adrenalin) -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 my-1 flex-1 min-h-0 items-stretch">
+            
+            <!-- COLUMN A (4 cols): LARGE COMPRESSION FORCE METER -->
+            <div class="md:col-span-4 bg-slate-50/80 border border-slate-200 rounded-xl p-3 flex flex-col justify-between shadow-xs">
+                <div class="flex justify-between items-center text-xs font-black text-slate-700">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-hand-fist text-rose-600 text-sm"></i> BOSISH KUCHI (MASSAJ):
+                    </span>
+                    <button type="button" onclick="tareCprForce()" title="Boshlang'ich vaznni 0 qilish (Tare)" class="py-1 px-2 bg-white hover:bg-slate-100 text-slate-700 rounded-lg border border-slate-300 text-xs font-bold cursor-pointer active:scale-95 transition flex items-center gap-1 shadow-xs">
+                        <i class="fa-solid fa-scale-balanced text-rose-600"></i> ⚖️ 0 Qilish (Tare)
+                    </button>
+                </div>
+
+                <!-- Big Value Display & Verdict Pill -->
+                <div class="flex items-baseline justify-between my-2">
+                    <div id="cpr-force-val" class="mono text-5xl lg:text-6xl font-black text-rose-600 tracking-tight">0.0 kg</div>
+                    <div class="text-right">
+                        <div id="cpr-eval-verdict" class="px-2.5 py-1 rounded-lg text-xs font-black bg-slate-200 text-slate-700 shadow-xs">
+                            BOSISHGA TAYYOR
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-bold mt-0.5">Jami: <span id="num-count" class="text-rose-600 font-extrabold text-xs">0</span> ta zarba</div>
+                    </div>
+                </div>
+
+                <!-- Big Visual Force Bar -->
+                <div>
+                    <div class="w-full bg-slate-200 rounded-xl h-6 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
+                        <div id="cpr-force-bar" class="bg-rose-500 h-full rounded-lg transition-all duration-75" style="width: 0%;"></div>
+                        <!-- Target zone overlay (38 - 55 kg = 63% to 91%) -->
+                        <div class="absolute inset-y-0 left-[63%] w-[28%] bg-emerald-500/25 border-x-2 border-emerald-500 pointer-events-none flex items-center justify-center">
+                            <span class="text-[9px] font-black text-emerald-900 tracking-wider">ME'YOR (38-55 kg)</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-500 mt-1">
+                        <span>0 kg (Bo'sh)</span>
+                        <span class="text-emerald-700">Target: 5 - 6 sm chuqurlik</span>
+                        <span>60 kg (Max)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMN B (5 cols): 30:2 CYCLE HUB & REAL-TIME QUALITY -->
+            <div class="md:col-span-5 bg-indigo-50/50 border border-indigo-200 rounded-xl p-3 flex flex-col justify-between shadow-xs">
+                <div class="flex justify-between items-center text-xs font-black text-indigo-900">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate text-indigo-600 text-sm"></i> 30:2 REANIMATSIYA SIKLI:
+                    </span>
+                    <span id="cpr-rate-badge" class="px-2 py-0.5 rounded text-xs font-bold bg-white text-indigo-800 border border-indigo-200">
+                        100 - 120 /min me'yor
+                    </span>
+                </div>
+
+                <!-- Giant Cycle Counters & Prompt -->
+                <div class="grid grid-cols-2 gap-2 my-1">
+                    <div class="bg-white border border-indigo-200 rounded-xl p-2 text-center shadow-xs">
+                        <div class="text-[11px] font-extrabold text-slate-500 uppercase">Ko'krak Massaji</div>
+                        <div class="flex items-baseline justify-center gap-1">
+                            <span id="cpr-cycle-comps" class="mono text-4xl lg:text-5xl font-black text-indigo-600">0</span>
+                            <span class="text-sm font-bold text-slate-400">/ 30</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-sky-200 rounded-xl p-2 text-center shadow-xs">
+                        <div class="text-[11px] font-extrabold text-slate-500 uppercase">Sun'iy Nafas</div>
+                        <div class="flex items-baseline justify-center gap-1">
+                            <span id="cpr-cycle-vents" class="mono text-4xl lg:text-5xl font-black text-sky-600">0</span>
+                            <span class="text-sm font-bold text-slate-400">/ 2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Big Prompt Banner -->
+                <div id="cpr-cycle-badge" class="py-1 px-2 rounded-lg text-center text-xs font-black bg-indigo-100 text-indigo-900 border border-indigo-300">
+                    SIKLNI BOSHLANG: 30 TA TO'G'RI ZARBA BERING
+                </div>
+
+                <!-- 4 Real-time Quality Chips -->
+                <div class="grid grid-cols-4 gap-1.5 mt-1 text-[10px] font-bold">
+                    <div id="badge-d" class="p-1 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs">Chuqurlik: -</div>
+                    <div id="badge-r" class="p-1 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs">Bo'shatish: -</div>
+                    <div id="badge-bpm" class="p-1 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs">Tezlik: -</div>
+                    <div id="badge-pos" class="p-1 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs">Joyi: -</div>
+                </div>
+            </div>
+
+            <!-- COLUMN C (3 cols): AIRWAY VENTILATION & INJECTION ACTION -->
+            <div class="md:col-span-3 bg-sky-50/50 border border-sky-200 rounded-xl p-3 flex flex-col justify-between shadow-xs">
+                <div class="flex justify-between items-center text-xs font-black text-sky-900">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-lungs text-sky-600 text-sm"></i> O'PKA BOSIMI:
+                    </span>
+                    <span id="cpr-bpm-val" class="mono font-black text-emerald-700 text-xs">0 /min</span>
+                </div>
+
+                <!-- Big Lung Value Display -->
+                <div class="flex items-baseline justify-between my-1">
+                    <div id="lung-p-val" class="mono text-4xl lg:text-5xl font-black text-sky-600">0.0 kPa</div>
+                    <div id="stomach-alert" class="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-slate-600 border border-slate-200">
+                        Oshqozon toza
+                    </div>
+                </div>
+
+                <!-- Lung Bar -->
+                <div>
+                    <div class="w-full bg-slate-200 rounded-xl h-5 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
+                        <div id="lung-p-bar" class="bg-sky-500 h-full rounded-lg transition-all duration-75" style="width: 0%;"></div>
+                        <div class="absolute inset-y-0 left-[32%] w-[56%] bg-sky-400/20 border-x border-sky-500 pointer-events-none flex items-center justify-center">
+                            <span class="text-[8px] font-black text-sky-900">ME'YOR (0.8-2.2 kPa)</span>
+                        </div>
+                    </div>
+                    <div id="lung-status-text" class="text-[10px] text-sky-700 font-bold mt-1 text-center">
+                        Me'yor: 0.8 - 2.2 kPa
+                    </div>
+                </div>
+
+                <div class="hidden"><span id="stomach-p-val">0.0</span></div>
+
+                <!-- Big Interactive Injection (Adrenalin) Button -->
+                <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-1 w-full py-2 px-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95">
+                    <i class="fa-solid fa-syringe text-sm"></i> 💉 ADRENALIN 1mg (UKOL)
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (COMPACT ~36px) -->
+    <footer class="bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs shrink-0 flex flex-wrap items-center justify-between gap-1 text-xs">
+        <div class="flex items-center gap-1.5 text-slate-700 font-bold">
+            <i class="fa-solid fa-stethoscope text-indigo-600"></i>
+            <span>Ssenariylar:</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1">
             <button onclick="setScenario('normal')" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
                 <i class="fa-solid fa-heart text-emerald-600"></i> 🟢 Normal (75)
             </button>
@@ -587,7 +602,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         let cprCycleCorrectComps = 0;
         let cprCycleVents = 0;
         let cprCycleCorrectVents = 0;
-        let cprRevivalStage = 0; // 0: Asistoliya/To'xtash, 1: Ozroq jonlanish (20+ BPM), 2: To'liq o'ziga kelish (ROSC)
+        let cprRevivalStage = 0; // 0: Asistoliya, 1: Ozroq jonlanish (22 BPM), 2: To'liq o'ziga kelish (ROSC)
 
         function processCPRStroke(forceKg) {
             const now = Date.now();
@@ -641,14 +656,23 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function updateCycleHUD() {
             const badge = document.getElementById("cpr-cycle-badge");
+            const compsEl = document.getElementById("cpr-cycle-comps");
+            const ventsEl = document.getElementById("cpr-cycle-vents");
+
+            if (compsEl) compsEl.innerText = cprCycleComps;
+            if (ventsEl) ventsEl.innerText = cprCycleVents;
+
             if (!badge) return;
 
             if (cprCycleComps >= 30 && cprCycleVents < 2) {
-                badge.innerText = `30 ZARBA TUGADI! 🫁 2 TA NAFAS BERING!`;
-                badge.className = "text-xs mono font-black text-amber-600 alarm-blink";
+                badge.innerText = `🫁 30 ZARBA BO'LDI! ENDI 2 TA NAFAS BERING!`;
+                badge.className = "py-1 px-2 rounded-lg text-center text-xs font-black bg-amber-500 text-white alarm-blink shadow-md";
+            } else if (cprCycleVents >= 2) {
+                badge.innerText = `✅ SIKL YAKUNLANDI (Baholanmoqda...)`;
+                badge.className = "py-1 px-2 rounded-lg text-center text-xs font-black bg-emerald-600 text-white shadow-md";
             } else {
-                badge.innerText = `${cprCycleComps}/30 zarba | ${cprCycleVents}/2 nafas`;
-                badge.className = "text-xs mono font-black text-indigo-700";
+                badge.innerText = `SIKL: ${cprCycleComps}/30 ZARBA | ${cprCycleVents}/2 NAFAS`;
+                badge.className = "py-1 px-2 rounded-lg text-center text-xs font-black bg-indigo-100 text-indigo-900 border border-indigo-300";
             }
         }
 
@@ -675,6 +699,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (valEl) valEl.innerText = "0.0 kg";
             const bar = document.getElementById("cpr-force-bar");
             if (bar) bar.style.width = "0%";
+            const verd = document.getElementById("cpr-eval-verdict");
+            if (verd) {
+                verd.innerText = "NOLGA SOZLANDI";
+                verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-100 text-emerald-800 shadow-xs";
+            }
         }
 
         // ==================== PROCESS INCOMING ESP32 JSON ====================
@@ -682,7 +711,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             const rawF = parseFloat(data.force !== undefined ? data.force : (data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0)));
             lastRawMonitorForce = rawF;
 
-            // Boshlang'ich vaznni 0 deb olish (Boshida tinch turganda avtomatik nolga sozlaydi)
+            // Boshlang'ich vaznni 0 deb olish
             if (!monitorTareCaptured) {
                 if (rawF < 15.0) {
                     monitorTareSamples.push(rawF);
@@ -717,24 +746,41 @@ HTML_CONTENT = """<!DOCTYPE html>
             const bpmOk = data.bpm_ok !== undefined ? Boolean(data.bpm_ok) : lastRateOk;
             const posOk = posBtn;
 
-            // 1. Force Bar yangilash
+            // 1. Force Bar va Verdict
             document.getElementById("cpr-force-val").innerText = `${fCurr.toFixed(1)} kg`;
             const forcePct = Math.min(100, (fCurr / 60.0) * 100);
             const forceBar = document.getElementById("cpr-force-bar");
             forceBar.style.width = `${forcePct}%`;
 
+            const verd = document.getElementById("cpr-eval-verdict");
             if (fCurr >= 38.0 && fCurr <= 55.0) {
-                forceBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-emerald-600 font-extrabold text-sm";
+                forceBar.className = "bg-emerald-500 h-full rounded-lg transition-all duration-75 shadow-[0_0_12px_#22c55e]";
+                document.getElementById("cpr-force-val").className = "mono text-5xl lg:text-6xl font-black text-emerald-600 tracking-tight";
+                if (verd) {
+                    verd.innerText = "✅ A'LO ZARBA (38-55 kg)";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-600 text-white shadow-sm";
+                }
             } else if (fCurr > 55.0) {
-                forceBar.className = "bg-rose-500 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-rose-600 font-extrabold text-sm";
+                forceBar.className = "bg-rose-500 h-full rounded-lg transition-all duration-75 shadow-[0_0_12px_#ef4444]";
+                document.getElementById("cpr-force-val").className = "mono text-5xl lg:text-6xl font-black text-rose-600 tracking-tight";
+                if (verd) {
+                    verd.innerText = "🚨 JUDA QATTIQ (>55 kg)";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-rose-600 text-white shadow-sm";
+                }
             } else if (fCurr > 8.0) {
-                forceBar.className = "bg-amber-500 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-amber-600 font-extrabold text-sm";
+                forceBar.className = "bg-amber-500 h-full rounded-lg transition-all duration-75";
+                document.getElementById("cpr-force-val").className = "mono text-5xl lg:text-6xl font-black text-amber-600 tracking-tight";
+                if (verd) {
+                    verd.innerText = "⚠️ SAYOZ: QATTIQROQ BOSING";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-sm";
+                }
             } else {
-                forceBar.className = "bg-slate-300 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-slate-500 font-bold text-sm";
+                forceBar.className = "bg-slate-300 h-full rounded-lg transition-all duration-75";
+                document.getElementById("cpr-force-val").className = "mono text-5xl lg:text-6xl font-black text-slate-500 tracking-tight";
+                if (verd) {
+                    verd.innerText = "BOSISHGA TAYYOR";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-slate-200 text-slate-700 shadow-xs";
+                }
             }
 
             // 2. Sifat nishonlari
@@ -747,41 +793,41 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById("cpr-bpm-val").innerText = `${bpm} /min`;
             const rateBadge = document.getElementById("cpr-rate-badge");
             if (bpm >= 100 && bpm <= 120) {
-                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 text-center";
-                rateBadge.innerText = "✅ A'lo tezlik (100-120)";
+                rateBadge.className = "px-2 py-0.5 rounded text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300";
+                rateBadge.innerText = "✅ A'lo tezlik (100-120 /min)";
             } else if (bpm > 120) {
-                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 text-center";
-                rateBadge.innerText = "⚠️ Juda tez (>120)";
+                rateBadge.className = "px-2 py-0.5 rounded text-xs font-black bg-amber-100 text-amber-800 border border-amber-300";
+                rateBadge.innerText = "⚠️ Juda tez (>120 /min)";
             } else if (bpm > 0) {
-                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 text-center";
-                rateBadge.innerText = "⚠️ Sekin (<100)";
+                rateBadge.className = "px-2 py-0.5 rounded text-xs font-black bg-amber-100 text-amber-800 border border-amber-300";
+                rateBadge.innerText = "⚠️ Sekin (<100 /min)";
             } else {
-                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center";
-                rateBadge.innerText = "Standart: 100 - 120 /min";
+                rateBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-white text-indigo-800 border border-indigo-200";
+                rateBadge.innerText = "100 - 120 /min me'yor";
             }
 
-            // 4. O'pka bosimi (Optimal me'yor: 0.8 - 2.2 kPa)
+            // 4. O'pka bosimi (0.8 - 2.2 kPa)
             document.getElementById("lung-p-val").innerText = `${lungP.toFixed(1)} kPa`;
             const lungPct = Math.min(100, (lungP / 2.5) * 100);
             document.getElementById("lung-p-bar").style.width = `${lungPct}%`;
             
             const lungStatus = document.getElementById("lung-status-text");
             if (lungP >= 0.8 && lungP <= 2.2) {
-                lungStatus.innerText = "✅ TO'G'RI NAFAS (0.8 - 2.2 kPa)";
-                lungStatus.className = "text-[9px] text-emerald-700 mt-0.5 font-bold";
+                lungStatus.innerText = "✅ TO'G'RI HAJM (0.8 - 2.2 kPa)";
+                lungStatus.className = "text-[10px] text-emerald-700 font-black mt-1 text-center";
                 if (current.spo2 < 99 && current.hr > 0) {
                     current.spo2 = Math.min(100, current.spo2 + 1);
                     updateNumericsUI();
                 }
             } else if (lungP > 2.2) {
-                lungStatus.innerText = "🚨 JUDA KUCHLI! (>2.2 kPa)";
-                lungStatus.className = "text-[9px] text-rose-600 mt-0.5 font-bold";
+                lungStatus.innerText = "🚨 JUDA KUCHLI! BAROTRAVMA (>2.2 kPa)";
+                lungStatus.className = "text-[10px] text-rose-600 font-black mt-1 text-center";
             } else if (lungP >= 0.4) {
-                lungStatus.innerText = "⚠️ Qattiqroq siqing (<0.8 kPa)";
-                lungStatus.className = "text-[9px] text-amber-700 mt-0.5 font-bold";
+                lungStatus.innerText = "⚠️ Kam havo: Qattiqroq puflang (<0.8 kPa)";
+                lungStatus.className = "text-[10px] text-amber-700 font-bold mt-1 text-center";
             } else {
                 lungStatus.innerText = "Me'yor: 0.8 - 2.2 kPa";
-                lungStatus.className = "text-[9px] text-slate-500 mt-0.5 font-semibold";
+                lungStatus.className = "text-[10px] text-slate-500 font-semibold mt-1 text-center";
             }
 
             // --- 30:2 SIKL: NAFASNI HISOBGA OLISH VA BOSQICHLI JONLANISH ---
@@ -793,14 +839,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
                 updateCycleHUD();
 
-                // Agar 30 ta bosish (yoki kamida 25 ta) va 2 ta nafas to'liq bajarilsa:
+                // 30 ta bosish (yoki kamida 25 ta) va 2 ta nafas berilganda:
                 if (cprCycleComps >= 25 && cprCycleVents >= 2) {
                     const totalActs = cprCycleComps + cprCycleVents;
                     const totalCorrect = cprCycleCorrectComps + cprCycleCorrectVents;
                     const accuracyPct = Math.round((totalCorrect / totalActs) * 100);
 
-                    // Agar aniqlik 80% dan yuqori bo'lsa -> 1-BOSQICH: OZROQ JONLANSIN (20+ BPM)!
                     if (accuracyPct >= 80) {
+                        // 1-BOSQICH: OZROQ JONLANSIN (22 BPM)!
                         cprRevivalStage = 1;
                         target.hr = 22;
                         current.hr = 22;
@@ -817,11 +863,17 @@ HTML_CONTENT = """<!DOCTYPE html>
                         stopAsystoleTone();
                         updateNumericsUI();
                         updateBanner(`🟡 1-BOSQICH (Aniqlik: ${accuracyPct}%): YURAK 22 BPM URISHNI BOSHLADI! ENDI UKOL (ADRENALIN) QILISH KERAK!`, "bg-amber-100 text-amber-900 border-amber-400 font-black");
+
+                        const stageBadge = document.getElementById("cpr-stage-badge");
+                        if (stageBadge) {
+                            stageBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-500 alarm-blink"></span><span>1-BOSQICH: YURAK 22 BPM URMOQDA (ADRENALIN KUTILMOQDA)</span>`;
+                            stageBadge.className = "px-3 py-1 rounded-xl text-xs font-black bg-amber-100 text-amber-900 border border-amber-400 flex items-center gap-1.5 shadow-sm";
+                        }
                     } else {
                         updateBanner(`⚠️ SIKL YETARLI EMAS (Aniqlik: ${accuracyPct}% < 80%). Qayta 30:2 bajaring!`, "bg-rose-100 text-rose-900 border-rose-400 font-bold");
                     }
 
-                    // Keyingi sikl uchun hisoblagichlarni yangilash
+                    // Keyingi sikl uchun yangilash
                     cprCycleComps = 0;
                     cprCycleCorrectComps = 0;
                     cprCycleVents = 0;
@@ -832,13 +884,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             // 5. Oshqozon xavfi
-            document.getElementById("stomach-p-val").innerText = `${stomachP.toFixed(1)} kPa`;
             const stomachAlert = document.getElementById("stomach-alert");
             if (stomachP > 0.8) {
-                stomachAlert.className = "px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-800 border border-rose-400 alarm-blink";
+                stomachAlert.className = "px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-400 alarm-blink";
                 stomachAlert.innerHTML = "⚠️ HAVO OSHQOZONDA!";
             } else {
-                stomachAlert.className = "px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center";
+                stomachAlert.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-white text-slate-600 border border-slate-200";
                 stomachAlert.innerHTML = "Oshqozon toza";
             }
 
@@ -848,7 +899,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (injBtn) {
                 injBanner.classList.remove("hidden");
                 if (injBtnEl) {
-                    injBtnEl.className = "mt-1 w-full py-0.5 px-1.5 rounded bg-purple-600 text-white font-black text-[10px] flex items-center justify-center gap-1 shadow-sm alarm-blink";
+                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-xl bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 alarm-blink";
                 }
                 
                 const flash = document.getElementById("flash-overlay");
@@ -862,11 +913,17 @@ HTML_CONTENT = """<!DOCTYPE html>
                     transitionSteps = 45;
                     stopAsystoleTone();
                     updateBanner("🟢 2-BOSQICH: UKOL QILINDI VA BEMOR TO'LIQ O'ZIGA KELDI (ROSC - 75 BPM)!", "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+
+                    const stageBadge = document.getElementById("cpr-stage-badge");
+                    if (stageBadge) {
+                        stageBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span>2-BOSQICH: BEMOR TO'LIQ O'ZIGA KELDI (BARQAROR 75 BPM)</span>`;
+                        stageBadge.className = "px-3 py-1 rounded-xl text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-400 flex items-center gap-1.5 shadow-sm";
+                    }
                 }
             } else {
                 injBanner.classList.add("hidden");
                 if (injBtnEl) {
-                    injBtnEl.className = "mt-1 w-full py-0.5 px-1.5 rounded bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 font-bold text-[10px] flex items-center justify-center gap-1 transition cursor-pointer active:scale-95 shadow-xs";
+                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95";
                 }
             }
         }
@@ -892,14 +949,15 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function updateQualityBadge(id, label, isOk, isActive) {
             const el = document.getElementById(id);
+            if (!el) return;
             if (!isActive) {
-                el.className = "px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-500 text-center font-bold";
+                el.className = "p-1 rounded bg-white border border-slate-200 text-slate-500 text-center font-bold shadow-xs";
                 el.innerText = `${label}: -`;
             } else if (isOk) {
-                el.className = "px-1 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-center font-bold";
+                el.className = "p-1 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-center font-black shadow-xs";
                 el.innerText = `${label}: ✅`;
             } else {
-                el.className = "px-1 py-0.5 rounded bg-rose-100 border border-rose-300 text-rose-800 text-center font-bold";
+                el.className = "p-1 rounded bg-rose-100 border border-rose-300 text-rose-800 text-center font-black shadow-xs";
                 el.innerText = `${label}: ❌`;
             }
         }
@@ -935,6 +993,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             totalSteps = 120;
             transitionSteps = totalSteps;
 
+            const stageBadge = document.getElementById("cpr-stage-badge");
+
             if (type === "dying") {
                 target.hr = 0; target.spo2 = 0; target.sys = 0; target.dia = 0; target.rr = 0;
                 current.hr = 0; current.spo2 = 0; current.sys = 0; current.dia = 0; current.rr = 0;
@@ -943,6 +1003,10 @@ HTML_CONTENT = """<!DOCTYPE html>
                 totalSteps = 0;
                 updateNumericsUI();
                 updateBanner("🚨 ASISTOLIYA: YURAK TO'XTADI (0 BPM)! CPR (30:2) TALAB QILINADI!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
+                if (stageBadge) {
+                    stageBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 alarm-blink"></span><span>0-BOSQICH: BEMOR ASISTOLIYADA (0 BPM - CPR TALAB QILINADI)</span>`;
+                    stageBadge.className = "px-3 py-1 rounded-xl text-xs font-black bg-rose-100 text-rose-900 border border-rose-400 flex items-center gap-1.5 shadow-sm";
+                }
                 startAsystoleTone();
                 return;
             }
@@ -950,6 +1014,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (type === "normal") {
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                 updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-100 text-emerald-900 border-emerald-300 font-bold");
+                if (stageBadge) {
+                    stageBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span>STATUS: BARQAROR NORMAL (75 BPM)</span>`;
+                    stageBadge.className = "px-3 py-1 rounded-xl text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-400 flex items-center gap-1.5 shadow-sm";
+                }
                 stopAsystoleTone();
             } else if (type === "attack") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
@@ -1038,31 +1106,30 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             const rhythmLabel = document.getElementById("ecg-rhythm-name");
             if (hrVal <= 0) {
-                rhythmLabel.innerText = "ASYSTOLIYA (Yurak to'xtadi)";
-                rhythmLabel.className = "text-rose-600 font-extrabold alarm-blink";
+                rhythmLabel.innerText = "ASYSTOLIYA (0 BPM)";
+                rhythmLabel.className = "text-[10px] font-black text-rose-600 alarm-blink truncate";
             } else if (hrVal <= 35) {
-                rhythmLabel.innerText = "Sekin Bradikardiya (Tiklanmoqda)";
-                rhythmLabel.className = "text-amber-600 font-bold";
+                rhythmLabel.innerText = "Bradikardiya (22 BPM)";
+                rhythmLabel.className = "text-[10px] font-black text-amber-600 truncate";
             } else if (hrVal > 150) {
-                rhythmLabel.innerText = "Ventrikulyar Taxikardiya";
-                rhythmLabel.className = "text-amber-600 font-bold";
+                rhythmLabel.innerText = "Taxikardiya";
+                rhythmLabel.className = "text-[10px] font-black text-amber-600 truncate";
             } else {
                 rhythmLabel.innerText = "Sinus Ritmi";
-                rhythmLabel.className = "text-emerald-700 font-bold";
+                rhythmLabel.className = "text-[10px] font-bold text-emerald-700 truncate";
             }
         }
 
-        // ==================== CANVAS OSCILLOSCOPES (WHITE MEDICAL DAY-MODE) ====================
+        // ==================== CANVAS OSCILLOSCOPES (COMPACT WHITE CLINICAL) ====================
         const ecgCanvas = document.getElementById("ecgCanvas");
         const plethCanvas = document.getElementById("plethCanvas");
-        const respCanvas = document.getElementById("respCanvas");
 
         const ecgCtx = ecgCanvas.getContext("2d");
         const plethCtx = plethCanvas.getContext("2d");
-        const respCtx = respCanvas.getContext("2d");
 
         function resizeCanvases() {
-            [ecgCanvas, plethCanvas, respCanvas].forEach(c => {
+            [ecgCanvas, plethCanvas].forEach(c => {
+                if (!c) return;
                 c.width = c.clientWidth * (window.devicePixelRatio || 1) || c.clientWidth;
                 c.height = c.clientHeight * (window.devicePixelRatio || 1) || c.clientHeight;
             });
@@ -1072,15 +1139,12 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         let ecgX = 0;
         let plethX = 0;
-        let respX = 0;
 
         let ecgPhase = 0;
         let plethPhase = 0;
-        let respPhase = 0;
 
         let lastEcgY = null;
         let lastPlethY = null;
-        let lastRespY = null;
 
         function getECGY(phase, hr) {
             if (hr <= 0) return 0;
@@ -1109,28 +1173,20 @@ HTML_CONTENT = """<!DOCTYPE html>
             return (Math.cos(((p - 0.55) / 0.45) * (Math.PI / 2)) * 0.4) * amp;
         }
 
-        function getRespY(phase, rr) {
-            if (rr <= 0) return 0;
-            return Math.sin(phase * Math.PI * 2) * 0.75;
-        }
-
         function animate() {
             const hr = current.hr;
             const spo2 = current.spo2;
-            const rr = current.rr;
 
             const w = ecgCanvas.width;
             const hEcg = ecgCanvas.height;
             const hPleth = plethCanvas.height;
-            const hResp = respCanvas.height;
 
-            const sweepSpeed = 2.2 * (window.devicePixelRatio || 1);
-            const eraseWidth = 24 * (window.devicePixelRatio || 1);
+            const sweepSpeed = 2.0 * (window.devicePixelRatio || 1);
+            const eraseWidth = 20 * (window.devicePixelRatio || 1);
 
             const bps = hr / 60;
             ecgPhase += (bps / 60);
             plethPhase += (bps / 60);
-            respPhase += ((rr / 60) / 60);
 
             const currentP = ecgPhase % 1.0;
             if (currentP >= 0.33 && currentP < 0.38) {
@@ -1141,18 +1197,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
             }
 
-            // 1. ECG (White background, Crisp Medical Green #16a34a)
+            // 1. ECG (Crisp Medical Green #16a34a)
             const nextEcgX = (ecgX + sweepSpeed) % w;
             ecgCtx.fillStyle = "#ffffff";
             ecgCtx.fillRect(nextEcgX, 0, eraseWidth, hEcg);
 
             const ecgVal = getECGY(ecgPhase, hr);
             const midEcg = hEcg / 2;
-            const curEcgY = midEcg - (ecgVal * (hEcg * 0.42));
+            const curEcgY = midEcg - (ecgVal * (hEcg * 0.44));
 
             if (lastEcgY !== null && nextEcgX > ecgX) {
                 ecgCtx.strokeStyle = "#16a34a";
-                ecgCtx.lineWidth = 2.4 * (window.devicePixelRatio || 1);
+                ecgCtx.lineWidth = 2.2 * (window.devicePixelRatio || 1);
                 ecgCtx.beginPath();
                 ecgCtx.moveTo(ecgX, lastEcgY);
                 ecgCtx.lineTo(nextEcgX, curEcgY);
@@ -1161,17 +1217,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             ecgX = nextEcgX;
             lastEcgY = curEcgY;
 
-            // 2. SpO2 Pleth (White background, Deep Medical Cyan #0284c7)
+            // 2. SpO2 Pleth (Deep Medical Cyan #0284c7)
             const nextPlethX = (plethX + sweepSpeed) % w;
             plethCtx.fillStyle = "#ffffff";
             plethCtx.fillRect(nextPlethX, 0, eraseWidth, hPleth);
 
             const plethVal = getPlethY(plethPhase, hr, spo2);
-            const curPlethY = hPleth - 8 - (plethVal * (hPleth * 0.8));
+            const curPlethY = hPleth - 6 - (plethVal * (hPleth * 0.78));
 
             if (lastPlethY !== null && nextPlethX > plethX) {
                 plethCtx.strokeStyle = "#0284c7";
-                plethCtx.lineWidth = 2.2 * (window.devicePixelRatio || 1);
+                plethCtx.lineWidth = 2.0 * (window.devicePixelRatio || 1);
                 plethCtx.beginPath();
                 plethCtx.moveTo(plethX, lastPlethY);
                 plethCtx.lineTo(nextPlethX, curPlethY);
@@ -1179,26 +1235,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
             plethX = nextPlethX;
             lastPlethY = curPlethY;
-
-            // 3. RESP (White background, Deep Medical Amber #d97706)
-            const nextRespX = (respX + sweepSpeed) % w;
-            respCtx.fillStyle = "#ffffff";
-            respCtx.fillRect(nextRespX, 0, eraseWidth, hResp);
-
-            const respVal = getRespY(respPhase, rr);
-            const midResp = hResp / 2;
-            const curRespY = midResp - (respVal * (hResp * 0.38));
-
-            if (lastRespY !== null && nextRespX > respX) {
-                respCtx.strokeStyle = "#d97706";
-                respCtx.lineWidth = 2.2 * (window.devicePixelRatio || 1);
-                respCtx.beginPath();
-                respCtx.moveTo(respX, lastRespY);
-                respCtx.lineTo(nextRespX, curRespY);
-                respCtx.stroke();
-            }
-            respX = nextRespX;
-            lastRespY = curRespY;
 
             requestAnimationFrame(animate);
         }
@@ -1216,7 +1252,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // ==================== PWA INSTALL (SENSORLI KIOSK) ====================
+        // PWA Install
         let deferredPromptVital = null;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
