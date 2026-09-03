@@ -54,7 +54,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
 
         <div class="flex items-center gap-3">
             <!-- SOUND TOGGLE -->
-            <button id="sound-btn" onclick="toggleSound()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold flex items-center gap-2 text-emerald-400 transition">
+            <button id="sound-btn" onclick="toggleSound()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold flex items-center gap-2 text-emerald-400 transition cursor-pointer">
                 <i id="sound-icon" class="fa-solid fa-volume-high"></i>
                 <span id="sound-text" class="hidden sm:inline">Ovoz Yoniq</span>
             </button>
@@ -138,27 +138,27 @@ INTUBATION_HTML = """<!DOCTYPE html>
                 </div>
                 <div>
                     <h3 id="diag-title" class="text-base font-bold text-slate-200">Signal kutilmoqda</h3>
-                    <p id="diag-detail" class="text-xs text-slate-400 mt-1">Hozircha sensorlardan ma'lumot kelmayapti. Arduino portini ulang yoki Demo rejimini bosing.</p>
+                    <p id="diag-detail" class="text-xs text-slate-400 mt-1">Hozircha sensorlardan ma'lumot kelmayapti. Arduino portini ulang, Demo rejimni bosing yoki pastdagi sinov tugmalaridan foydalaning.</p>
                 </div>
             </div>
 
-            <!-- LIVE SENSOR VALUES READOUT -->
+            <!-- LIVE SENSOR VALUES READOUT & MANUAL TEST BUTTONS -->
             <div class="grid grid-cols-3 gap-3">
-                <div id="card-teeth" class="rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-center transition">
-                    <p class="text-[11px] text-slate-400 font-medium">Tish Sensori</p>
+                <button onclick="triggerManualSensor('teeth')" class="rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-rose-950/40 hover:border-rose-500/50 p-3 text-center transition cursor-pointer active:scale-95">
+                    <p class="text-[11px] text-slate-400 font-medium">Tish Sensori (Sinov)</p>
                     <p id="val-teeth" class="text-xl font-bold mono text-slate-200 mt-0.5">0</p>
                     <span id="st-teeth" class="text-[10px] uppercase font-bold text-slate-500">jim</span>
-                </div>
-                <div id="card-trachea" class="rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-center transition">
+                </button>
+                <button onclick="triggerManualSensor('trachea')" class="rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-sky-950/40 hover:border-sky-500/50 p-3 text-center transition cursor-pointer active:scale-95">
                     <p class="text-[11px] text-slate-400 font-medium">Traxeya (O'pka)</p>
                     <p id="val-trachea" class="text-xl font-bold mono text-slate-200 mt-0.5">0</p>
                     <span id="st-trachea" class="text-[10px] uppercase font-bold text-slate-500">jim</span>
-                </div>
-                <div id="card-esophagus" class="rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-center transition">
-                    <p class="text-[11px] text-slate-400 font-medium">Qizilo'ngach</p>
+                </button>
+                <button onclick="triggerManualSensor('esophagus')" class="rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-amber-950/40 hover:border-amber-500/50 p-3 text-center transition cursor-pointer active:scale-95">
+                    <p class="text-[11px] text-slate-400 font-medium">Qizilo'ngach (Sinov)</p>
                     <p id="val-esophagus" class="text-xl font-bold mono text-slate-200 mt-0.5">0</p>
                     <span id="st-esophagus" class="text-[10px] uppercase font-bold text-slate-500">jim</span>
-                </div>
+                </button>
             </div>
 
         </div>
@@ -205,7 +205,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
                     <h4 class="text-xs font-bold text-slate-300 flex items-center gap-2">
                         <i class="fa-solid fa-film text-purple-400"></i> To'g'ri Intubatsiya Namuna Videosi
                     </h4>
-                    <button onclick="toggleVideo()" class="text-[11px] text-slate-400 hover:text-white transition">
+                    <button onclick="toggleVideo()" class="text-[11px] text-slate-400 hover:text-white transition cursor-pointer">
                         <span id="vid-btn-txt">Yashirish</span>
                     </button>
                 </div>
@@ -222,7 +222,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
                     <h4 class="text-xs font-bold text-slate-300 flex items-center gap-2">
                         <i class="fa-solid fa-terminal text-emerald-400"></i> Serial Ma'lumotlar Logi
                     </h4>
-                    <button onclick="clearLogs()" class="text-[11px] text-slate-400 hover:text-rose-400 transition flex items-center gap-1">
+                    <button onclick="clearLogs()" class="text-[11px] text-slate-400 hover:text-rose-400 transition flex items-center gap-1 cursor-pointer">
                         <i class="fa-solid fa-trash"></i> Tozalash
                     </button>
                 </div>
@@ -277,7 +277,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
                 } catch (e) { return null; }
             }
 
-            const pairs = [...text.matchAll(/([a-zA-Z_\u0400-\u04FF']+)\s*[:=]\s*(-?\d+(?:\.\d+)?)/g)];
+            const pairs = [...text.matchAll(/([a-zA-Z_\\u0400-\\u04FF']+)\\s*[:=]\\s*(-?\\d+(?:\\.\\d+)?)/g)];
             if (pairs.length) {
                 const out = {};
                 for (let m of pairs) {
@@ -287,7 +287,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
                 return Object.keys(out).length ? out : null;
             }
 
-            const nums = text.split(/[,;\s]+/).map(Number);
+            const nums = text.split(/[,;\\s]+/).map(Number);
             if (nums.length >= 3 && nums.slice(0, 3).every(n => Number.isFinite(n))) {
                 return { teeth: nums[0], esophagus: nums[1], trachea: nums[2] };
             }
@@ -465,11 +465,11 @@ INTUBATION_HTML = """<!DOCTYPE html>
             if (soundEnabled) {
                 icon.className = "fa-solid fa-volume-high";
                 txt.innerText = "Ovoz Yoniq";
-                btn.className = "px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold flex items-center gap-2 text-emerald-400 transition";
+                btn.className = "px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold flex items-center gap-2 text-emerald-400 transition cursor-pointer";
             } else {
                 icon.className = "fa-solid fa-volume-xmark";
                 txt.innerText = "Ovoz O'chiq";
-                btn.className = "px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold flex items-center gap-2 text-slate-500 transition";
+                btn.className = "px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold flex items-center gap-2 text-slate-500 transition cursor-pointer";
                 stopAllAudio();
             }
         }
@@ -501,6 +501,13 @@ INTUBATION_HTML = """<!DOCTYPE html>
             }, 6500);
         }
 
+        // SENSOR TEST MANUAL BUTTON HANDLER
+        function triggerManualSensor(sensorKey) {
+            logSerial(`[SINOV] ${sensorKey} sensori bosildi`);
+            const updateObj = { [sensorKey]: 1 };
+            updateState(updateObj);
+        }
+
         // WEB SERIAL CONNECT
         async function toggleConnect() {
             if (isConnected) {
@@ -509,16 +516,19 @@ INTUBATION_HTML = """<!DOCTYPE html>
             }
             if (!("serial" in navigator)) {
                 alert("Bu brauzer Web Serial API'ni qo'llab-quvvatlamaydi. Iltimos Google Chrome yoki Microsoft Edge ishlating.");
+                logSerial("[XATO] Brauzer Web Serial API-ni qo'llab-quvvatlamaydi.");
                 return;
             }
 
             try {
                 const baud = Number(document.getElementById('baud-select').value) || 9600;
+                logSerial(`[ULANISH] COM Port so'ralmoqda (Baud: ${baud})...`);
                 port = await navigator.serial.requestPort();
                 await port.open({ baudRate: baud });
                 
                 isConnected = true;
                 updateStatus("connected", "Ulangan");
+                logSerial("✅ Arduino COM porti muvaffaqiyatli ulandi!");
 
                 const decoder = new TextDecoderStream();
                 port.readable.pipeTo(decoder.writable);
@@ -541,6 +551,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
                 }
             } catch (e) {
                 console.error("Serial error:", e);
+                logSerial(`[XATO] Port ulanmadi: ${e.message || e}`);
                 disconnectSerial();
             }
         }
@@ -550,22 +561,26 @@ INTUBATION_HTML = """<!DOCTYPE html>
             if (reader) { try { reader.cancel(); } catch(e){} reader = null; }
             if (port) { try { port.close(); } catch(e){} port = null; }
             updateStatus("disconnected", "Ulanmagan");
+            logSerial("[UZILDIS] Port ulanishi uzildi.");
         }
 
         // DEMO SCRIPT
         function toggleDemo() {
             if (isDemo) {
                 clearInterval(demoInterval);
+                demoInterval = null;
                 isDemo = false;
                 updateStatus("disconnected", "Ulanmagan");
                 document.getElementById('demo-btn').innerHTML = '<i class="fa-solid fa-circle-play text-amber-400"></i> Demo';
                 updateState({ teeth: 0, esophagus: 0, trachea: 0 });
+                logSerial("[DEMO] Demo rejim to'xtatildi.");
                 return;
             }
 
             isDemo = true;
             updateStatus("demo", "Demo Rejim");
-            document.getElementById('demo-btn').innerHTML = '<i class="fa-solid fa-circle-stop text-rose-400"></i> To'xtatish';
+            document.getElementById('demo-btn').innerHTML = '<i class="fa-solid fa-circle-stop text-rose-400"></i> To&apos;xtatish';
+            logSerial("[DEMO] Demo rejim ishga tushdi! (Ssenariy o'ynamoqda...)");
 
             const demoSteps = [
                 { teeth: 0, esophagus: 0, trachea: 0 },
@@ -610,6 +625,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
 
         function logSerial(msg) {
             const box = document.getElementById('log-box');
+            if (!box) return;
             const time = new Date().toLocaleTimeString();
             const p = document.createElement('p');
             p.innerText = `[${time}] ${msg}`;
