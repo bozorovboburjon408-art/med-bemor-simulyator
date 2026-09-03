@@ -424,8 +424,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <button onclick="sendManualPumpCommand('PUMP:ON', 75)" class="px-3 py-1 rounded bg-emerald-900 hover:bg-emerald-800 text-emerald-200 border border-emerald-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
                     <i class="fa-solid fa-play text-[10px]"></i> 💨 Kompressorni Yoqish
                 </button>
-                <button onclick="sendManualPumpCommand('PUMP:OFF', 0)" class="px-3 py-1 rounded bg-red-900 hover:bg-red-800 text-red-200 border border-red-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
-                    <i class="fa-solid fa-power-off text-[10px]"></i> 🛑 O'chirish
+                <button onclick="stopCompressorAndZeroBPM()" class="px-3 py-1 rounded bg-red-900 hover:bg-red-800 text-red-200 border border-red-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
+                    <i class="fa-solid fa-power-off text-[10px]"></i> 🛑 O'chirish (0 BPM)
                 </button>
                 <span class="text-slate-600">|</span>
                 <span class="text-xs text-slate-400">Puls:</span>
@@ -441,8 +441,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <button onclick="sendManualBPM(135)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-orange-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
                     135 BPM
                 </button>
-                <button onclick="sendManualPumpCommand('PUMP:OFF', 0)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    0 Asistoliya
+                <button onclick="stopCompressorAndZeroBPM()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 text-xs font-bold cursor-pointer transition">
+                    0 Asistoliya (Nol)
                 </button>
                 <button onclick="sendManualPumpCommand('ROSC', 75)" class="px-2.5 py-1 rounded bg-indigo-900 hover:bg-indigo-800 text-indigo-200 border border-indigo-500 text-xs font-bold flex items-center gap-1 shadow cursor-pointer transition">
                     <i class="fa-solid fa-sparkles text-[10px]"></i> ROSC
@@ -890,31 +890,49 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        async function sendWebSerialCommand(cmd) {
-            cmd = cmd.trim();
-            // 1. Direct Web Serial port yozish
-            if (webSerialPort && webSerialPort.writable) {
-                try {
-                    const writer = webSerialPort.writable.getWriter();
-                    const data = new TextEncoder().encode(cmd + String.fromCharCode(13, 10));
-                    await writer.write(data);
-                    writer.releaseLock();
-                    console.log(">>> [USB ARDUINO BUYRUQ]:", cmd);
-                } catch(e) {
-                    console.warn("USB Serial yozish xatosi:", e);
+        // Serial buyruqlari navbati (deadlock va yo'qolishning oldini oluvchi asinxron navbat)
+        let serialCommandQueue = [];
+        let isSendingSerial = false;
+
+        function sendWebSerialCommand(cmd) {
+            serialCommandQueue.push(cmd);
+            processSerialQueue();
+        }
+
+        async function processSerialQueue() {
+            if (isSendingSerial || serialCommandQueue.length === 0) return;
+            isSendingSerial = true;
+
+            while (serialCommandQueue.length > 0) {
+                const cmd = serialCommandQueue.shift().trim();
+
+                // 1. Direct Web Serial port orqali uzatish
+                if (webSerialPort && webSerialPort.writable) {
+                    try {
+                        const writer = webSerialPort.writable.getWriter();
+                        const data = new TextEncoder().encode(cmd + String.fromCharCode(13, 10));
+                        await writer.write(data);
+                        writer.releaseLock();
+                        console.log(">>> [USB ARDUINO BUYRUQ]:", cmd);
+                    } catch(e) {
+                        console.warn("USB Serial yozish xatosi:", e);
+                    }
                 }
+
+                // 2. Server backend API orqali yuborish (pyserial ko'prigi uchun)
+                try {
+                    fetch("/api/compressor", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ cmd: cmd })
+                    }).catch(() => {});
+                } catch(e) {}
+
+                showKompressorFeedback(`📡 Buyruq: [${cmd}]`, cmd.includes("OFF") || cmd.includes("DYING") || cmd === "BPM:0" || cmd === "0" || cmd === "STOP" ? "rose" : "emerald");
+
+                await new Promise(r => setTimeout(r, 60));
             }
-
-            // 2. Server backend API orqali yuborish (pyserial ko'prigi uchun)
-            try {
-                fetch("/api/compressor", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cmd: cmd })
-                }).catch(() => {});
-            } catch(e) {}
-
-            showKompressorFeedback(`📡 Buyruq: [${cmd}]`, cmd.includes("OFF") || cmd.includes("DYING") || cmd === "BPM:0" ? "rose" : "emerald");
+            isSendingSerial = false;
         }
 
         function showKompressorFeedback(msg, color="emerald") {
@@ -929,34 +947,86 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (msg.includes("PUMP:ON") || msg.includes("NORMAL") || msg.includes("Yoqildi") || msg.includes("75") || msg.includes("135") || msg.includes("100") || msg.includes("42")) {
                     pumpText.innerText = "Kompressor: YONIQ (PUMP:ON)";
                     pumpDot.className = "w-2 h-2 rounded-full bg-emerald-400 alarm-blink";
-                } else if (msg.includes("PUMP:OFF") || msg.includes("DYING") || msg.includes("BPM:0") || msg.includes("O'chiril")) {
-                    pumpText.innerText = "Kompressor: TO'XTATILGAN";
+                } else if (msg.includes("PUMP:OFF") || msg.includes("DYING") || msg.includes("BPM:0") || msg.includes("0") || msg.includes("STOP") || msg.includes("to'xtatildi")) {
+                    pumpText.innerText = "Kompressor: TO'XTATILGAN (0 BPM)";
                     pumpDot.className = "w-2 h-2 rounded-full bg-red-500";
                 }
             }
         }
 
+        // ==================== 0 BPM ASISTOLIYA VA KOMPRESSORNI TO'XTATISH ====================
+        function stopCompressorAndZeroBPM() {
+            initAudio();
+            // 1. Ekranni darhol 0 ga tushiramiz
+            target.hr = 0;
+            target.spo2 = 0;
+            target.sys = 0;
+            target.dia = 0;
+            target.rr = 0;
+            current.hr = 0;
+            current.spo2 = 0;
+            current.sys = 0;
+            current.dia = 0;
+            current.rr = 0;
+            current.rhythm = "asystole";
+            transitionSteps = 0;
+            totalSteps = 0;
+            updateNumericsUI();
+            updateBanner("🚨 DIQQAT: ASISTOLIYA / PULS VA KOMPRESSOR TO'XTATILDI (0 BPM)", "bg-red-950 text-red-400 border-red-500 alarm-blink");
+            startAsystoleTone();
+
+            // 2. Arduino kompressori va pulsatoriga barcha to'xtatish buyruqlarini navbat bilan yuborish
+            sendWebSerialCommand("0");
+            sendWebSerialCommand("BPM:0");
+            sendWebSerialCommand("STOP");
+            sendWebSerialCommand("PUMP:OFF");
+            sendWebSerialCommand("DYING");
+
+            showKompressorFeedback("🛑 Kompressor va puls to'liq to'xtatildi (0 BPM)", "rose");
+        }
+
         function sendManualPumpCommand(cmd, bpm=75) {
             initAudio();
-            sendWebSerialCommand(cmd);
-            if (bpm > 0) {
-                setTimeout(() => sendWebSerialCommand(`BPM:${bpm}`), 120);
+            if (cmd.includes("OFF") || bpm <= 0) {
+                stopCompressorAndZeroBPM();
+                return;
             }
+            target.hr = bpm;
+            current.hr = bpm;
+            current.rhythm = bpm > 130 ? "vtach" : (bpm < 50 ? "brady" : "sinus");
+            transitionSteps = 0;
+            updateNumericsUI();
+            stopAsystoleTone();
+
+            sendWebSerialCommand("PUMP:ON");
+            sendWebSerialCommand(`BPM:${bpm}`);
         }
 
         function sendManualBPM(bpm) {
             initAudio();
-            if (bpm > 0) {
-                sendWebSerialCommand("PUMP:ON");
-                setTimeout(() => sendWebSerialCommand(`BPM:${bpm}`), 120);
-            } else {
-                sendWebSerialCommand("PUMP:OFF");
-                setTimeout(() => sendWebSerialCommand("BPM:0"), 120);
+            bpm = parseInt(bpm);
+            if (bpm <= 0) {
+                stopCompressorAndZeroBPM();
+                return;
             }
+            target.hr = bpm;
+            current.hr = bpm;
+            current.rhythm = bpm > 130 ? "vtach" : (bpm < 50 ? "brady" : "sinus");
+            transitionSteps = 0;
+            updateNumericsUI();
+            stopAsystoleTone();
+
+            sendWebSerialCommand("PUMP:ON");
+            sendWebSerialCommand(`BPM:${bpm}`);
         }
 
         function setScenario(type) {
             initAudio();
+            if (type === "dying") {
+                stopCompressorAndZeroBPM();
+                return;
+            }
+
             totalSteps = 150;
             transitionSteps = totalSteps;
 
@@ -967,12 +1037,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                 sendWebSerialCommand("PUMP:ON");
                 sendWebSerialCommand("NORMAL");
                 sendWebSerialCommand("BPM:75");
-            } else if (type === "dying") {
-                target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 35.1, mode: "dying", rhythm: "asystole" };
-                updateBanner("🚨 DIQQAT: BEMORNI YO'QOTYAPMIZ! (KOLLAPS / ASISTOLIYA)", "bg-red-950 text-red-400 border-red-500 alarm-blink");
-                sendWebSerialCommand("PUMP:OFF");
-                sendWebSerialCommand("DYING");
-                sendWebSerialCommand("BPM:0");
             } else if (type === "attack") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA VA GIPERTONIK KRIZ!", "bg-orange-950 text-orange-400 border-orange-500 alarm-blink");

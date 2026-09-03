@@ -77,24 +77,22 @@ void processWebCommand(String cmd) {
   cmd.trim();
   cmd.toUpperCase();
 
-  // 1. To'g'ridan-to'g'ri BPM berilganda: masalan "BPM:135" yoki "135"
-  if (cmd.startsWith("BPM:")) {
-    int bpm = cmd.substring(4).toInt();
-    setTargetBPM(bpm, "Veb: To'g'ridan-to'g'ri BPM");
+  // 1. Nol (0) qilish / To'liq to'xtatish (Barcha ehtimoliy buyruqlar: 0, BPM:0, STOP, OFF, PUMP:OFF, DYING, ASYSTOLE, 5)
+  if (cmd == "0" || cmd == "BPM:0" || cmd == "STOP" || cmd == "OFF" || 
+      cmd.indexOf("PUMP:OFF") >= 0 || cmd.indexOf("KOMPRESSOR:OFF") >= 0 || 
+      cmd.indexOf("DYING") >= 0 || cmd.indexOf("ASYSTOLE") >= 0 || cmd == "5") {
+    setTargetBPM(0, "Kompressor va puls to'liq to'xtatildi (0 BPM)");
   }
-  // 2. Kompressorni to'g'ridan-to'g'ri yoqish (PUMP:ON / KOMPRESSOR:ON)
+  // 2. To'g'ridan-to'g'ri BPM berilganda: masalan "BPM:135" yoki "BPM:42"
+  else if (cmd.startsWith("BPM:")) {
+    int bpm = cmd.substring(4).toInt();
+    setTargetBPM(bpm, "Veb: Aniq BPM");
+  }
+  // 3. Kompressorni to'g'ridan-to'g'ri yoqish (PUMP:ON / KOMPRESSOR:ON / START / ON)
   else if (cmd.indexOf("PUMP:ON") >= 0 || cmd.indexOf("KOMPRESSOR:ON") >= 0 || cmd == "START" || cmd == "ON") {
     digitalWrite(PIN_PUMP_POWER, HIGH);
     if (targetBPM <= 0) setTargetBPM(75, "Kompressor Yoqildi (Standart 75 BPM)");
     Serial.println(F(">>> [KOMPRESSOR (PIN D7) YOQILDI]"));
-  }
-  // 3. Kompressorni to'g'ridan-to'g'ri o'chirish (PUMP:OFF / KOMPRESSOR:OFF)
-  else if (cmd.indexOf("PUMP:OFF") >= 0 || cmd.indexOf("KOMPRESSOR:OFF") >= 0 || cmd == "STOP" || cmd == "OFF") {
-    digitalWrite(PIN_PUMP_POWER, LOW);
-    digitalWrite(PIN_PULSE_VALVE, LOW);
-    digitalWrite(PIN_HEART_LED, LOW);
-    targetBPM = 0;
-    Serial.println(F(">>> [KOMPRESSOR VA PULS RELESI TO'XTATILDI]"));
   }
   // 4. Veb-saytdagi "🟢 Normal (Barqaror)" tugmasi
   else if (cmd.indexOf("NORMAL") >= 0 || cmd == "1") {
@@ -108,19 +106,15 @@ void processWebCommand(String cmd) {
   else if (cmd.indexOf("BRAD") >= 0 || cmd == "3") {
     setTargetBPM(42, "Veb: Bradikardiya (42 BPM)");
   }
-  // 7. Veb-saytdagi "🚨 Bemorni yo'qotyapmiz! / Asistoliya" tugmasi
-  else if (cmd.indexOf("DYING") >= 0 || cmd.indexOf("ASYSTOLE") >= 0 || cmd == "5") {
-    setTargetBPM(0, "Veb: ASISTOLIYA - Puls to'xtadi (0 BPM)");
-  }
-  // 8. Veb-saytdagi "Defibrillyatsiya (Shok)" tugmasi
+  // 7. Veb-saytdagi "Defibrillyatsiya (Shok)" tugmasi
   else if (cmd.indexOf("SHOCK") >= 0) {
     handleDefibShock();
   }
-  // 9. Veb-saytdagi "✨ Bemor Tirildi (ROSC)" tugmasi
+  // 8. Veb-saytdagi "✨ Bemor Tirildi (ROSC)" tugmasi
   else if (cmd.indexOf("ROSC") >= 0 || cmd == "6") {
     handleROSCRevival();
   }
-  // 10. Agar shunchaki son kelsa (masalan "90")
+  // 9. Agar shunchaki musbat son kelsa (masalan "90")
   else if (cmd.toInt() > 0) {
     setTargetBPM(cmd.toInt(), "Veb: Qiymat bo'yicha");
   }
@@ -131,11 +125,14 @@ void setTargetBPM(int bpm, String reason) {
   targetBPM = bpm;
 
   if (targetBPM <= 0) {
-    // Puls yo'q (Yurak to'xtagan)
+    // Puls yo'q (Yurak to'xtagan - Asistoliya)
+    targetBPM = 0;
     nextIntervalMs = 999999;
-    digitalWrite(PIN_PULSE_VALVE, LOW);
-    digitalWrite(PIN_PUMP_POWER, LOW); // Nasos o'chadi
+    isPulseActive = false;
+    digitalWrite(PIN_PULSE_VALVE, LOW); // Klapan darhol yopiladi
+    digitalWrite(PIN_PUMP_POWER, LOW);  // Nasos (Kompressor D7) darhol o'chadi
     digitalWrite(PIN_HEART_LED, LOW);
+    noTone(PIN_BUZZER);
   } else {
     // Normal / Tez / Sekin puls
     digitalWrite(PIN_PUMP_POWER, HIGH); // Nasos yoqiladi
@@ -158,7 +155,16 @@ void setTargetBPM(int bpm, String reason) {
 
 // ==================== PULS VA HAVO SIKLI (MILLIS MOTORIKA) ====================
 void handlePneumaticPulse(unsigned long currentMillis) {
-  if (targetBPM <= 0) return; // Puls to'xtagan
+  if (targetBPM <= 0) {
+    if (isPulseActive) {
+      isPulseActive = false;
+      digitalWrite(PIN_PULSE_VALVE, LOW);
+      digitalWrite(PIN_PUMP_POWER, LOW);
+      digitalWrite(PIN_HEART_LED, LOW);
+      noTone(PIN_BUZZER);
+    }
+    return; // Puls to'xtagan
+  }
 
   // 1. Yangi zarba vaqti keldimi? (Rele ochiladi -> Tomir shishadi)
   if (!isPulseActive && (currentMillis - lastBeatTime >= nextIntervalMs)) {
