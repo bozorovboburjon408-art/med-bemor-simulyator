@@ -23,7 +23,7 @@ try:
 except:
     pass
 
-app = FastAPI(title="Reanimatsiya va Bemor Hayotiy Ko'rsatkichlari Simulyatori (ESP32 Live)")
+app = FastAPI(title="Reanimatsiya va Bemor Hayotiy Ko'rsatkichlari Monitori (ESP32 Live)")
 
 active_websockets: List[WebSocket] = []
 
@@ -47,42 +47,35 @@ HTML_CONTENT = """<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ICU Bemor Hayotiy Ko'rsatkichlari Monitori (ESP32)</title>
-    <meta name="theme-color" content="#030712">
+    <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Vital Monitor">
     <link rel="manifest" href="/manifest_vital.json">
     <link rel="icon" href="/static/icons/vital_192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
-        * { -webkit-touch-callout: none; touch-action: manipulation; }
-        body {
-            background-color: #05070d;
-            color: #f1f5f9;
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700;800&display=swap');
+        * { -webkit-touch-callout: none; touch-action: manipulation; box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            color: #0f172a;
             font-family: 'Rajdhani', sans-serif;
             user-select: none;
-            overflow-x: hidden;
         }
 
         .mono {
             font-family: 'Share Tech Mono', monospace;
         }
 
-        .glow-green { text-shadow: 0 0 12px rgba(34, 197, 94, 0.6); }
-        .glow-cyan { text-shadow: 0 0 12px rgba(6, 182, 212, 0.6); }
-        .glow-yellow { text-shadow: 0 0 12px rgba(234, 179, 8, 0.6); }
-        .glow-red { text-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
-        .glow-white { text-shadow: 0 0 12px rgba(255, 255, 255, 0.6); }
-
-        .border-green { border-color: rgba(34, 197, 94, 0.3); }
-        .border-cyan { border-color: rgba(6, 182, 212, 0.3); }
-        .border-yellow { border-color: rgba(234, 179, 8, 0.3); }
-        .border-red { border-color: rgba(239, 68, 68, 0.5); }
-
         @keyframes shockFlash {
-            0% { background-color: rgba(255, 255, 255, 0.9); }
+            0% { background-color: rgba(59, 130, 246, 0.5); }
             100% { background-color: transparent; }
         }
         .shock-active {
@@ -90,7 +83,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         @keyframes injFlash {
-            0% { background-color: rgba(147, 51, 234, 0.7); }
+            0% { background-color: rgba(168, 85, 247, 0.45); }
             100% { background-color: transparent; }
         }
         .inj-active {
@@ -99,384 +92,334 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         @keyframes alarmBlink {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.2; }
+            50% { opacity: 0.3; }
         }
         .alarm-blink {
             animation: alarmBlink 0.8s infinite;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between p-2 lg:p-4">
+<body class="h-screen w-screen bg-slate-100 text-slate-800 flex flex-col justify-between p-2 overflow-hidden select-none">
 
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
-    <!-- TOP HEADER -->
-    <header class="bg-[#0c101c] border border-slate-800 rounded-xl px-4 py-2 flex flex-wrap items-center justify-between gap-3 shadow-lg">
-        <div class="flex items-center space-x-4">
+    <!-- 1. TOP MEDICAL HEADER -->
+    <header class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-xs shrink-0">
+        <div class="flex items-center space-x-3">
             <div class="flex items-center space-x-2">
                 <span class="w-3 h-3 rounded-full bg-emerald-500 alarm-blink"></span>
-                <span class="font-bold text-lg tracking-wider text-slate-100">ICU PATIENT MONITOR</span>
+                <span class="font-extrabold text-base tracking-wider text-slate-900">ICU PATIENT MONITOR</span>
             </div>
-            <div class="text-xs text-slate-400 border-l border-slate-700 pl-3">
-                KOYKA: <span class="text-white font-bold">#04 (Reanimatsiya)</span>
+            <div class="text-xs text-slate-500 border-l border-slate-300 pl-3">
+                KOYKA: <span class="text-slate-900 font-bold">#04 (Reanimatsiya)</span>
             </div>
-            <div class="text-xs text-slate-400 border-l border-slate-700 pl-3">
-                BEMOR: <span class="text-emerald-400 font-bold">Anvar Karimov (40 yosh, Erkak)</span>
+            <div class="text-xs text-slate-500 border-l border-slate-300 pl-3">
+                BEMOR: <span class="text-emerald-700 font-bold">Anvar Karimov (40 yosh)</span>
             </div>
         </div>
 
-        <div id="alarm-banner" class="px-4 py-1 rounded-md text-xs font-bold uppercase tracking-widest bg-emerald-950/80 text-emerald-400 border border-emerald-700">
+        <div id="alarm-banner" class="px-3 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300">
             <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
         </div>
 
         <div class="flex flex-wrap items-center gap-1.5 text-xs">
-            <a href="/hub" class="px-2.5 py-1 rounded bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 transition font-bold shadow">
-                <i class="fa-solid fa-hospital text-cyan-400"></i>
-                <span>Kiosk Hub</span>
+            <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 transition font-bold shadow-xs">
+                <i class="fa-solid fa-hospital text-cyan-600"></i>
+                <span>Hub</span>
             </a>
 
-            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2.5 py-1 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow cursor-pointer transition">
+            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow-xs cursor-pointer transition">
                 <i class="fa-solid fa-download"></i>
                 <span>O'rnatish</span>
             </button>
 
-            <a href="/" target="_blank" class="px-2.5 py-1 rounded bg-indigo-900/80 hover:bg-indigo-800 text-indigo-200 border border-indigo-600 flex items-center gap-1.5 transition font-bold shadow">
-                <i class="fa-solid fa-hospital-user text-indigo-400"></i>
+            <a href="/" target="_blank" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 transition font-bold shadow-xs">
+                <i class="fa-solid fa-hospital-user text-indigo-600"></i>
                 <span>AI Bemor</span>
             </a>
 
-            <a href="/console" target="_blank" class="px-2.5 py-1 rounded bg-purple-900/80 hover:bg-purple-800 text-purple-200 border border-purple-600 flex items-center gap-1.5 transition font-bold shadow">
-                <i class="fa-solid fa-hand-holding-heart text-purple-400"></i>
+            <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 transition font-bold shadow-xs">
+                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i>
                 <span>Pult & CPR</span>
             </a>
 
-            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 transition font-bold shadow cursor-pointer">
-                <i class="fa-brands fa-usb text-blue-400"></i>
-                <span id="web-serial-text">🔌 Arduino Kompressor (USB)</span>
-            </button>
-
-            <div id="pump-status-badge" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300 flex items-center gap-1.5 text-xs">
-                <span id="pump-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                <span id="pump-text">Kompressor: Kutilmoqda</span>
-            </div>
-
-            <div id="hw-badge" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 flex items-center gap-1.5">
+            <div id="hw-badge" class="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1.5 font-bold">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span id="hw-text">ESP32 UART: Jonli oqim</span>
+                <span id="hw-text">ESP32 UART: Jonli</span>
             </div>
 
-            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-2.5 py-1 rounded">
-                <button id="btn-audio" onclick="toggleAudio()" class="text-slate-200 hover:text-white flex items-center gap-1 cursor-pointer transition">
-                    <i id="audio-icon" class="fa-solid fa-volume-high text-emerald-400 text-xs"></i>
+            <!-- VOLUME CONTROL (100% MAKSIMAL) -->
+            <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2 py-1 rounded-lg">
+                <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer transition">
+                    <i id="audio-icon" class="fa-solid fa-volume-high text-emerald-600 text-xs"></i>
                     <span id="audio-text" class="text-xs font-bold">100%</span>
                 </button>
-                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="1.0" oninput="changeMonitorVolume(this.value)" class="w-16 accent-emerald-500 h-1.5 bg-slate-700 rounded cursor-pointer" title="Yurak urish ovoz balandligi (100% Maksimal)">
+                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="1.0" oninput="changeMonitorVolume(this.value)" class="w-14 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Yurak urish ovoz balandligi (100% Maksimal)">
             </div>
-            <button onclick="toggleFullScreen()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600">
+
+            <button onclick="toggleFullScreen()" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
                 <i class="fa-solid fa-expand"></i>
             </button>
-            <span id="clock" class="mono text-sm text-slate-300">00:00:00</span>
+            <span id="clock" class="mono text-xs font-bold text-slate-700">00:00:00</span>
         </div>
     </header>
 
-    <!-- INJECTION / UKOL ALERT BANNER (TOP POPUP) -->
-    <div id="inj-banner" class="hidden my-1 bg-purple-950/90 border border-purple-500 rounded-xl p-2.5 shadow-lg text-center text-purple-200 text-sm font-bold alarm-blink">
-        <i class="fa-solid fa-syringe text-purple-400 text-lg mr-2"></i> 
-        <span>💉 UKOL QILINDI (TOUCH SENSOR)! DORI YUBORILMOQDA...</span>
+    <!-- INJECTION NOTIFICATION POPUP -->
+    <div id="inj-banner" class="hidden my-1 bg-purple-100 border border-purple-400 rounded-xl p-2 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink">
+        <i class="fa-solid fa-syringe text-purple-600 text-sm mr-1"></i> 
+        <span>💉 UKOL QILINDI (ADRENALIN 1mg)! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
-    <!-- LIVE MANIKEN SENSOR TELEMETRY HUD (CPR & AIRWAY) -->
-    <div id="cpr-hud" class="my-2 bg-[#090d1a] border border-indigo-900/60 rounded-xl p-3 shadow-md grid grid-cols-2 md:grid-cols-5 gap-3 items-center">
+    <!-- 2. LIVE MANIKEN SENSOR TELEMETRY & CPR 30:2 HUD -->
+    <div id="cpr-hud" class="bg-white border border-slate-200 rounded-xl p-2 my-1 shadow-xs grid grid-cols-2 md:grid-cols-5 gap-2 items-center text-xs shrink-0">
         
         <!-- 1. CPR Compression Force -->
-        <div class="flex flex-col border-r border-slate-800 pr-2">
-            <div class="flex justify-between items-center text-xs font-bold text-indigo-300 mb-1">
-                <span><i class="fa-solid fa-hand-fist mr-1 text-indigo-400"></i> KUCH (f_curr):</span>
-                <div class="flex items-center gap-1.5">
-                    <span id="cpr-force-val" class="mono text-emerald-400 font-bold text-sm">0.0 kg</span>
-                    <button type="button" onclick="tareCprForce()" title="Boshlang'ich vaznni 0 qilish (Tare)" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded border border-slate-700 text-[10px] cursor-pointer active:scale-95 transition flex items-center gap-1">
-                        <i class="fa-solid fa-scale-balanced text-[9px]"></i> 0 qilish
+        <div class="flex flex-col border-r border-slate-200 pr-2">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-700 mb-0.5">
+                <span><i class="fa-solid fa-hand-fist mr-1 text-rose-600"></i> KUCH:</span>
+                <div class="flex items-center gap-1">
+                    <span id="cpr-force-val" class="mono text-rose-600 font-extrabold text-sm">0.0 kg</span>
+                    <button type="button" onclick="tareCprForce()" title="Boshlang'ich vaznni 0 qilish (Tare)" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-300 text-[9px] font-bold cursor-pointer active:scale-95 transition flex items-center gap-0.5">
+                        <i class="fa-solid fa-scale-balanced text-[8px]"></i> 0 qilish
                     </button>
                 </div>
             </div>
-            <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden relative">
-                <div id="cpr-force-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
-                <div class="absolute inset-y-0 left-[66%] w-[25%] bg-emerald-500/20 border-x border-emerald-400/50 pointer-events-none"></div>
+            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden relative">
+                <div id="cpr-force-bar" class="bg-rose-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
+                <div class="absolute inset-y-0 left-[63%] w-[28%] bg-emerald-500/20 border-x border-emerald-500/50 pointer-events-none"></div>
             </div>
-            <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
+            <div class="flex justify-between text-[9px] text-slate-500 mt-0.5">
                 <span>0 kg</span>
-                <span class="text-emerald-400">Target (40-55 kg)</span>
+                <span class="text-emerald-700 font-bold">Me'yor (38-55 kg)</span>
                 <span>60 kg</span>
             </div>
         </div>
 
-        <!-- 2. CPR Quality Checks (Depth, Recoil, BPM, Position) -->
-        <div class="flex flex-col border-r border-slate-800 pr-2 justify-between">
-            <div class="text-[11px] font-bold text-slate-300 mb-1 flex items-center justify-between">
-                <span><i class="fa-solid fa-clipboard-check text-indigo-400"></i> CPR SIFATI:</span>
-                <span id="cpr-count-badge" class="text-xs mono text-indigo-400 font-bold">0 marta</span>
+        <!-- 2. CPR 30:2 Cycle Tracker & Quality -->
+        <div class="flex flex-col border-r border-slate-200 pr-2 justify-between">
+            <div class="text-[11px] font-bold text-slate-700 mb-0.5 flex items-center justify-between">
+                <span><i class="fa-solid fa-clipboard-check text-indigo-600"></i> SIKL (30:2):</span>
+                <span id="cpr-cycle-badge" class="text-xs mono font-black text-indigo-700">0/30 zarba | 0/2 nafas</span>
             </div>
-            <div class="grid grid-cols-2 gap-1 text-[10px]">
-                <span id="badge-d" class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 text-center font-bold">Chuqurlik: -</span>
-                <span id="badge-r" class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 text-center font-bold">Bo'shatish: -</span>
-                <span id="badge-bpm" class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 text-center font-bold">Tezlik: -</span>
-                <span id="badge-pos" class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 text-center font-bold">Joyi: -</span>
+            <div class="grid grid-cols-2 gap-1 text-[9px]">
+                <span id="badge-d" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Chuqurlik: -</span>
+                <span id="badge-r" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Bo'shatish: -</span>
+                <span id="badge-bpm" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Tezlik: -</span>
+                <span id="badge-pos" class="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 text-center font-bold">Joyi: -</span>
             </div>
         </div>
 
         <!-- 3. CPR BPM Speed -->
-        <div class="flex flex-col border-r border-slate-800 pr-2 justify-center">
-            <div class="flex justify-between items-center text-xs font-bold text-slate-300 mb-1">
-                <span><i class="fa-solid fa-gauge text-indigo-400"></i> CPR TEZLIK (bpm):</span>
-                <span id="cpr-bpm-val" class="mono text-emerald-400 font-bold text-sm">0 /min</span>
+        <div class="flex flex-col border-r border-slate-200 pr-2 justify-center">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-700 mb-0.5">
+                <span><i class="fa-solid fa-gauge text-slate-600"></i> CPR TEZLIK:</span>
+                <span id="cpr-bpm-val" class="mono text-emerald-700 font-bold text-sm">0 /min</span>
             </div>
-            <div id="cpr-rate-badge" class="px-2 py-1 rounded text-xs font-bold bg-slate-900 text-slate-400 border border-slate-800 text-center">
+            <div id="cpr-rate-badge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center">
                 Standart: 100 - 120 /min
             </div>
         </div>
 
         <!-- 4. Lung Pressure -->
-        <div class="flex flex-col border-r border-slate-800 pr-2">
-            <div class="flex justify-between items-center text-xs font-bold text-cyan-300 mb-1">
-                <span><i class="fa-solid fa-lungs mr-1 text-cyan-400"></i> O'PKA (lung_p):</span>
-                <span id="lung-p-val" class="mono text-cyan-400 font-bold text-sm">0.0 cmH2O</span>
+        <div class="flex flex-col border-r border-slate-200 pr-2">
+            <div class="flex justify-between items-center text-xs font-bold text-sky-800 mb-0.5">
+                <span><i class="fa-solid fa-lungs mr-1 text-sky-600"></i> O'PKA (lung_p):</span>
+                <span id="lung-p-val" class="mono text-sky-700 font-extrabold text-sm">0.0 kPa</span>
             </div>
-            <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
-                <div id="lung-p-bar" class="bg-cyan-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
+            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                <div id="lung-p-bar" class="bg-sky-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
             </div>
-            <div id="lung-status-text" class="text-[10px] text-cyan-400 mt-0.5">O'pka: Normal</div>
+            <div id="lung-status-text" class="text-[9px] text-sky-700 mt-0.5 font-bold">Me'yor: 0.8 - 2.2 kPa</div>
         </div>
 
-        <!-- 5. Stomach Pressure & Injection Status -->
+        <!-- 5. Stomach Alert & Injection Action -->
         <div class="flex flex-col justify-between">
-            <div class="flex justify-between items-center text-xs font-bold text-slate-300 mb-1">
-                <span><i class="fa-solid fa-circle-exclamation text-yellow-400"></i> OSHQOZON:</span>
-                <span id="stomach-p-val" class="mono text-slate-300 font-bold text-xs">0.0</span>
+            <div class="flex justify-between items-center text-xs font-bold text-slate-700 mb-0.5">
+                <span><i class="fa-solid fa-circle-exclamation text-amber-500"></i> OSHQOZON:</span>
+                <span id="stomach-p-val" class="mono text-slate-700 font-bold text-xs">0.0</span>
             </div>
-            <div id="stomach-alert" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900 text-slate-400 border border-slate-800 text-center">
+            <div id="stomach-alert" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center">
                 Oshqozon toza
             </div>
-            <div id="inj-badge-small" class="text-[10px] text-purple-400 font-semibold mt-0.5 text-center">
-                Ukol: Kutilmoqda (Touch 4)
-            </div>
+            <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-1 w-full py-0.5 px-1.5 rounded bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 font-bold text-[10px] flex items-center justify-center gap-1 transition cursor-pointer active:scale-95 shadow-xs">
+                <i class="fa-solid fa-syringe text-purple-600"></i> 💉 Ukol Qilish (Adrenalin)
+            </button>
         </div>
 
     </div>
 
-    <!-- MAIN MONITOR DISPLAY (WAVEFORMS + VITAL NUMERICS) -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 my-1 flex-1">
+    <!-- 3. MAIN MONITOR DISPLAY (WAVEFORMS + VITAL NUMERICS - ZERO SCROLL FIT) -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-2 my-0.5 flex-1 min-h-0 overflow-hidden">
         
-        <!-- LEFT 3 COLUMNS: LIVE CANVAS WAVEFORMS -->
-        <div class="lg:col-span-3 bg-[#080b14] border border-slate-800 rounded-xl p-3 flex flex-col justify-between shadow-2xl relative">
+        <!-- LEFT 3 COLUMNS: LIVE MEDICAL OSCILLOSCOPE (WHITE CLINICAL BACKGROUND) -->
+        <div class="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-2 flex flex-col justify-between shadow-xs overflow-hidden">
             
-            <!-- 1. ECG WAVEFORM (Green) -->
-            <div class="relative flex-1 flex flex-col min-h-[140px] border-b border-slate-800/80 pb-2">
-                <div class="flex justify-between items-center text-xs font-bold text-emerald-400 mb-1">
-                    <span class="flex items-center gap-2">
-                        <i class="fa-solid fa-bolt"></i> EKG Lead II (mV)
-                        <span class="text-[10px] text-slate-500 font-normal">25mm/s 10mm/mV</span>
+            <!-- 1. ECG WAVEFORM (Deep Medical Green) -->
+            <div class="flex-1 flex flex-col min-h-0 pb-1 border-b border-slate-100">
+                <div class="flex justify-between items-center text-xs font-bold text-emerald-800 mb-0.5 shrink-0">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-bolt text-emerald-600"></i> EKG Lead II (mV)
+                        <span class="text-[10px] text-slate-400 font-normal">25mm/s 10mm/mV</span>
                     </span>
-                    <span id="ecg-rhythm-name" class="text-emerald-400">Sinus Ritmi</span>
+                    <span id="ecg-rhythm-name" class="font-extrabold text-emerald-700">Sinus Ritmi</span>
                 </div>
-                <canvas id="ecgCanvas" class="w-full flex-1 rounded bg-black/40"></canvas>
+                <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
+                    <canvas id="ecgCanvas" class="w-full h-full block"></canvas>
+                </div>
             </div>
 
-            <!-- 2. SpO2 PLETHYSMOGRAM WAVEFORM (Cyan) -->
-            <div class="relative flex-1 flex flex-col min-h-[120px] border-b border-slate-800/80 py-2">
-                <div class="flex justify-between items-center text-xs font-bold text-cyan-400 mb-1">
-                    <span class="flex items-center gap-2">
-                        <i class="fa-solid fa-wave-square"></i> SpO2 Pleth
-                        <span class="text-[10px] text-slate-500 font-normal">Puls to'lqini</span>
+            <!-- 2. SpO2 PLETHYSMOGRAM WAVEFORM (Deep Medical Cyan/Blue) -->
+            <div class="flex-1 flex flex-col min-h-0 py-1 border-b border-slate-100">
+                <div class="flex justify-between items-center text-xs font-bold text-sky-800 mb-0.5 shrink-0">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-wave-square text-sky-600"></i> SpO2 Pleth
+                        <span class="text-[10px] text-slate-400 font-normal">Puls to'lqini</span>
                     </span>
-                    <span id="pleth-status" class="text-cyan-400">Normal perfuziya</span>
+                    <span id="pleth-status" class="font-extrabold text-sky-700">Normal perfuziya</span>
                 </div>
-                <canvas id="plethCanvas" class="w-full flex-1 rounded bg-black/40"></canvas>
+                <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
+                    <canvas id="plethCanvas" class="w-full h-full block"></canvas>
+                </div>
             </div>
 
-            <!-- 3. RESPIRATION WAVEFORM (Yellow) -->
-            <div class="relative flex-1 flex flex-col min-h-[110px] pt-2">
-                <div class="flex justify-between items-center text-xs font-bold text-yellow-400 mb-1">
-                    <span class="flex items-center gap-2">
-                        <i class="fa-solid fa-lungs"></i> RESP (Nafas olish)
-                        <span class="text-[10px] text-slate-500 font-normal">Impedance Pneumography</span>
+            <!-- 3. RESPIRATION WAVEFORM (Deep Medical Amber) -->
+            <div class="flex-1 flex flex-col min-h-0 pt-1">
+                <div class="flex justify-between items-center text-xs font-bold text-amber-800 mb-0.5 shrink-0">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-lungs text-amber-600"></i> RESP (Nafas olish)
+                        <span class="text-[10px] text-slate-400 font-normal">Pneumography</span>
                     </span>
-                    <span id="resp-status" class="text-yellow-400">Ritmli nafas</span>
+                    <span id="resp-status" class="font-extrabold text-amber-700">Ritmli nafas</span>
                 </div>
-                <canvas id="respCanvas" class="w-full flex-1 rounded bg-black/40"></canvas>
+                <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
+                    <canvas id="respCanvas" class="w-full h-full block"></canvas>
+                </div>
             </div>
 
-            <div class="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:16px_16px]"></div>
         </div>
 
-        <!-- RIGHT 1 COLUMN: LARGE VITAL NUMERIC BOXES -->
-        <div class="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
+        <!-- RIGHT 1 COLUMN: VITAL NUMERIC BOXES (COMPACT CLINICAL WHITE CARDS) -->
+        <div class="flex flex-col justify-between gap-1.5 min-h-0 overflow-hidden">
             
-            <!-- HR / PULSE (Green) -->
-            <div class="bg-[#080b14] border border-green rounded-xl p-3 flex flex-col justify-between shadow-md relative overflow-hidden">
-                <div class="flex justify-between items-center text-emerald-400 font-bold text-sm">
-                    <span><i class="fa-solid fa-heart-pulse mr-1"></i> HR / PULS</span>
-                    <span class="text-xs text-slate-500">bpm</span>
+            <!-- HR / PULSE (Green Card) -->
+            <div class="bg-white border border-emerald-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-emerald-800 font-bold text-xs">
+                    <span><i class="fa-solid fa-heart-pulse mr-1 text-emerald-600"></i> HR / PULS</span>
+                    <span class="text-[10px] text-slate-400">bpm</span>
                 </div>
-                <div class="flex items-baseline justify-between my-1">
-                    <span id="num-hr" class="mono text-5xl lg:text-6xl font-bold text-emerald-400 glow-green">75</span>
-                    <div class="text-right text-[11px] text-emerald-600/80 leading-tight">
+                <div class="flex items-baseline justify-between my-0.5">
+                    <span id="num-hr" class="mono text-4xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
+                    <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
                         <div>YUQ: 120</div>
                         <div>PAS: 50</div>
                     </div>
                 </div>
-                <div class="flex justify-between text-[10px] text-slate-400 border-t border-slate-800 pt-1">
-                    <span>Kompressiyalar: <span id="num-count" class="text-emerald-400 font-bold">0</span></span>
+                <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-0.5">
+                    <span>Kompressiyalar: <span id="num-count" class="font-bold text-emerald-700">0</span></span>
                     <span>Puls: Normal</span>
                 </div>
             </div>
 
-            <!-- SpO2 (Cyan) -->
-            <div class="bg-[#080b14] border border-cyan rounded-xl p-3 flex flex-col justify-between shadow-md relative overflow-hidden">
-                <div class="flex justify-between items-center text-cyan-400 font-bold text-sm">
-                    <span><i class="fa-solid fa-droplet mr-1"></i> SpO2 (Kislorod)</span>
-                    <span class="text-xs text-slate-500">%</span>
+            <!-- SpO2 (Blue Card) -->
+            <div class="bg-white border border-sky-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-sky-800 font-bold text-xs">
+                    <span><i class="fa-solid fa-droplet mr-1 text-sky-600"></i> SpO2 (Kislorod)</span>
+                    <span class="text-[10px] text-slate-400">%</span>
                 </div>
-                <div class="flex items-baseline justify-between my-1">
-                    <span id="num-spo2" class="mono text-5xl lg:text-6xl font-bold text-cyan-400 glow-cyan">98</span>
-                    <div class="text-right text-[11px] text-cyan-600/80 leading-tight">
+                <div class="flex items-baseline justify-between my-0.5">
+                    <span id="num-spo2" class="mono text-4xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
+                    <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
                         <div>PI: 4.2%</div>
                         <div>PAS: 90%</div>
                     </div>
                 </div>
-                <div class="flex justify-between text-[10px] text-slate-400 border-t border-slate-800 pt-1">
-                    <span>Puls: <span id="num-pr">75</span></span>
+                <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-0.5">
+                    <span>Puls: <span id="num-pr" class="font-bold text-sky-700">75</span></span>
                     <span>Signal: Kuchli</span>
                 </div>
             </div>
 
-            <!-- NIBP (Blood Pressure - White) -->
-            <div class="bg-[#080b14] border border-slate-700 rounded-xl p-3 flex flex-col justify-between shadow-md relative overflow-hidden">
-                <div class="flex justify-between items-center text-slate-200 font-bold text-sm">
-                    <span><i class="fa-solid fa-gauge-high mr-1"></i> NIBP (Davleniya)</span>
-                    <span class="text-xs text-slate-500">mmHg</span>
+            <!-- NIBP (Blood Pressure Card) -->
+            <div class="bg-white border border-slate-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-slate-800 font-bold text-xs">
+                    <span><i class="fa-solid fa-gauge-high mr-1 text-indigo-600"></i> NIBP (Davleniya)</span>
+                    <span class="text-[10px] text-slate-400">mmHg</span>
                 </div>
-                <div class="flex items-baseline justify-between my-1">
-                    <div>
-                        <span id="num-sys" class="mono text-3xl lg:text-4xl font-bold text-white glow-white">120</span>
-                        <span class="text-xl text-slate-400">/</span>
-                        <span id="num-dia" class="mono text-3xl lg:text-4xl font-bold text-white glow-white">80</span>
+                <div class="flex items-baseline justify-between my-0.5">
+                    <div class="text-slate-800 font-black leading-none">
+                        <span id="num-sys" class="mono text-2xl lg:text-3xl font-black">120</span>
+                        <span class="text-slate-400 text-lg">/</span>
+                        <span id="num-dia" class="mono text-2xl lg:text-3xl font-black">80</span>
                     </div>
-                    <div class="text-right text-xs text-slate-400">
-                        (<span id="num-map" class="text-emerald-400 font-bold">93</span>)
+                    <div class="text-right text-[11px] text-slate-600 font-bold">
+                        MAP: <span id="num-map" class="text-emerald-700">93</span>
                     </div>
                 </div>
-                <div class="flex justify-between text-[10px] text-slate-400 border-t border-slate-800 pt-1">
+                <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-100 pt-0.5">
                     <span>Avto: 15min</span>
-                    <span>Oxirgi: 2 min oldin</span>
+                    <span>Holat: Barqaror</span>
                 </div>
             </div>
 
-            <!-- RR & TEMP (Yellow & Purple) -->
-            <div class="grid grid-cols-2 gap-2">
-                <div class="bg-[#080b14] border border-yellow rounded-xl p-2.5 flex flex-col justify-between">
-                    <div class="flex justify-between items-center text-yellow-400 font-bold text-xs">
-                        <span><i class="fa-solid fa-lungs mr-1"></i> RR</span>
-                        <span class="text-[10px] text-slate-500">rpm</span>
+            <!-- RR & TEMP (Mini Split Card) -->
+            <div class="grid grid-cols-2 gap-1.5">
+                <div class="bg-white border border-amber-300 rounded-xl p-1.5 text-center shadow-xs flex flex-col justify-between">
+                    <div class="text-[10px] font-bold text-amber-800 flex items-center justify-between">
+                        <span><i class="fa-solid fa-lungs mr-0.5 text-amber-600"></i> RR</span>
+                        <span class="text-slate-400">rpm</span>
                     </div>
-                    <span id="num-rr" class="mono text-3xl lg:text-4xl font-bold text-yellow-400 glow-yellow my-1">16</span>
-                    <div class="text-[10px] text-slate-400 border-t border-slate-800 pt-0.5">Apnoe: 20s</div>
+                    <span id="num-rr" class="mono text-2xl font-black text-amber-600 my-0.5">16</span>
+                    <div class="text-[9px] text-slate-400">Ritmli nafas</div>
                 </div>
 
-                <div class="bg-[#080b14] border border-purple-500/30 rounded-xl p-2.5 flex flex-col justify-between">
-                    <div class="flex justify-between items-center text-purple-400 font-bold text-xs">
-                        <span><i class="fa-solid fa-temperature-three-quarters mr-1"></i> TEMP</span>
-                        <span class="text-[10px] text-slate-500">°C</span>
+                <div class="bg-white border border-purple-300 rounded-xl p-1.5 text-center shadow-xs flex flex-col justify-between">
+                    <div class="text-[10px] font-bold text-purple-800 flex items-center justify-between">
+                        <span><i class="fa-solid fa-temperature-three-quarters mr-0.5 text-purple-600"></i> TEMP</span>
+                        <span class="text-slate-400">°C</span>
                     </div>
-                    <span id="num-temp" class="mono text-3xl lg:text-4xl font-bold text-purple-400 my-1">36.6</span>
-                    <div class="text-[10px] text-slate-400 border-t border-slate-800 pt-0.5">T1 Teri</div>
+                    <span id="num-temp" class="mono text-2xl font-black text-purple-600 my-0.5">36.6</span>
+                    <div class="text-[9px] text-slate-400">T1 Teri</div>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <!-- INSTRUCTOR SIMULATION & KOMPRESSOR CONTROL PANEL -->
-    <footer class="bg-[#0c101c] border border-slate-800 rounded-xl p-3 shadow-xl">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800">
-            <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-sliders text-indigo-400"></i> O'qituvchi Boshqaruv Paneli va Ssenariylar
-            </h3>
-            <div class="flex items-center gap-2">
-                <span id="compressor-cmd-feedback" class="text-xs font-bold text-slate-400"></span>
-            </div>
+    <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (NO COMPRESSOR / PURE SIMULATOR) -->
+    <footer class="bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs shrink-0 flex flex-wrap items-center justify-between gap-1.5 text-xs">
+        <div class="flex items-center gap-1.5 text-slate-700 font-bold">
+            <i class="fa-solid fa-stethoscope text-indigo-600"></i>
+            <span>Klinik Ssenariylar:</span>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-3">
-            <button onclick="setScenario('normal')" class="px-3 py-2 rounded-lg bg-emerald-950 hover:bg-emerald-900 border border-emerald-600 text-emerald-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition active:scale-95 shadow">
-                <i class="fa-solid fa-heart text-base text-emerald-400"></i>
-                <span>🟢 Normal (Barqaror)</span>
+        <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="setScenario('normal')" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-heart text-emerald-600"></i> 🟢 Normal (75)
             </button>
 
-            <button onclick="setScenario('dying')" class="px-3 py-2 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500 text-red-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition active:scale-95 shadow alarm-blink">
-                <i class="fa-solid fa-skull-crossbones text-base text-red-500"></i>
-                <span>🚨 Bemorni yo'qotyapmiz!</span>
+            <button onclick="setScenario('dying')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-skull-crossbones text-rose-600"></i> 🚨 0 Asistoliya
             </button>
 
-            <button onclick="setScenario('attack')" class="px-3 py-2 rounded-lg bg-orange-950 hover:bg-orange-900 border border-orange-500 text-orange-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition active:scale-95 shadow">
-                <i class="fa-solid fa-bolt-lightning text-base text-orange-400"></i>
-                <span>⚡ Xuruj boshlanyapti!</span>
+            <button onclick="setScenario('attack')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-bolt-lightning text-amber-600"></i> ⚡ Taxikardiya
             </button>
 
-            <button onclick="setScenario('hypoxia')" class="px-3 py-2 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-500 text-cyan-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition active:scale-95 shadow">
-                <i class="fa-solid fa-lungs text-base text-cyan-400"></i>
-                <span>🫁 Gipoksiya / Bo'g'ilish</span>
+            <button onclick="setScenario('hypoxia')" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-lungs text-sky-600"></i> 🫁 Gipoksiya
             </button>
 
-            <button onclick="setScenario('shock')" class="px-3 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 border border-rose-500 text-rose-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition active:scale-95 shadow">
-                <i class="fa-solid fa-droplet-slash text-base text-rose-400"></i>
-                <span>🩸 Shok (Qon ketishi)</span>
+            <button onclick="setScenario('shock')" class="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-droplet-slash text-purple-600"></i> 🩸 Shok
             </button>
 
-            <button onclick="defibrillateShock()" class="px-3 py-2 rounded-lg bg-indigo-950 hover:bg-indigo-900 border border-indigo-500 text-indigo-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition active:scale-95 shadow">
-                <i class="fa-solid fa-wand-magic-sparkles text-base text-indigo-400"></i>
-                <span>💉 Defibrilyator / CPR</span>
+            <button onclick="triggerManualInjection()" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-syringe text-indigo-600"></i> 💉 Ukol (Adrenalin)
             </button>
-        </div>
 
-        <!-- DEDICATED ARDUINO KOMPRESSOR & PULSATOR BAR -->
-        <div class="bg-[#080c16] border border-blue-900/50 rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2 text-xs text-blue-300 font-bold">
-                <i class="fa-solid fa-wind text-cyan-400"></i>
-                <span>ARDUINO: D7 (Ortiqcha Bosim Solinoidi) & D8 (Puls Rele) [Kompressor: Doimiy]:</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5">
-                <button onclick="sendManualPumpCommand('PUMP:ON', 75)" class="px-3 py-1 rounded bg-emerald-900 hover:bg-emerald-800 text-emerald-200 border border-emerald-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
-                    <i class="fa-solid fa-play text-[10px]"></i> 💨 Pulsni Yoqish (75 BPM)
-                </button>
-                <button onclick="stopCompressorAndZeroBPM()" class="px-3 py-1 rounded bg-red-900 hover:bg-red-800 text-red-200 border border-red-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
-                    <i class="fa-solid fa-power-off text-[10px]"></i> 🛑 0 Asistoliya (Bosimni chiqarish)
-                </button>
-                <span class="text-slate-600">|</span>
-                <span class="text-xs text-slate-400">Puls:</span>
-                <button onclick="sendManualBPM(42)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    42
-                </button>
-                <button onclick="sendManualBPM(75)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    75
-                </button>
-                <button onclick="sendManualBPM(100)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-yellow-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    100
-                </button>
-                <button onclick="sendManualBPM(135)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-orange-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    135
-                </button>
-                <button onclick="stopCompressorAndZeroBPM()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    0 Nol
-                </button>
-                <span class="text-slate-600">|</span>
-                <span class="text-xs text-slate-400">D7 Klapan:</span>
-                <button onclick="sendWebSerialCommand('D7:ON')" title="D7 solinoidini ochib ortiqcha bosimni chiqarish" class="px-2.5 py-1 rounded bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600 text-xs font-bold cursor-pointer transition">
-                    D7: OCHISH (Chiqarish)
-                </button>
-                <button onclick="sendWebSerialCommand('D7:OFF')" title="D7 solinoidini yopish" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    D7: YOPISH
-                </button>
-            </div>
+            <button onclick="defibrillateShock()" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> ⚡ Defibrilyator
+            </button>
         </div>
     </footer>
 
@@ -509,7 +452,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // Dinamik kompressor: Ovozni to'yinishga (saturation) yetkazib, eng baland jarangdorlik beradi
                 masterCompressor = audioCtx.createDynamicsCompressor();
                 masterCompressor.threshold.setValueAtTime(-14, audioCtx.currentTime);
                 masterCompressor.knee.setValueAtTime(30, audioCtx.currentTime);
@@ -539,11 +481,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             const text = document.getElementById("audio-text");
             if (icon) {
                 if (!soundEnabled || monitorVolume === 0) {
-                    icon.className = "fa-solid fa-volume-xmark text-red-400 text-xs";
+                    icon.className = "fa-solid fa-volume-xmark text-red-500 text-xs";
                 } else if (monitorVolume < 0.5) {
-                    icon.className = "fa-solid fa-volume-low text-yellow-400 text-xs";
+                    icon.className = "fa-solid fa-volume-low text-amber-500 text-xs";
                 } else {
-                    icon.className = "fa-solid fa-volume-high text-emerald-400 text-xs";
+                    icon.className = "fa-solid fa-volume-high text-emerald-600 text-xs";
                 }
             }
             if (text) {
@@ -572,10 +514,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const now = audioCtx.currentTime;
                 const minFreq = 480;
                 const maxFreq = 960;
-                // SpO2 ga bog'liq chastota: SpO2 pasaysa ovoz pasti (chuqurlashadi), yuqori bo'lsa jaranglaydi
                 const freq = minFreq + ((Math.max(50, current.spo2) - 50) / 50) * (maxFreq - minFreq);
 
-                // 1. Asosiy ton (Fundamental Sine) — MAKSIMAL 1.0 AMPLITUDA
+                // 1. Asosiy ton (Fundamental Sine)
                 const osc1 = audioCtx.createOscillator();
                 const gain1 = audioCtx.createGain();
                 osc1.type = "sine";
@@ -583,7 +524,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 gain1.gain.setValueAtTime(1.0, now);
                 gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
 
-                // 2. Tibbiy Garmonika (Triangle) — Jarangdorlik va xona ichida yaqqol eshitilish kuchi
+                // 2. Tibbiy Garmonika (Triangle)
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
                 osc2.type = "triangle";
@@ -614,7 +555,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const gain = audioCtx.createGain();
                 asystoleOsc.type = "triangle";
                 asystoleOsc.frequency.setValueAtTime(850, now);
-                gain.gain.setValueAtTime(0.85, now); // MAKSIMAL ASISTOLIYA SIGNAL BALANDLIGI
+                gain.gain.setValueAtTime(0.85, now);
                 asystoleOsc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
                 asystoleOsc.start(now);
@@ -631,7 +572,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Dynamic CPR Stroke analysis in frontend
+        // ==================== CPR 30:2 SIKLI VA BOSQICHLI JONLANISH MANTIQI ====================
         let cprState = "idle";
         let peakForce = 0;
         let lastStrokeTime = 0;
@@ -640,6 +581,13 @@ HTML_CONTENT = """<!DOCTYPE html>
         let lastDepthOk = false;
         let lastRecoilOk = true;
         let lastRateOk = false;
+
+        // 30:2 Sikl hisoblagichlari:
+        let cprCycleComps = 0;
+        let cprCycleCorrectComps = 0;
+        let cprCycleVents = 0;
+        let cprCycleCorrectVents = 0;
+        let cprRevivalStage = 0; // 0: Asistoliya/To'xtash, 1: Ozroq jonlanish (20+ BPM), 2: To'liq o'ziga kelish (ROSC)
 
         function processCPRStroke(forceKg) {
             const now = Date.now();
@@ -664,6 +612,16 @@ HTML_CONTENT = """<!DOCTYPE html>
                     cprCount++;
                     lastDepthOk = (peakForce >= 38.0 && peakForce <= 55.0);
                     lastRateOk = (currentBpm >= 100 && currentBpm <= 120);
+
+                    // 30:2 Sikl kompressiyalarini hisoblash
+                    if (cprCycleComps < 30) {
+                        cprCycleComps++;
+                        if (lastDepthOk) {
+                            cprCycleCorrectComps++;
+                        }
+                    }
+
+                    updateCycleHUD();
                 }
             } else if (cprState === "recoiling") {
                 if (forceKg <= 5.0) {
@@ -678,6 +636,19 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             if (now - lastStrokeTime > 2500) {
                 currentBpm = 0;
+            }
+        }
+
+        function updateCycleHUD() {
+            const badge = document.getElementById("cpr-cycle-badge");
+            if (!badge) return;
+
+            if (cprCycleComps >= 30 && cprCycleVents < 2) {
+                badge.innerText = `30 ZARBA TUGADI! 🫁 2 TA NAFAS BERING!`;
+                badge.className = "text-xs mono font-black text-amber-600 alarm-blink";
+            } else {
+                badge.innerText = `${cprCycleComps}/30 zarba | ${cprCycleVents}/2 nafas`;
+                badge.className = "text-xs mono font-black text-indigo-700";
             }
         }
 
@@ -704,14 +675,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (valEl) valEl.innerText = "0.0 kg";
             const bar = document.getElementById("cpr-force-bar");
             if (bar) bar.style.width = "0%";
-            if (typeof sendWebSerialCommand === "function") {
-                sendWebSerialCommand("TARE");
-            }
         }
 
         // ==================== PROCESS INCOMING ESP32 JSON ====================
         function handleHardwareData(data) {
-            // Support all JSON variations: force / f_curr / force_kg
             const rawF = parseFloat(data.force !== undefined ? data.force : (data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0)));
             lastRawMonitorForce = rawF;
 
@@ -733,13 +700,14 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             let fCurr = Math.max(0, rawF - monitorForceTare);
-            if (fCurr < 0.2) fCurr = 0.0; // Shovqinni nolga tenglash
+            if (fCurr < 0.2) fCurr = 0.0;
+
             const posBtn = (data.pos_btn === 1 || data.pos_btn === true || data.pos_ok === true || data.pos_valid === true);
             const injBtn = (data.inj_btn === 1 || data.inj_btn === true || data.inj_ok === true);
             const lungP = parseFloat(data.lung_p || 0);
             const stomachP = parseFloat(data.stomach_p || 0);
 
-            // Compute CPR in real time
+            // CPR zarbasini tahlil qilish
             processCPRStroke(fCurr);
 
             const bpm = data.bpm !== undefined ? parseInt(data.bpm) : currentBpm;
@@ -748,9 +716,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             const rOk = data.r_ok !== undefined ? Boolean(data.r_ok) : lastRecoilOk;
             const bpmOk = data.bpm_ok !== undefined ? Boolean(data.bpm_ok) : lastRateOk;
             const posOk = posBtn;
-            const injOk = injBtn;
 
-            // 1. Update Force Bar
+            // 1. Force Bar yangilash
             document.getElementById("cpr-force-val").innerText = `${fCurr.toFixed(1)} kg`;
             const forcePct = Math.min(100, (fCurr / 60.0) * 100);
             const forceBar = document.getElementById("cpr-force-bar");
@@ -758,120 +725,181 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             if (fCurr >= 38.0 && fCurr <= 55.0) {
                 forceBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-emerald-400 font-bold text-sm";
+                document.getElementById("cpr-force-val").className = "mono text-emerald-600 font-extrabold text-sm";
             } else if (fCurr > 55.0) {
                 forceBar.className = "bg-rose-500 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-rose-400 font-bold text-sm";
+                document.getElementById("cpr-force-val").className = "mono text-rose-600 font-extrabold text-sm";
             } else if (fCurr > 8.0) {
-                forceBar.className = "bg-yellow-500 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-yellow-400 font-bold text-sm";
+                forceBar.className = "bg-amber-500 h-full rounded-full transition-all duration-75";
+                document.getElementById("cpr-force-val").className = "mono text-amber-600 font-extrabold text-sm";
             } else {
-                forceBar.className = "bg-slate-700 h-full rounded-full transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-slate-400 font-bold text-sm";
+                forceBar.className = "bg-slate-300 h-full rounded-full transition-all duration-75";
+                document.getElementById("cpr-force-val").className = "mono text-slate-500 font-bold text-sm";
             }
 
-            // 2. Update Quality Badges
-            document.getElementById("cpr-count-badge").innerText = `${count} marta`;
-            document.getElementById("num-count").innerText = count;
+            // 2. Sifat nishonlari
+            updateQualityBadge("badge-d", "Chuqurlik", dOk, fCurr > 10.0);
+            updateQualityBadge("badge-r", "Bo'shatish", rOk, fCurr > 10.0);
+            updateQualityBadge("badge-bpm", "Tezlik", bpmOk, bpm > 20);
+            updateQualityBadge("badge-pos", "Joyi", posOk, fCurr > 5.0);
 
-            updateQualityBadge("badge-d", "Chuqurlik", dOk, fCurr > 5);
-            updateQualityBadge("badge-r", "Bo'shatish", rOk, fCurr > 5);
-            updateQualityBadge("badge-bpm", "Tezlik", bpmOk, bpm > 0);
-            updateQualityBadge("badge-pos", "Joyi", posOk, true);
-
-            // 3. CPR BPM
+            // 3. CPR Tezlik BPM
             document.getElementById("cpr-bpm-val").innerText = `${bpm} /min`;
             const rateBadge = document.getElementById("cpr-rate-badge");
-            if (bpm > 0) {
-                if (bpm >= 100 && bpm <= 120) {
-                    rateBadge.className = "px-2 py-1 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-600 text-center";
-                    rateBadge.innerText = "✅ Tezlik: A'LO (100-120)";
-                } else if (bpm < 100) {
-                    rateBadge.className = "px-2 py-1 rounded text-xs font-bold bg-yellow-950 text-yellow-300 border border-yellow-600 text-center";
-                    rateBadge.innerText = "⚠️ Tezroq bosing (<100)";
-                } else {
-                    rateBadge.className = "px-2 py-1 rounded text-xs font-bold bg-orange-950 text-orange-300 border border-orange-600 text-center";
-                    rateBadge.innerText = "⚠️ Juda tez (>120)";
-                }
+            if (bpm >= 100 && bpm <= 120) {
+                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 text-center";
+                rateBadge.innerText = "✅ A'lo tezlik (100-120)";
+            } else if (bpm > 120) {
+                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 text-center";
+                rateBadge.innerText = "⚠️ Juda tez (>120)";
+            } else if (bpm > 0) {
+                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 text-center";
+                rateBadge.innerText = "⚠️ Sekin (<100)";
             } else {
-                rateBadge.className = "px-2 py-1 rounded text-xs font-bold bg-slate-900 text-slate-400 border border-slate-800 text-center";
+                rateBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center";
                 rateBadge.innerText = "Standart: 100 - 120 /min";
             }
 
-            // 4. Lung Pressure (Max: 3.5 kPa)
+            // 4. O'pka bosimi (Optimal me'yor: 0.8 - 2.2 kPa)
             document.getElementById("lung-p-val").innerText = `${lungP.toFixed(1)} kPa`;
-            const lungPct = Math.min(100, (lungP / 3.5) * 100);
+            const lungPct = Math.min(100, (lungP / 2.5) * 100);
             document.getElementById("lung-p-bar").style.width = `${lungPct}%`;
-            if (lungP >= 2.0 && lungP <= 3.0) {
-                document.getElementById("lung-status-text").innerText = "✅ TO'G'RI VA YETARLI NAFAS (20-30 cmH2O)";
-                document.getElementById("lung-status-text").className = "text-[10px] text-emerald-400 mt-0.5 font-bold glow-green";
-                if (current.spo2 < 99) {
+            
+            const lungStatus = document.getElementById("lung-status-text");
+            if (lungP >= 0.8 && lungP <= 2.2) {
+                lungStatus.innerText = "✅ TO'G'RI NAFAS (0.8 - 2.2 kPa)";
+                lungStatus.className = "text-[9px] text-emerald-700 mt-0.5 font-bold";
+                if (current.spo2 < 99 && current.hr > 0) {
                     current.spo2 = Math.min(100, current.spo2 + 1);
                     updateNumericsUI();
                 }
-            } else if (lungP > 3.0) {
-                document.getElementById("lung-status-text").innerText = "🚨 JUDA KUCHLI! BAROTRAVMA XAVFI (>3.0 kPa)";
-                document.getElementById("lung-status-text").className = "text-[10px] text-rose-400 mt-0.5 font-bold glow-red";
-            } else if (lungP > 0.6) {
-                document.getElementById("lung-status-text").innerText = "⚠️ Qattiqroq siqing (<20 cmH2O)";
-                document.getElementById("lung-status-text").className = "text-[10px] text-yellow-400 mt-0.5 font-bold";
+            } else if (lungP > 2.2) {
+                lungStatus.innerText = "🚨 JUDA KUCHLI! (>2.2 kPa)";
+                lungStatus.className = "text-[9px] text-rose-600 mt-0.5 font-bold";
+            } else if (lungP >= 0.4) {
+                lungStatus.innerText = "⚠️ Qattiqroq siqing (<0.8 kPa)";
+                lungStatus.className = "text-[9px] text-amber-700 mt-0.5 font-bold";
             } else {
-                document.getElementById("lung-status-text").innerText = "O'pka: Normal";
-                document.getElementById("lung-status-text").className = "text-[10px] text-cyan-400 mt-0.5";
+                lungStatus.innerText = "Me'yor: 0.8 - 2.2 kPa";
+                lungStatus.className = "text-[9px] text-slate-500 mt-0.5 font-semibold";
             }
 
-            // 5. Stomach Pressure
+            // --- 30:2 SIKL: NAFASNI HISOBGA OLISH VA BOSQICHLI JONLANISH ---
+            if (lungP >= 0.5 && !window._monitorVentTriggered) {
+                window._monitorVentTriggered = true;
+                cprCycleVents++;
+                if (lungP >= 0.8 && lungP <= 2.2) {
+                    cprCycleCorrectVents++;
+                }
+                updateCycleHUD();
+
+                // Agar 30 ta bosish (yoki kamida 25 ta) va 2 ta nafas to'liq bajarilsa:
+                if (cprCycleComps >= 25 && cprCycleVents >= 2) {
+                    const totalActs = cprCycleComps + cprCycleVents;
+                    const totalCorrect = cprCycleCorrectComps + cprCycleCorrectVents;
+                    const accuracyPct = Math.round((totalCorrect / totalActs) * 100);
+
+                    // Agar aniqlik 80% dan yuqori bo'lsa -> 1-BOSQICH: OZROQ JONLANSIN (20+ BPM)!
+                    if (accuracyPct >= 80) {
+                        cprRevivalStage = 1;
+                        target.hr = 22;
+                        current.hr = 22;
+                        target.spo2 = 62;
+                        current.spo2 = 62;
+                        target.sys = 65;
+                        target.dia = 40;
+                        current.sys = 65;
+                        current.dia = 40;
+                        target.rr = 6;
+                        current.rr = 6;
+                        current.rhythm = "brady";
+                        transitionSteps = 0;
+                        stopAsystoleTone();
+                        updateNumericsUI();
+                        updateBanner(`🟡 1-BOSQICH (Aniqlik: ${accuracyPct}%): YURAK 22 BPM URISHNI BOSHLADI! ENDI UKOL (ADRENALIN) QILISH KERAK!`, "bg-amber-100 text-amber-900 border-amber-400 font-black");
+                    } else {
+                        updateBanner(`⚠️ SIKL YETARLI EMAS (Aniqlik: ${accuracyPct}% < 80%). Qayta 30:2 bajaring!`, "bg-rose-100 text-rose-900 border-rose-400 font-bold");
+                    }
+
+                    // Keyingi sikl uchun hisoblagichlarni yangilash
+                    cprCycleComps = 0;
+                    cprCycleCorrectComps = 0;
+                    cprCycleVents = 0;
+                    cprCycleCorrectVents = 0;
+                }
+            } else if (lungP < 0.3) {
+                window._monitorVentTriggered = false;
+            }
+
+            // 5. Oshqozon xavfi
             document.getElementById("stomach-p-val").innerText = `${stomachP.toFixed(1)} kPa`;
             const stomachAlert = document.getElementById("stomach-alert");
             if (stomachP > 0.8) {
-                stomachAlert.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-500 alarm-blink";
+                stomachAlert.className = "px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-800 border border-rose-400 alarm-blink";
                 stomachAlert.innerHTML = "⚠️ HAVO OSHQOZONDA!";
             } else {
-                stomachAlert.className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900 text-slate-400 border border-slate-800 text-center";
+                stomachAlert.className = "px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 text-center";
                 stomachAlert.innerHTML = "Oshqozon toza";
             }
 
-            // 6. Injection (Touch Sensor Ukol)
+            // 6. Ukol / Inyeksiya (Touch Pin 4) -> 2-BOSQICH: TO'LIQ O'ZIGA KELISH
             const injBanner = document.getElementById("inj-banner");
-            const injBadge = document.getElementById("inj-badge-small");
-            if (injOk) {
+            const injBtnEl = document.getElementById("inj-badge-small");
+            if (injBtn) {
                 injBanner.classList.remove("hidden");
-                injBadge.innerText = "💉 UKOL QILINDI!";
-                injBadge.className = "text-[10px] text-purple-300 font-bold mt-0.5 text-center alarm-blink";
+                if (injBtnEl) {
+                    injBtnEl.className = "mt-1 w-full py-0.5 px-1.5 rounded bg-purple-600 text-white font-black text-[10px] flex items-center justify-center gap-1 shadow-sm alarm-blink";
+                }
                 
-                // Flash overlay
                 const flash = document.getElementById("flash-overlay");
                 flash.classList.add("inj-active");
                 setTimeout(() => flash.classList.remove("inj-active"), 1200);
 
-                // If patient was dying, injection helps rescue patient!
-                if (current.hr <= 30) {
-                    setTimeout(() => {
-                        setScenario("normal");
-                    }, 1500);
+                // Agar 1-bosqichda bo'lsa (yoki reanimatsiya qilinayotgan bo'lsa) -> TO'LIQ O'ZIGA KELISH (ROSC)!
+                if (cprRevivalStage === 1 || (current.hr <= 30 && cprCount >= 10)) {
+                    cprRevivalStage = 2;
+                    target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                    transitionSteps = 45;
+                    stopAsystoleTone();
+                    updateBanner("🟢 2-BOSQICH: UKOL QILINDI VA BEMOR TO'LIQ O'ZIGA KELDI (ROSC - 75 BPM)!", "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
                 }
             } else {
                 injBanner.classList.add("hidden");
-                injBadge.innerText = "Ukol: Kutilmoqda (Touch 4)";
-                injBadge.className = "text-[10px] text-purple-400 font-semibold mt-0.5 text-center";
+                if (injBtnEl) {
+                    injBtnEl.className = "mt-1 w-full py-0.5 px-1.5 rounded bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 font-bold text-[10px] flex items-center justify-center gap-1 transition cursor-pointer active:scale-95 shadow-xs";
+                }
             }
+        }
 
-            // Auto-recovery after 10 high-quality compressions
-            if (current.hr <= 20 && count >= 10 && dOk && posOk && bpmOk) {
-                setScenario("normal");
-            }
+        function triggerManualInjection() {
+            handleHardwareData({
+                force: lastRawMonitorForce,
+                pos_btn: 1,
+                inj_btn: 1,
+                lung_p: 0,
+                stomach_p: 0
+            });
+            setTimeout(() => {
+                handleHardwareData({
+                    force: lastRawMonitorForce,
+                    pos_btn: 0,
+                    inj_btn: 0,
+                    lung_p: 0,
+                    stomach_p: 0
+                });
+            }, 1500);
         }
 
         function updateQualityBadge(id, label, isOk, isActive) {
             const el = document.getElementById(id);
             if (!isActive) {
-                el.className = "px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 text-center font-bold";
+                el.className = "px-1 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-500 text-center font-bold";
                 el.innerText = `${label}: -`;
             } else if (isOk) {
-                el.className = "px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-300 text-center font-bold";
+                el.className = "px-1 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-center font-bold";
                 el.innerText = `${label}: ✅`;
             } else {
-                el.className = "px-1.5 py-0.5 rounded bg-rose-950 border border-rose-700 text-rose-300 text-center font-bold";
+                el.className = "px-1 py-0.5 rounded bg-rose-100 border border-rose-300 text-rose-800 text-center font-bold";
                 el.innerText = `${label}: ❌`;
             }
         }
@@ -883,7 +911,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             ws.onopen = () => {
                 document.getElementById("hw-dot").className = "w-2 h-2 rounded-full bg-emerald-500";
-                document.getElementById("hw-text").innerText = "ESP32 UART: Jonli oqim";
+                document.getElementById("hw-text").innerText = "ESP32 UART: Jonli";
             };
 
             ws.onmessage = (event) => {
@@ -895,311 +923,51 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             ws.onclose = () => {
                 document.getElementById("hw-dot").className = "w-2 h-2 rounded-full bg-amber-500";
-                document.getElementById("hw-text").innerText = "ESP32 UART: Qayta ulanmoqda";
+                document.getElementById("hw-text").innerText = "ESP32: Qayta ulanmoqda";
                 setTimeout(connectTelemetryWebSocket, 1500);
             };
         }
 
-        // ==================== DIRECT WEB SERIAL API (ONE-CLICK USB KOMPRESSOR) ====================
-        let webSerialPort = null;
-        let isSerialConnected = false;
-        let webSerialReader = null;
-        let webSerialBuffer = "";
-
-        async function toggleDirectWebSerial() {
-            if (isSerialConnected && webSerialPort) {
-                await disconnectWebSerial();
-                return;
-            }
-            await connectDirectWebSerial();
-        }
-
-        async function connectDirectWebSerial() {
-            if (!("serial" in navigator)) {
-                alert("Brauzeringiz Web Serial API-ni qo'llab-quvvatlamaydi. Iltimos Google Chrome yoki Microsoft Edge brauzeridan foydalaning!");
-                return;
-            }
-            try {
-                webSerialPort = await navigator.serial.requestPort();
-                await webSerialPort.open({ baudRate: 115200 });
-                isSerialConnected = true;
-
-                updateWebSerialUI(true);
-                showKompressorFeedback("🔌 Arduino USB ulandi! Yuklanmoqda...", "emerald");
-
-                // Arduino DTR resetdan so'ng bootloader tugashini kutamiz (1.6 soniya)
-                setTimeout(async () => {
-                    await sendWebSerialCommand("NORMAL");
-                    await sendWebSerialCommand("PUMP:ON");
-                    await sendWebSerialCommand("BPM:75");
-                    showKompressorFeedback("💨 Kompressor Yoqildi: 75 BPM Normal Puls faol!", "emerald");
-                }, 1600);
-
-                readWebSerialStream();
-            } catch(err) {
-                console.error("Web Serial Ulanish xatosi:", err);
-                if (err.name !== "NotFoundError") {
-                    alert("USB portga ulanishda xatolik: " + err.message);
-                }
-                updateWebSerialUI(false);
-            }
-        }
-
-        async function disconnectWebSerial() {
-            try {
-                if (webSerialReader) {
-                    await webSerialReader.cancel();
-                    webSerialReader = null;
-                }
-                if (webSerialPort) {
-                    await webSerialPort.close();
-                    webSerialPort = null;
-                }
-            } catch(e) {
-                console.warn("Serial yopish xatosi:", e);
-            }
-            isSerialConnected = false;
-            updateWebSerialUI(false);
-            showKompressorFeedback("🔌 USB uzildi", "slate");
-        }
-
-        if ("serial" in navigator) {
-            navigator.serial.addEventListener("disconnect", () => {
-                isSerialConnected = false;
-                webSerialPort = null;
-                updateWebSerialUI(false);
-                showKompressorFeedback("🔌 Arduino USB kabeli uzildi", "rose");
-            });
-        }
-
-        function updateWebSerialUI(connected) {
-            const btn = document.getElementById("btn-web-serial");
-            const text = document.getElementById("web-serial-text");
-            const pumpDot = document.getElementById("pump-dot");
-            const pumpText = document.getElementById("pump-text");
-
-            if (connected) {
-                btn.className = "px-2.5 py-1 rounded bg-emerald-900 text-emerald-200 border border-emerald-500 flex items-center gap-1.5 font-bold shadow cursor-pointer transition";
-                text.innerText = "✅ Kompressor Ulandi (USB)";
-                if (pumpDot) pumpDot.className = "w-2 h-2 rounded-full bg-emerald-400 alarm-blink";
-                if (pumpText) pumpText.innerText = "Kompressor: YONIQ (PUMP:ON)";
-            } else {
-                btn.className = "px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 font-bold shadow cursor-pointer transition";
-                text.innerText = "🔌 Arduino Kompressor (USB)";
-                if (pumpDot) pumpDot.className = "w-2 h-2 rounded-full bg-slate-500";
-                if (pumpText) pumpText.innerText = "Kompressor: Kutilmoqda";
-            }
-        }
-
-        async function readWebSerialStream() {
-            while (webSerialPort && webSerialPort.readable && isSerialConnected) {
-                try {
-                    webSerialReader = webSerialPort.readable.getReader();
-                    const decoder = new TextDecoder();
-                    while (true) {
-                        const { value, done } = await webSerialReader.read();
-                        if (done) break;
-                        if (value) {
-                            webSerialBuffer += decoder.decode(value, { stream: true });
-                            let lines = webSerialBuffer.split(String.fromCharCode(10));
-                            webSerialBuffer = lines.pop();
-                            for (let line of lines) {
-                                line = line.trim();
-                                if (line.startsWith("{") && line.endsWith("}")) {
-                                    try {
-                                        const data = JSON.parse(line);
-                                        handleHardwareData(data);
-                                    } catch(e) {}
-                                } else if (line.includes("KOMPRESSOR") || line.includes("BPM")) {
-                                    console.log("ARDUINO FEEDBACK:", line);
-                                }
-                            }
-                        }
-                    }
-                } catch(err) {
-                    console.warn("Serial o'qish xatosi:", err);
-                    break;
-                } finally {
-                    if (webSerialReader) {
-                        try { webSerialReader.releaseLock(); } catch(e) {}
-                        webSerialReader = null;
-                    }
-                }
-            }
-        }
-
-        // Serial buyruqlari navbati (deadlock va yo'qolishning oldini oluvchi asinxron navbat)
-        let serialCommandQueue = [];
-        let isSendingSerial = false;
-
-        function sendWebSerialCommand(cmd) {
-            serialCommandQueue.push(cmd);
-            processSerialQueue();
-        }
-
-        async function processSerialQueue() {
-            if (isSendingSerial || serialCommandQueue.length === 0) return;
-            isSendingSerial = true;
-
-            while (serialCommandQueue.length > 0) {
-                const cmd = serialCommandQueue.shift().trim();
-
-                // 1. Direct Web Serial port orqali uzatish
-                if (webSerialPort && webSerialPort.writable) {
-                    try {
-                        const writer = webSerialPort.writable.getWriter();
-                        const data = new TextEncoder().encode(cmd + String.fromCharCode(13, 10));
-                        await writer.write(data);
-                        writer.releaseLock();
-                        console.log(">>> [USB ARDUINO BUYRUQ]:", cmd);
-                    } catch(e) {
-                        console.warn("USB Serial yozish xatosi:", e);
-                    }
-                }
-
-                // 2. Server backend API orqali yuborish (pyserial ko'prigi uchun)
-                try {
-                    fetch("/api/compressor", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ cmd: cmd })
-                    }).catch(() => {});
-                } catch(e) {}
-
-                showKompressorFeedback(`📡 Buyruq: [${cmd}]`, cmd.includes("OFF") || cmd.includes("DYING") || cmd === "BPM:0" || cmd === "0" || cmd === "STOP" ? "rose" : "emerald");
-
-                await new Promise(r => setTimeout(r, 60));
-            }
-            isSendingSerial = false;
-        }
-
-        function showKompressorFeedback(msg, color="emerald") {
-            const el = document.getElementById("compressor-cmd-feedback");
-            if (el) {
-                el.innerText = msg;
-                el.className = `text-xs font-bold text-${color}-400 transition-all duration-300`;
-            }
-            const pumpText = document.getElementById("pump-text");
-            const pumpDot = document.getElementById("pump-dot");
-            if (pumpText && pumpDot) {
-                if (msg.includes("PUMP:ON") || msg.includes("NORMAL") || msg.includes("Yoqildi") || msg.includes("75") || msg.includes("135") || msg.includes("100") || msg.includes("42")) {
-                    pumpText.innerText = "Kompressor: YONIQ (PUMP:ON)";
-                    pumpDot.className = "w-2 h-2 rounded-full bg-emerald-400 alarm-blink";
-                } else if (msg.includes("PUMP:OFF") || msg.includes("DYING") || msg.includes("BPM:0") || msg.includes("0") || msg.includes("STOP") || msg.includes("to'xtatildi")) {
-                    pumpText.innerText = "Kompressor: TO'XTATILGAN (0 BPM)";
-                    pumpDot.className = "w-2 h-2 rounded-full bg-red-500";
-                }
-            }
-        }
-
-        // ==================== 0 BPM ASISTOLIYA VA KOMPRESSORNI TO'XTATISH ====================
-        function stopCompressorAndZeroBPM() {
-            initAudio();
-            // 1. Ekranni darhol 0 ga tushiramiz
-            target.hr = 0;
-            target.spo2 = 0;
-            target.sys = 0;
-            target.dia = 0;
-            target.rr = 0;
-            current.hr = 0;
-            current.spo2 = 0;
-            current.sys = 0;
-            current.dia = 0;
-            current.rr = 0;
-            current.rhythm = "asystole";
-            transitionSteps = 0;
-            totalSteps = 0;
-            updateNumericsUI();
-            updateBanner("🚨 DIQQAT: ASISTOLIYA / PULS VA KOMPRESSOR TO'XTATILDI (0 BPM)", "bg-red-950 text-red-400 border-red-500 alarm-blink");
-            startAsystoleTone();
-
-            // 2. Arduino kompressori va pulsatoriga barcha to'xtatish buyruqlarini navbat bilan yuborish
-            sendWebSerialCommand("0");
-            sendWebSerialCommand("BPM:0");
-            sendWebSerialCommand("STOP");
-            sendWebSerialCommand("PUMP:OFF");
-            sendWebSerialCommand("DYING");
-
-            showKompressorFeedback("🛑 Kompressor va puls to'liq to'xtatildi (0 BPM)", "rose");
-        }
-
-        function sendManualPumpCommand(cmd, bpm=75) {
-            initAudio();
-            if (cmd.includes("OFF") || bpm <= 0) {
-                stopCompressorAndZeroBPM();
-                return;
-            }
-            target.hr = bpm;
-            current.hr = bpm;
-            current.rhythm = bpm > 130 ? "vtach" : (bpm < 50 ? "brady" : "sinus");
-            transitionSteps = 0;
-            updateNumericsUI();
-            stopAsystoleTone();
-
-            sendWebSerialCommand("PUMP:ON");
-            sendWebSerialCommand(`BPM:${bpm}`);
-        }
-
-        function sendManualBPM(bpm) {
-            initAudio();
-            bpm = parseInt(bpm);
-            if (bpm <= 0) {
-                stopCompressorAndZeroBPM();
-                return;
-            }
-            target.hr = bpm;
-            current.hr = bpm;
-            current.rhythm = bpm > 130 ? "vtach" : (bpm < 50 ? "brady" : "sinus");
-            transitionSteps = 0;
-            updateNumericsUI();
-            stopAsystoleTone();
-
-            sendWebSerialCommand("PUMP:ON");
-            sendWebSerialCommand(`BPM:${bpm}`);
-        }
-
+        // ==================== KLINIK SSENARIYLAR ====================
         function setScenario(type) {
             initAudio();
+            cprRevivalStage = 0;
+            totalSteps = 120;
+            transitionSteps = totalSteps;
+
             if (type === "dying") {
-                stopCompressorAndZeroBPM();
+                target.hr = 0; target.spo2 = 0; target.sys = 0; target.dia = 0; target.rr = 0;
+                current.hr = 0; current.spo2 = 0; current.sys = 0; current.dia = 0; current.rr = 0;
+                current.rhythm = "asystole";
+                transitionSteps = 0;
+                totalSteps = 0;
+                updateNumericsUI();
+                updateBanner("🚨 ASISTOLIYA: YURAK TO'XTADI (0 BPM)! CPR (30:2) TALAB QILINADI!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
+                startAsystoleTone();
                 return;
             }
-
-            totalSteps = 150;
-            transitionSteps = totalSteps;
 
             if (type === "normal") {
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
-                updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-950/80 text-emerald-400 border-emerald-700");
+                updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-100 text-emerald-900 border-emerald-300 font-bold");
                 stopAsystoleTone();
-                sendWebSerialCommand("PUMP:ON");
-                sendWebSerialCommand("NORMAL");
-                sendWebSerialCommand("BPM:75");
             } else if (type === "attack") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
-                updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA VA GIPERTONIK KRIZ!", "bg-orange-950 text-orange-400 border-orange-500 alarm-blink");
+                updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA VA GIPERTONIK KRIZ!", "bg-amber-100 text-amber-900 border-amber-400 alarm-blink font-black");
                 stopAsystoleTone();
-                sendWebSerialCommand("PUMP:ON");
-                sendWebSerialCommand("ATTACK");
-                sendWebSerialCommand("BPM:135");
             } else if (type === "hypoxia") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
-                updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI!", "bg-cyan-950 text-cyan-400 border-cyan-500 alarm-blink");
+                updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI!", "bg-sky-100 text-sky-900 border-sky-400 alarm-blink font-black");
                 stopAsystoleTone();
-                sendWebSerialCommand("PUMP:ON");
-                sendWebSerialCommand("BPM:135");
             } else if (type === "shock") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
-                updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI!", "bg-rose-950 text-rose-400 border-rose-500 alarm-blink");
+                updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI!", "bg-purple-100 text-purple-900 border-purple-400 alarm-blink font-black");
                 stopAsystoleTone();
-                sendWebSerialCommand("PUMP:ON");
-                sendWebSerialCommand("BPM:145");
             }
         }
 
         function defibrillateShock() {
             initAudio();
-            sendWebSerialCommand("SHOCK");
             const flash = document.getElementById("flash-overlay");
             flash.classList.add("shock-active");
             setTimeout(() => flash.classList.remove("shock-active"), 600);
@@ -1208,12 +976,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = "sawtooth";
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
+                osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.3);
                 gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.connect(gain);
-                gain.connect(audioCtx.destination);
+                gain.connect(masterCompressor || audioCtx.destination);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.3);
             } catch(e) {}
@@ -1225,7 +993,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function updateBanner(text, classes) {
             const b = document.getElementById("alarm-banner");
-            b.className = `px-4 py-1 rounded-md text-xs font-bold uppercase tracking-widest border ${classes}`;
+            b.className = `px-3 py-0.5 rounded-lg text-xs uppercase tracking-wider border ${classes}`;
             b.innerHTML = text;
         }
 
@@ -1268,19 +1036,23 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById("num-rr").innerText = rrVal;
             document.getElementById("num-temp").innerText = current.temp.toFixed(1);
 
+            const rhythmLabel = document.getElementById("ecg-rhythm-name");
             if (hrVal <= 0) {
-                document.getElementById("ecg-rhythm-name").innerText = "ASYSTOLIYA (Yurak to'xtadi)";
-                document.getElementById("ecg-rhythm-name").className = "text-red-500 font-bold alarm-blink";
+                rhythmLabel.innerText = "ASYSTOLIYA (Yurak to'xtadi)";
+                rhythmLabel.className = "text-rose-600 font-extrabold alarm-blink";
+            } else if (hrVal <= 35) {
+                rhythmLabel.innerText = "Sekin Bradikardiya (Tiklanmoqda)";
+                rhythmLabel.className = "text-amber-600 font-bold";
             } else if (hrVal > 150) {
-                document.getElementById("ecg-rhythm-name").innerText = "Ventrikulyar Taxikardiya";
-                document.getElementById("ecg-rhythm-name").className = "text-orange-400 font-bold";
+                rhythmLabel.innerText = "Ventrikulyar Taxikardiya";
+                rhythmLabel.className = "text-amber-600 font-bold";
             } else {
-                document.getElementById("ecg-rhythm-name").innerText = "Sinus Ritmi";
-                document.getElementById("ecg-rhythm-name").className = "text-emerald-400";
+                rhythmLabel.innerText = "Sinus Ritmi";
+                rhythmLabel.className = "text-emerald-700 font-bold";
             }
         }
 
-        // Canvas Oscilloscopes
+        // ==================== CANVAS OSCILLOSCOPES (WHITE MEDICAL DAY-MODE) ====================
         const ecgCanvas = document.getElementById("ecgCanvas");
         const plethCanvas = document.getElementById("plethCanvas");
         const respCanvas = document.getElementById("respCanvas");
@@ -1291,8 +1063,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function resizeCanvases() {
             [ecgCanvas, plethCanvas, respCanvas].forEach(c => {
-                c.width = c.clientWidth * window.devicePixelRatio || c.clientWidth;
-                c.height = c.clientHeight * window.devicePixelRatio || c.clientHeight;
+                c.width = c.clientWidth * (window.devicePixelRatio || 1) || c.clientWidth;
+                c.height = c.clientHeight * (window.devicePixelRatio || 1) || c.clientHeight;
             });
         }
         window.addEventListener("resize", resizeCanvases);
@@ -1352,8 +1124,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             const hPleth = plethCanvas.height;
             const hResp = respCanvas.height;
 
-            const sweepSpeed = 2.5 * (window.devicePixelRatio || 1);
-            const eraseWidth = 25 * (window.devicePixelRatio || 1);
+            const sweepSpeed = 2.2 * (window.devicePixelRatio || 1);
+            const eraseWidth = 24 * (window.devicePixelRatio || 1);
 
             const bps = hr / 60;
             ecgPhase += (bps / 60);
@@ -1369,9 +1141,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
             }
 
-            // 1. ECG
+            // 1. ECG (White background, Crisp Medical Green #16a34a)
             const nextEcgX = (ecgX + sweepSpeed) % w;
-            ecgCtx.fillStyle = "#000000";
+            ecgCtx.fillStyle = "#ffffff";
             ecgCtx.fillRect(nextEcgX, 0, eraseWidth, hEcg);
 
             const ecgVal = getECGY(ecgPhase, hr);
@@ -1379,10 +1151,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             const curEcgY = midEcg - (ecgVal * (hEcg * 0.42));
 
             if (lastEcgY !== null && nextEcgX > ecgX) {
-                ecgCtx.strokeStyle = "#22c55e";
-                ecgCtx.lineWidth = 2.5 * (window.devicePixelRatio || 1);
-                ecgCtx.shadowColor = "#22c55e";
-                ecgCtx.shadowBlur = 6;
+                ecgCtx.strokeStyle = "#16a34a";
+                ecgCtx.lineWidth = 2.4 * (window.devicePixelRatio || 1);
                 ecgCtx.beginPath();
                 ecgCtx.moveTo(ecgX, lastEcgY);
                 ecgCtx.lineTo(nextEcgX, curEcgY);
@@ -1391,19 +1161,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             ecgX = nextEcgX;
             lastEcgY = curEcgY;
 
-            // 2. SpO2
+            // 2. SpO2 Pleth (White background, Deep Medical Cyan #0284c7)
             const nextPlethX = (plethX + sweepSpeed) % w;
-            plethCtx.fillStyle = "#000000";
+            plethCtx.fillStyle = "#ffffff";
             plethCtx.fillRect(nextPlethX, 0, eraseWidth, hPleth);
 
             const plethVal = getPlethY(plethPhase, hr, spo2);
-            const curPlethY = hPleth - 10 - (plethVal * (hPleth * 0.8));
+            const curPlethY = hPleth - 8 - (plethVal * (hPleth * 0.8));
 
             if (lastPlethY !== null && nextPlethX > plethX) {
-                plethCtx.strokeStyle = "#06b6d4";
+                plethCtx.strokeStyle = "#0284c7";
                 plethCtx.lineWidth = 2.2 * (window.devicePixelRatio || 1);
-                plethCtx.shadowColor = "#06b6d4";
-                plethCtx.shadowBlur = 5;
                 plethCtx.beginPath();
                 plethCtx.moveTo(plethX, lastPlethY);
                 plethCtx.lineTo(nextPlethX, curPlethY);
@@ -1412,9 +1180,9 @@ HTML_CONTENT = """<!DOCTYPE html>
             plethX = nextPlethX;
             lastPlethY = curPlethY;
 
-            // 3. RESP
+            // 3. RESP (White background, Deep Medical Amber #d97706)
             const nextRespX = (respX + sweepSpeed) % w;
-            respCtx.fillStyle = "#000000";
+            respCtx.fillStyle = "#ffffff";
             respCtx.fillRect(nextRespX, 0, eraseWidth, hResp);
 
             const respVal = getRespY(respPhase, rr);
@@ -1422,10 +1190,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             const curRespY = midResp - (respVal * (hResp * 0.38));
 
             if (lastRespY !== null && nextRespX > respX) {
-                respCtx.strokeStyle = "#eab308";
+                respCtx.strokeStyle = "#d97706";
                 respCtx.lineWidth = 2.2 * (window.devicePixelRatio || 1);
-                respCtx.shadowColor = "#eab308";
-                respCtx.shadowBlur = 5;
                 respCtx.beginPath();
                 respCtx.moveTo(respX, lastRespY);
                 respCtx.lineTo(nextRespX, curRespY);
@@ -1500,7 +1266,6 @@ def send_serial_hw_command(cmd: str):
             try:
                 active_serial_port.write((cmd + "\r\n").encode("utf-8"))
                 active_serial_port.flush()
-                print(f">>> [BACKEND SERIAL COM]: Yuborildi -> {cmd}")
                 return True
             except Exception as e:
                 print(f"Serial port yozish xatosi: {e}")
@@ -1525,10 +1290,7 @@ def auto_detect_arduino_port():
                             s = serial.Serial(p.device, 115200, timeout=0.1)
                             time.sleep(1.6)
                             active_serial_port = s
-                            print(f"✅ Backend Arduino USB porti ulandi: {p.device}")
-                            send_serial_hw_command("NORMAL")
-                            send_serial_hw_command("PUMP:ON")
-                            send_serial_hw_command("BPM:75")
+                            print(f"✅ Backend Arduino/ESP32 USB porti ulandi: {p.device}")
                             break
                         except Exception:
                             pass
@@ -1548,7 +1310,6 @@ async def get_monitor():
 
 @app.post("/api/compressor")
 async def api_compressor(req: CompressorRequest):
-    send_serial_hw_command(req.cmd)
     return JSONResponse(content={"status": "ok", "cmd": req.cmd})
 
 @app.post("/api/telemetry")
