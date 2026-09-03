@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 MedLife Touchscreen Kiosk Hub - Sensorli Ekran Ilovalar Markazi
 """
@@ -91,7 +91,7 @@ HUB_HTML = """<!DOCTYPE html>
             </p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
 
             <!-- APP 1: BEMOR AI -->
             <div class="touch-card bg-gradient-to-b from-slate-900/90 to-slate-950/90 border-2 border-teal-500/30 hover:border-teal-400/80 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
@@ -199,6 +199,40 @@ HUB_HTML = """<!DOCTYPE html>
                     </a>
                     <a href="/console?source=pwa" target="_blank" class="w-full py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-desktop text-indigo-400"></i>
+                        <span>Alohida Oyna / Kioska</span>
+                    </a>
+            <!-- APP 4: INTUBATSIYA MODULI -->
+            <div class="touch-card bg-gradient-to-b from-slate-900/90 to-slate-950/90 border-2 border-purple-500/30 hover:border-purple-400/80 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+                <div class="absolute -right-8 -top-8 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                            <i class="fa-solid fa-stethoscope text-2xl text-white"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-400 text-xs font-bold mono">
+                            3 SENSOR + OVOZ
+                        </span>
+                    </div>
+                    <h3 class="text-2xl font-black text-white group-hover:text-purple-300 transition">
+                        Intubatsiya Moduli
+                    </h3>
+                    <p class="text-slate-400 text-sm mt-3 leading-relaxed">
+                        Traxeya va qizilo'ngach intubatsiyasi: Tish, O'pka va Oshqozon yo'li datchiklari real vaqt monitoringi, audio ogohlantirish hamda vizual anatomiya animatsiyasi.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mt-5">
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-purple-300 border border-slate-700">🩸 Anatomiya Overlay</span>
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-purple-300 border border-slate-700">🔊 Realtime Audio</span>
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-purple-300 border border-slate-700">⚡ Web Serial API</span>
+                    </div>
+                </div>
+
+                <div class="mt-8 space-y-3">
+                    <a href="/intubation" class="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-extrabold text-base shadow-xl shadow-purple-950 flex items-center justify-center gap-3 transition">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Sensorli Ekranda Ochish</span>
+                    </a>
+                    <a href="/intubation?source=pwa" target="_blank" class="w-full py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-desktop text-purple-400"></i>
                         <span>Alohida Oyna / Kioska</span>
                     </a>
                 </div>

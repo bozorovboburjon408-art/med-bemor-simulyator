@@ -17,6 +17,8 @@ import uvicorn
 from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
 from kiosk_hub import HUB_HTML
+from intubation_simulator import INTUBATION_HTML
+
 
 
 # Console encodingni to'g'rilash (Windows uchun)
@@ -1226,7 +1228,25 @@ async def get_pult():
 async def get_exam():
     return HTMLResponse(content=CONSOLE_HTML)
 
+@app.get("/intubation", response_class=HTMLResponse)
+async def get_intubation():
+    return HTMLResponse(content=INTUBATION_HTML)
+
+@app.get("/intubation/assets/{filename}")
+async def get_intubation_asset(filename: str):
+    file_path = os.path.join(os.path.dirname(__file__), "intubation-modul", "assets", filename)
+    if os.path.exists(file_path):
+        if filename.endswith(".svg"):
+            return FileResponse(file_path, media_type="image/svg+xml")
+        elif filename.endswith(".mp3"):
+            return FileResponse(file_path, media_type="audio/mpeg")
+        elif filename.endswith(".mp4"):
+            return FileResponse(file_path, media_type="video/mp4")
+        return FileResponse(file_path)
+    return JSONResponse(content={"error": "Asset not found"}, status_code=404)
+
 @app.get("/manikin_photo.png")
+
 async def get_photo():
     photo_path = os.path.join(os.path.dirname(__file__), "manikin_photo.png")
     if os.path.exists(photo_path):
