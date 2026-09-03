@@ -82,31 +82,45 @@ void processWebCommand(String cmd) {
     int bpm = cmd.substring(4).toInt();
     setTargetBPM(bpm, "Veb: To'g'ridan-to'g'ri BPM");
   }
-  // 2. Veb-saytdagi "🟢 Normal (Barqaror)" tugmasi
+  // 2. Kompressorni to'g'ridan-to'g'ri yoqish (PUMP:ON / KOMPRESSOR:ON)
+  else if (cmd.indexOf("PUMP:ON") >= 0 || cmd.indexOf("KOMPRESSOR:ON") >= 0 || cmd == "START" || cmd == "ON") {
+    digitalWrite(PIN_PUMP_POWER, HIGH);
+    if (targetBPM <= 0) setTargetBPM(75, "Kompressor Yoqildi (Standart 75 BPM)");
+    Serial.println(F(">>> [KOMPRESSOR (PIN D7) YOQILDI]"));
+  }
+  // 3. Kompressorni to'g'ridan-to'g'ri o'chirish (PUMP:OFF / KOMPRESSOR:OFF)
+  else if (cmd.indexOf("PUMP:OFF") >= 0 || cmd.indexOf("KOMPRESSOR:OFF") >= 0 || cmd == "STOP" || cmd == "OFF") {
+    digitalWrite(PIN_PUMP_POWER, LOW);
+    digitalWrite(PIN_PULSE_VALVE, LOW);
+    digitalWrite(PIN_HEART_LED, LOW);
+    targetBPM = 0;
+    Serial.println(F(">>> [KOMPRESSOR VA PULS RELESI TO'XTATILDI]"));
+  }
+  // 4. Veb-saytdagi "🟢 Normal (Barqaror)" tugmasi
   else if (cmd.indexOf("NORMAL") >= 0 || cmd == "1") {
     setTargetBPM(75, "Veb: Normal Sinus (75 BPM)");
   }
-  // 3. Veb-saytdagi "⚡ Xuruj boshlanyapti!" (Taxikardiya) tugmasi
+  // 5. Veb-saytdagi "⚡ Xuruj boshlanyapti!" (Taxikardiya) tugmasi
   else if (cmd.indexOf("TACH") >= 0 || cmd.indexOf("ATTACK") >= 0 || cmd == "2") {
     setTargetBPM(135, "Veb: Taxikardiya Xuruji (135 BPM)");
   }
-  // 4. Veb-saytdagi "Bradikardiya" tugmasi
+  // 6. Veb-saytdagi "Bradikardiya" tugmasi
   else if (cmd.indexOf("BRAD") >= 0 || cmd == "3") {
     setTargetBPM(42, "Veb: Bradikardiya (42 BPM)");
   }
-  // 5. Veb-saytdagi "🚨 Bemorni yo'qotyapmiz! / Asistoliya" tugmasi
-  else if (cmd.indexOf("DYING") >= 0 || cmd.indexOf("ASYSTOLE") >= 0 || cmd.indexOf("STOP") >= 0 || cmd == "5") {
+  // 7. Veb-saytdagi "🚨 Bemorni yo'qotyapmiz! / Asistoliya" tugmasi
+  else if (cmd.indexOf("DYING") >= 0 || cmd.indexOf("ASYSTOLE") >= 0 || cmd == "5") {
     setTargetBPM(0, "Veb: ASISTOLIYA - Puls to'xtadi (0 BPM)");
   }
-  // 6. Veb-saytdagi "Defibrillyatsiya (Shok)" tugmasi
+  // 8. Veb-saytdagi "Defibrillyatsiya (Shok)" tugmasi
   else if (cmd.indexOf("SHOCK") >= 0) {
     handleDefibShock();
   }
-  // 7. Veb-saytdagi "✨ Bemor Tirildi (ROSC)" tugmasi
+  // 9. Veb-saytdagi "✨ Bemor Tirildi (ROSC)" tugmasi
   else if (cmd.indexOf("ROSC") >= 0 || cmd == "6") {
     handleROSCRevival();
   }
-  // 8. Agar shunchaki son kelsa (masalan "90")
+  // 10. Agar shunchaki son kelsa (masalan "90")
   else if (cmd.toInt() > 0) {
     setTargetBPM(cmd.toInt(), "Veb: Qiymat bo'yicha");
   }

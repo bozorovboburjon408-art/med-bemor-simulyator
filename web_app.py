@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from google import genai
 from google.genai import types
 import uvicorn
-from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry
+from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
 
 
@@ -521,6 +521,15 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             // Yangi kasallik profiliga ulanamiz
             connectWebSocket();
+            
+            // Kompressor va pulsatorga yangi kasallik ritmini yuborish
+            if (item.bpm) {
+                fetch("/api/compressor", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ cmd: `BPM:${item.bpm}` })
+                }).catch(() => {});
+            }
             
             addSystemMessage(`🩺 Kasallik holati o'zgartirildi: <b>${item.nomi}</b>.`);
         }
@@ -1044,8 +1053,14 @@ async def get_index():
     return HTMLResponse(content=HTML_CONTENT)
 
 @app.get("/monitor", response_class=HTMLResponse)
+@app.get("/vital", response_class=HTMLResponse)
 async def get_monitor():
     return HTMLResponse(content=MONITOR_HTML)
+
+@app.post("/api/compressor")
+async def api_compressor(req: CompressorRequest):
+    send_serial_hw_command(req.cmd)
+    return JSONResponse(content={"status": "ok", "cmd": req.cmd})
 
 @app.get("/console", response_class=HTMLResponse)
 async def get_console():

@@ -4,10 +4,17 @@ import socket
 import asyncio
 import json
 import threading
+import time
 from typing import List
+from pydantic import BaseModel
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
+try:
+    import serial
+    import serial.tools.list_ports
+except ImportError:
+    serial = None
 
 # UTF-8 encoding Windows console
 try:
@@ -127,10 +134,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <span>🫀 Yurak-O'pka Reanimatsiyasi</span>
             </a>
 
-            <button id="btn-web-serial" onclick="connectDirectWebSerial()" class="px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 transition font-bold shadow cursor-pointer">
+            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 transition font-bold shadow cursor-pointer">
                 <i class="fa-brands fa-usb text-blue-400"></i>
-                <span id="web-serial-text">🔌 Maniken (USB) ga Ulanish</span>
+                <span id="web-serial-text">🔌 Arduino Kompressor (USB)</span>
             </button>
+
+            <div id="pump-status-badge" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300 flex items-center gap-1.5 text-xs">
+                <span id="pump-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span id="pump-text">Kompressor: Kutilmoqda</span>
+            </div>
 
             <div id="hw-badge" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 flex items-center gap-1.5">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -359,16 +371,18 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- INSTRUCTOR SIMULATION CONTROL PANEL -->
+    <!-- INSTRUCTOR SIMULATION & KOMPRESSOR CONTROL PANEL -->
     <footer class="bg-[#0c101c] border border-slate-800 rounded-xl p-3 shadow-xl">
-        <div class="flex items-center justify-between mb-2">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800">
             <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
                 <i class="fa-solid fa-sliders text-indigo-400"></i> O'qituvchi Boshqaruv Paneli va Ssenariylar
             </h3>
-            <span class="text-xs text-slate-500">ESP32 UART yoki dastur orqali simulyatsiyani boshqaring</span>
+            <div class="flex items-center gap-2">
+                <span id="compressor-cmd-feedback" class="text-xs font-bold text-slate-400"></span>
+            </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-3">
             <button onclick="setScenario('normal')" class="px-3 py-2 rounded-lg bg-emerald-950 hover:bg-emerald-900 border border-emerald-600 text-emerald-300 font-bold text-xs flex flex-col items-center justify-center gap-1 transition active:scale-95 shadow">
                 <i class="fa-solid fa-heart text-base text-emerald-400"></i>
                 <span>🟢 Normal (Barqaror)</span>
@@ -398,6 +412,42 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <i class="fa-solid fa-wand-magic-sparkles text-base text-indigo-400"></i>
                 <span>💉 Defibrilyator / CPR</span>
             </button>
+        </div>
+
+        <!-- DEDICATED ARDUINO KOMPRESSOR & PULSATOR BAR -->
+        <div class="bg-[#080c16] border border-blue-900/50 rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-xs text-blue-300 font-bold">
+                <i class="fa-solid fa-wind text-cyan-400"></i>
+                <span>ARDUINO KOMPRESSOR (D7 Nasos & D8 Puls Rele):</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button onclick="sendManualPumpCommand('PUMP:ON', 75)" class="px-3 py-1 rounded bg-emerald-900 hover:bg-emerald-800 text-emerald-200 border border-emerald-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
+                    <i class="fa-solid fa-play text-[10px]"></i> 💨 Kompressorni Yoqish
+                </button>
+                <button onclick="sendManualPumpCommand('PUMP:OFF', 0)" class="px-3 py-1 rounded bg-red-900 hover:bg-red-800 text-red-200 border border-red-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
+                    <i class="fa-solid fa-power-off text-[10px]"></i> 🛑 O'chirish
+                </button>
+                <span class="text-slate-600">|</span>
+                <span class="text-xs text-slate-400">Puls:</span>
+                <button onclick="sendManualBPM(42)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
+                    42 BPM
+                </button>
+                <button onclick="sendManualBPM(75)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
+                    75 BPM
+                </button>
+                <button onclick="sendManualBPM(100)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-yellow-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
+                    100 BPM
+                </button>
+                <button onclick="sendManualBPM(135)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-orange-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
+                    135 BPM
+                </button>
+                <button onclick="sendManualPumpCommand('PUMP:OFF', 0)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 text-xs font-bold cursor-pointer transition">
+                    0 Asistoliya
+                </button>
+                <button onclick="sendManualPumpCommand('ROSC', 75)" class="px-2.5 py-1 rounded bg-indigo-900 hover:bg-indigo-800 text-indigo-200 border border-indigo-500 text-xs font-bold flex items-center gap-1 shadow cursor-pointer transition">
+                    <i class="fa-solid fa-sparkles text-[10px]"></i> ROSC
+                </button>
+            </div>
         </div>
     </footer>
 
@@ -712,10 +762,19 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
         }
 
-        // ==================== DIRECT WEB SERIAL API (ONE-CLICK USB SYNC) ====================
+        // ==================== DIRECT WEB SERIAL API (ONE-CLICK USB KOMPRESSOR) ====================
         let webSerialPort = null;
-        let webSerialWriter = null;
+        let isSerialConnected = false;
+        let webSerialReader = null;
         let webSerialBuffer = "";
+
+        async function toggleDirectWebSerial() {
+            if (isSerialConnected && webSerialPort) {
+                await disconnectWebSerial();
+                return;
+            }
+            await connectDirectWebSerial();
+        }
 
         async function connectDirectWebSerial() {
             if (!("serial" in navigator)) {
@@ -725,57 +784,174 @@ HTML_CONTENT = """<!DOCTYPE html>
             try {
                 webSerialPort = await navigator.serial.requestPort();
                 await webSerialPort.open({ baudRate: 115200 });
-                const textEncoder = new TextEncoderStream();
-                const writableStreamClosed = textEncoder.readable.pipeTo(webSerialPort.writable);
-                webSerialWriter = textEncoder.writable.getWriter();
+                isSerialConnected = true;
 
-                document.getElementById("web-serial-text").innerText = "✅ Maniken Ulandi (USB)";
-                document.getElementById("btn-web-serial").className = "px-2.5 py-1 rounded bg-emerald-900 text-emerald-200 border border-emerald-500 flex items-center gap-1.5 font-bold shadow";
+                updateWebSerialUI(true);
+                showKompressorFeedback("🔌 Arduino USB ulandi! Yuklanmoqda...", "emerald");
 
-                sendWebSerialCommand("BPM:75");
-                readWebSerialTelemetryLoop();
+                // Arduino DTR resetdan so'ng bootloader tugashini kutamiz (1.6 soniya)
+                setTimeout(async () => {
+                    await sendWebSerialCommand("NORMAL");
+                    await sendWebSerialCommand("PUMP:ON");
+                    await sendWebSerialCommand("BPM:75");
+                    showKompressorFeedback("💨 Kompressor Yoqildi: 75 BPM Normal Puls faol!", "emerald");
+                }, 1600);
+
+                readWebSerialStream();
             } catch(err) {
                 console.error("Web Serial Ulanish xatosi:", err);
+                if (err.name !== "NotFoundError") {
+                    alert("USB portga ulanishda xatolik: " + err.message);
+                }
+                updateWebSerialUI(false);
             }
         }
 
-        async function readWebSerialTelemetryLoop() {
+        async function disconnectWebSerial() {
             try {
-                const textDecoder = new TextDecoderStream();
-                webSerialPort.readable.pipeTo(textDecoder.writable);
-                const reader = textDecoder.readable.getReader();
+                if (webSerialReader) {
+                    await webSerialReader.cancel();
+                    webSerialReader = null;
+                }
+                if (webSerialPort) {
+                    await webSerialPort.close();
+                    webSerialPort = null;
+                }
+            } catch(e) {
+                console.warn("Serial yopish xatosi:", e);
+            }
+            isSerialConnected = false;
+            updateWebSerialUI(false);
+            showKompressorFeedback("🔌 USB uzildi", "slate");
+        }
 
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    if (value) {
-                        webSerialBuffer += value;
-                        let lines = webSerialBuffer.split(String.fromCharCode(10));
-                        webSerialBuffer = lines.pop();
-                        for (let line of lines) {
-                            line = line.trim();
-                            if (line.startsWith("{") && line.endsWith("}")) {
-                                try {
-                                    const data = JSON.parse(line);
-                                    handleHardwareData(data);
-                                    if (ws && ws.readyState === WebSocket.OPEN) {
-                                        ws.send(line);
-                                    }
-                                } catch(e) {}
+        if ("serial" in navigator) {
+            navigator.serial.addEventListener("disconnect", () => {
+                isSerialConnected = false;
+                webSerialPort = null;
+                updateWebSerialUI(false);
+                showKompressorFeedback("🔌 Arduino USB kabeli uzildi", "rose");
+            });
+        }
+
+        function updateWebSerialUI(connected) {
+            const btn = document.getElementById("btn-web-serial");
+            const text = document.getElementById("web-serial-text");
+            const pumpDot = document.getElementById("pump-dot");
+            const pumpText = document.getElementById("pump-text");
+
+            if (connected) {
+                btn.className = "px-2.5 py-1 rounded bg-emerald-900 text-emerald-200 border border-emerald-500 flex items-center gap-1.5 font-bold shadow cursor-pointer transition";
+                text.innerText = "✅ Kompressor Ulandi (USB)";
+                if (pumpDot) pumpDot.className = "w-2 h-2 rounded-full bg-emerald-400 alarm-blink";
+                if (pumpText) pumpText.innerText = "Kompressor: YONIQ (PUMP:ON)";
+            } else {
+                btn.className = "px-2.5 py-1 rounded bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500 flex items-center gap-1.5 font-bold shadow cursor-pointer transition";
+                text.innerText = "🔌 Arduino Kompressor (USB)";
+                if (pumpDot) pumpDot.className = "w-2 h-2 rounded-full bg-slate-500";
+                if (pumpText) pumpText.innerText = "Kompressor: Kutilmoqda";
+            }
+        }
+
+        async function readWebSerialStream() {
+            while (webSerialPort && webSerialPort.readable && isSerialConnected) {
+                try {
+                    webSerialReader = webSerialPort.readable.getReader();
+                    const decoder = new TextDecoder();
+                    while (true) {
+                        const { value, done } = await webSerialReader.read();
+                        if (done) break;
+                        if (value) {
+                            webSerialBuffer += decoder.decode(value, { stream: true });
+                            let lines = webSerialBuffer.split(String.fromCharCode(10));
+                            webSerialBuffer = lines.pop();
+                            for (let line of lines) {
+                                line = line.trim();
+                                if (line.startsWith("{") && line.endsWith("}")) {
+                                    try {
+                                        const data = JSON.parse(line);
+                                        handleHardwareData(data);
+                                    } catch(e) {}
+                                } else if (line.includes("KOMPRESSOR") || line.includes("BPM")) {
+                                    console.log("ARDUINO FEEDBACK:", line);
+                                }
                             }
                         }
                     }
+                } catch(err) {
+                    console.warn("Serial o'qish xatosi:", err);
+                    break;
+                } finally {
+                    if (webSerialReader) {
+                        try { webSerialReader.releaseLock(); } catch(e) {}
+                        webSerialReader = null;
+                    }
                 }
-            } catch(err) {
-                console.warn("Web serial oqimi uzildi:", err);
             }
         }
 
         async function sendWebSerialCommand(cmd) {
-            if (webSerialWriter) {
+            cmd = cmd.trim();
+            // 1. Direct Web Serial port yozish
+            if (webSerialPort && webSerialPort.writable) {
                 try {
-                    await webSerialWriter.write(cmd + String.fromCharCode(10));
-                } catch(e) {}
+                    const writer = webSerialPort.writable.getWriter();
+                    const data = new TextEncoder().encode(cmd + String.fromCharCode(13, 10));
+                    await writer.write(data);
+                    writer.releaseLock();
+                    console.log(">>> [USB ARDUINO BUYRUQ]:", cmd);
+                } catch(e) {
+                    console.warn("USB Serial yozish xatosi:", e);
+                }
+            }
+
+            // 2. Server backend API orqali yuborish (pyserial ko'prigi uchun)
+            try {
+                fetch("/api/compressor", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ cmd: cmd })
+                }).catch(() => {});
+            } catch(e) {}
+
+            showKompressorFeedback(`📡 Buyruq: [${cmd}]`, cmd.includes("OFF") || cmd.includes("DYING") || cmd === "BPM:0" ? "rose" : "emerald");
+        }
+
+        function showKompressorFeedback(msg, color="emerald") {
+            const el = document.getElementById("compressor-cmd-feedback");
+            if (el) {
+                el.innerText = msg;
+                el.className = `text-xs font-bold text-${color}-400 transition-all duration-300`;
+            }
+            const pumpText = document.getElementById("pump-text");
+            const pumpDot = document.getElementById("pump-dot");
+            if (pumpText && pumpDot) {
+                if (msg.includes("PUMP:ON") || msg.includes("NORMAL") || msg.includes("Yoqildi") || msg.includes("75") || msg.includes("135") || msg.includes("100") || msg.includes("42")) {
+                    pumpText.innerText = "Kompressor: YONIQ (PUMP:ON)";
+                    pumpDot.className = "w-2 h-2 rounded-full bg-emerald-400 alarm-blink";
+                } else if (msg.includes("PUMP:OFF") || msg.includes("DYING") || msg.includes("BPM:0") || msg.includes("O'chiril")) {
+                    pumpText.innerText = "Kompressor: TO'XTATILGAN";
+                    pumpDot.className = "w-2 h-2 rounded-full bg-red-500";
+                }
+            }
+        }
+
+        function sendManualPumpCommand(cmd, bpm=75) {
+            initAudio();
+            sendWebSerialCommand(cmd);
+            if (bpm > 0) {
+                setTimeout(() => sendWebSerialCommand(`BPM:${bpm}`), 120);
+            }
+        }
+
+        function sendManualBPM(bpm) {
+            initAudio();
+            if (bpm > 0) {
+                sendWebSerialCommand("PUMP:ON");
+                setTimeout(() => sendWebSerialCommand(`BPM:${bpm}`), 120);
+            } else {
+                sendWebSerialCommand("PUMP:OFF");
+                setTimeout(() => sendWebSerialCommand("BPM:0"), 120);
             }
         }
 
@@ -788,25 +964,33 @@ HTML_CONTENT = """<!DOCTYPE html>
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                 updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-950/80 text-emerald-400 border-emerald-700");
                 stopAsystoleTone();
+                sendWebSerialCommand("PUMP:ON");
                 sendWebSerialCommand("NORMAL");
+                sendWebSerialCommand("BPM:75");
             } else if (type === "dying") {
                 target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 35.1, mode: "dying", rhythm: "asystole" };
                 updateBanner("🚨 DIQQAT: BEMORNI YO'QOTYAPMIZ! (KOLLAPS / ASISTOLIYA)", "bg-red-950 text-red-400 border-red-500 alarm-blink");
+                sendWebSerialCommand("PUMP:OFF");
                 sendWebSerialCommand("DYING");
+                sendWebSerialCommand("BPM:0");
             } else if (type === "attack") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA VA GIPERTONIK KRIZ!", "bg-orange-950 text-orange-400 border-orange-500 alarm-blink");
                 stopAsystoleTone();
+                sendWebSerialCommand("PUMP:ON");
                 sendWebSerialCommand("ATTACK");
+                sendWebSerialCommand("BPM:135");
             } else if (type === "hypoxia") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
                 updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI!", "bg-cyan-950 text-cyan-400 border-cyan-500 alarm-blink");
                 stopAsystoleTone();
+                sendWebSerialCommand("PUMP:ON");
                 sendWebSerialCommand("BPM:135");
             } else if (type === "shock") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
                 updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI!", "bg-rose-950 text-rose-400 border-rose-500 alarm-blink");
                 stopAsystoleTone();
+                sendWebSerialCommand("PUMP:ON");
                 sendWebSerialCommand("BPM:145");
             }
         }
@@ -1074,9 +1258,69 @@ HTML_CONTENT = """<!DOCTYPE html>
 </html>
 """
 
+# ==================== PYTHON BACKEND SERIAL COM PORT BRIDGE ====================
+active_serial_port = None
+serial_lock = threading.Lock()
+
+def send_serial_hw_command(cmd: str):
+    global active_serial_port
+    if not serial:
+        return False
+    with serial_lock:
+        if active_serial_port and active_serial_port.is_open:
+            try:
+                active_serial_port.write((cmd + "\r\n").encode("utf-8"))
+                active_serial_port.flush()
+                print(f">>> [BACKEND SERIAL COM]: Yuborildi -> {cmd}")
+                return True
+            except Exception as e:
+                print(f"Serial port yozish xatosi: {e}")
+                try: active_serial_port.close()
+                except: pass
+                active_serial_port = None
+    return False
+
+def auto_detect_arduino_port():
+    global active_serial_port
+    if not serial:
+        return
+    while True:
+        if not active_serial_port or not active_serial_port.is_open:
+            try:
+                ports = list(serial.tools.list_ports.comports())
+                for p in ports:
+                    desc = (p.description or "").lower()
+                    hwid = (p.hwid or "").lower()
+                    if any(k in desc or k in hwid for k in ["ch340", "cp210", "usb-serial", "arduino", "uart", "ftdi", "silicon"]):
+                        try:
+                            s = serial.Serial(p.device, 115200, timeout=0.1)
+                            time.sleep(1.6)
+                            active_serial_port = s
+                            print(f"✅ Backend Arduino USB porti ulandi: {p.device}")
+                            send_serial_hw_command("NORMAL")
+                            send_serial_hw_command("PUMP:ON")
+                            send_serial_hw_command("BPM:75")
+                            break
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+        time.sleep(3.0)
+
+threading.Thread(target=auto_detect_arduino_port, daemon=True).start()
+
+class CompressorRequest(BaseModel):
+    cmd: str
+
 @app.get("/", response_class=HTMLResponse)
+@app.get("/vital", response_class=HTMLResponse)
 async def get_monitor():
     return HTMLResponse(content=HTML_CONTENT)
+
+@app.post("/api/compressor")
+async def api_compressor(req: CompressorRequest):
+    send_serial_hw_command(req.cmd)
+    return JSONResponse(content={"status": "ok", "cmd": req.cmd})
 
 @app.post("/api/telemetry")
 async def post_telemetry(request: Request):
