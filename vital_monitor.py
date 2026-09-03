@@ -169,7 +169,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     <!-- INJECTION NOTIFICATION POPUP -->
     <div id="inj-banner" class="hidden my-0.5 bg-purple-100 border border-purple-400 rounded-xl p-1.5 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink">
         <i class="fa-solid fa-syringe text-purple-600 text-sm mr-1"></i> 
-        <span>💉 UKOL QILINDI (ADRENALIN 1mg)! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
+        <span id="inj-banner-text">💉 UKOL QILINDI (ADRENALIN 1mg)! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
     <!-- 2. TOP 50% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
@@ -613,7 +613,10 @@ HTML_CONTENT = """<!DOCTYPE html>
         let cprCycleCorrectComps = 0;
         let cprCycleVents = 0;
         let cprCycleCorrectVents = 0;
-        let cprRevivalStage = 0;
+        let cprRevivalStage = 0; // 0: Asistoliya, 1: Ozroq jonlanish (22 BPM), 2: To'liq o'ziga kelish (ROSC)
+
+        let injectionInProgress = false;
+        let injectionCountdownTimer = null;
 
         function processCPRStroke(forceKg) {
             const now = Date.now();
@@ -954,7 +957,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 lungStatus.className = "text-[9px] text-slate-500 font-semibold mt-0.5 text-center";
             }
 
-            // --- 30:2 SIKL: NAFASNI HISOBGA OLISH VA BOSQICHLI JONLANISH ---
+            // --- 30:2 SIKL: NAFASNI HISOBGA OLISH VA 5 SEKUNDDA SEKIN JONLANISH (22 BPM) ---
             if (lungP >= 0.5 && !window._monitorVentTriggered) {
                 window._monitorVentTriggered = true;
                 cprCycleVents++;
@@ -969,26 +972,25 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const accuracyPct = Math.round((totalCorrect / totalActs) * 100);
 
                     if (accuracyPct >= 80) {
+                        // 1-BOSQICH: 5 SEKUND DAVOMIDA 22 BPM GA SEKIN TIKLANSIN!
                         cprRevivalStage = 1;
                         target.hr = 22;
-                        current.hr = 22;
                         target.spo2 = 62;
-                        current.spo2 = 62;
                         target.sys = 65;
                         target.dia = 40;
-                        current.sys = 65;
-                        current.dia = 40;
                         target.rr = 6;
-                        current.rr = 6;
                         current.rhythm = "brady";
-                        transitionSteps = 0;
+                        
+                        // 50 qadam * 100ms = 5000ms = 5 soniya
+                        totalSteps = 50;
+                        transitionSteps = 50;
                         stopAsystoleTone();
-                        updateNumericsUI();
-                        updateBanner(`🟡 1-BOSQICH (Aniqlik: ${accuracyPct}%): YURAK 22 BPM URISHNI BOSHLADI! ENDI UKOL (ADRENALIN) QILISH KERAK!`, "bg-amber-100 text-amber-900 border-amber-400 font-black");
+                        
+                        updateBanner(`🟡 1-BOSQICH (Aniqlik: ${accuracyPct}%): YURAK TIKLANMOQDA (~5 soniya -> 22 BPM)...`, "bg-amber-100 text-amber-900 border-amber-400 font-black");
 
                         const stageBadge = document.getElementById("cpr-stage-badge");
                         if (stageBadge) {
-                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 alarm-blink"></span><span>1-BOSQICH: YURAK 22 BPM URMOQDA (ADRENALIN KUTILMOQDA)</span>`;
+                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 alarm-blink"></span><span>1-BOSQICH: YURAK TIKLANMOQDA (5s -> 22 BPM)</span>`;
                             stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-amber-100 text-amber-900 border border-amber-400 flex items-center gap-1.5 shadow-sm";
                         }
                     } else {
@@ -1015,40 +1017,92 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             // 6. Ukol / Inyeksiya (Touch Pin 4)
-            const injBanner = document.getElementById("inj-banner");
-            const injBtnEl = document.getElementById("inj-badge-small");
             if (injBtn) {
-                injBanner.classList.remove("hidden");
+                processInjectionAction();
+            } else if (!injectionInProgress) {
+                const injBanner = document.getElementById("inj-banner");
+                const injBtnEl = document.getElementById("inj-badge-small");
+                if (injBanner) injBanner.classList.add("hidden");
                 if (injBtnEl) {
-                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 alarm-blink";
-                }
-                
-                const flash = document.getElementById("flash-overlay");
-                flash.classList.add("inj-active");
-                setTimeout(() => flash.classList.remove("inj-active"), 1200);
-
-                if (cprRevivalStage === 1 || (current.hr <= 30 && cprCount >= 10)) {
-                    cprRevivalStage = 2;
-                    target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
-                    transitionSteps = 45;
-                    stopAsystoleTone();
-                    updateBanner("🟢 2-BOSQICH: UKOL QILINDI VA BEMOR TO'LIQ O'ZIGA KELDI (ROSC - 75 BPM)!", "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
-
-                    const stageBadge = document.getElementById("cpr-stage-badge");
-                    if (stageBadge) {
-                        stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>2-BOSQICH: BEMOR TO'LIQ O'ZIGA KELDI (BARQAROR 75 BPM)</span>`;
-                        stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-400 flex items-center gap-1.5 shadow-sm";
-                    }
-                }
-            } else {
-                injBanner.classList.add("hidden");
-                if (injBtnEl) {
-                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95";
+                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
                 }
             }
         }
 
+        // ==================== INJECTION: 5s DELAY + 10s SMOOTH RECOVERY ====================
+        function processInjectionAction() {
+            if (injectionInProgress) return;
+
+            const injBanner = document.getElementById("inj-banner");
+            const injText = document.getElementById("inj-banner-text");
+            const injBtnEl = document.getElementById("inj-badge-small");
+            if (injBanner) injBanner.classList.remove("hidden");
+            if (injBtnEl) {
+                injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 alarm-blink";
+            }
+
+            const flash = document.getElementById("flash-overlay");
+            if (flash) {
+                flash.classList.add("inj-active");
+                setTimeout(() => flash.classList.remove("inj-active"), 1200);
+            }
+
+            if (cprRevivalStage === 1 || (current.hr <= 35 && cprCount >= 10)) {
+                injectionInProgress = true;
+                cprRevivalStage = 2;
+
+                let delaySec = 5;
+                const stageBadge = document.getElementById("cpr-stage-badge");
+                if (stageBadge) {
+                    stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-500 alarm-blink"></span><span>2-BOSQICH: ADRENALIN YURAKKA YETIB BORMOQDA (${delaySec}s)...</span>`;
+                    stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-purple-100 text-purple-900 border border-purple-400 flex items-center gap-1.5 shadow-sm";
+                }
+                const msg = `💉 2-BOSQICH: ADRENALIN 1mg YUBORILDI! DORI QON ORQALI YURAKKA YETIB BORMOQDA (${delaySec} soniya)...`;
+                if (injText) injText.innerText = msg;
+                updateBanner(msg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+
+                if (injectionCountdownTimer) clearInterval(injectionCountdownTimer);
+                injectionCountdownTimer = setInterval(() => {
+                    delaySec--;
+                    if (delaySec > 0) {
+                        if (stageBadge) {
+                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-500 alarm-blink"></span><span>2-BOSQICH: ADRENALIN YURAKKA YETIB BORMOQDA (${delaySec}s)...</span>`;
+                        }
+                        const curMsg = `💉 2-BOSQICH: ADRENALIN 1mg YUBORILDI! DORI QON ORQALI YURAKKA YETIB BORMOQDA (${delaySec} soniya)...`;
+                        if (injText) injText.innerText = curMsg;
+                        updateBanner(curMsg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+                    } else {
+                        clearInterval(injectionCountdownTimer);
+                        injectionCountdownTimer = null;
+
+                        // 5 sekund kutgandan so'ng -> keyingi 10 sekund davomida sekin-sekin tiklanish (100 * 100ms = 10000ms = 10 soniya)
+                        target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                        totalSteps = 100;
+                        transitionSteps = 100;
+                        stopAsystoleTone();
+
+                        if (stageBadge) {
+                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink"></span><span>2-BOSQICH: YURAK RITMI SEKIN TIKLANMOQDA (10s -> 75 BPM)</span>`;
+                            stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-400 flex items-center gap-1.5 shadow-sm";
+                        }
+                        const recMsg = `🟢 2-BOSQICH: ADRENALIN TA'SIR QILDI! YURAK RITMI SEKIN TIKLANMOQDA (10 soniya davomida 75 BPM ga)...`;
+                        if (injText) injText.innerText = recMsg;
+                        updateBanner(recMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    }
+                }, 1000);
+            } else {
+                updateBanner("💉 ADRENALIN 1mg YUBORILDI!", "bg-purple-100 text-purple-900 border-purple-400 font-bold");
+                setTimeout(() => {
+                    if (injBanner) injBanner.classList.add("hidden");
+                    if (injBtnEl) {
+                        injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
+                    }
+                }, 1500);
+            }
+        }
+
         function triggerManualInjection() {
+            processInjectionAction();
             handleHardwareData({
                 force: lastRawMonitorForce,
                 pos_btn: 1,
@@ -1117,7 +1171,15 @@ HTML_CONTENT = """<!DOCTYPE html>
             totalSteps = 120;
             transitionSteps = totalSteps;
 
+            if (injectionCountdownTimer) {
+                clearInterval(injectionCountdownTimer);
+                injectionCountdownTimer = null;
+            }
+            injectionInProgress = false;
+
             const stageBadge = document.getElementById("cpr-stage-badge");
+            const injBanner = document.getElementById("inj-banner");
+            if (injBanner) injBanner.classList.add("hidden");
 
             if (type === "dying") {
                 target.hr = 0; target.spo2 = 0; target.sys = 0; target.dia = 0; target.rr = 0;
@@ -1205,6 +1267,23 @@ HTML_CONTENT = """<!DOCTYPE html>
                     if (current.hr <= 0) {
                         current.rhythm = "asystole";
                         startAsystoleTone();
+                    } else if (cprRevivalStage === 1 && Math.round(current.hr) >= 20) {
+                        updateBanner("🟡 1-BOSQICH: YURAK 22 BPM URMOQDA! ENDI UKOL (ADRENALIN) QILISH KERAK!", "bg-amber-100 text-amber-900 border-amber-400 font-black");
+                        const stageBadge = document.getElementById("cpr-stage-badge");
+                        if (stageBadge) {
+                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 alarm-blink"></span><span>1-BOSQICH: YURAK 22 BPM URMOQDA (ADRENALIN KUTILMOQDA)</span>`;
+                            stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-amber-100 text-amber-900 border border-amber-400 flex items-center gap-1.5 shadow-sm";
+                        }
+                    } else if (cprRevivalStage === 2 && Math.round(current.hr) >= 70) {
+                        updateBanner("🟢 2-BOSQICH MUVAFFAQIYAT: BEMOR TO'LIQ O'ZIGA KELDI (BARQAROR 75 BPM, ROSC)!", "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                        const stageBadge = document.getElementById("cpr-stage-badge");
+                        if (stageBadge) {
+                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>2-BOSQICH: BEMOR TO'LIQ O'ZIGA KELDI (BARQAROR 75 BPM)</span>`;
+                            stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-400 flex items-center gap-1.5 shadow-sm";
+                        }
+                        const injBanner = document.getElementById("inj-banner");
+                        if (injBanner) injBanner.classList.add("hidden");
+                        injectionInProgress = false;
                     }
                 }
                 updateNumericsUI();
@@ -1233,7 +1312,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 rhythmLabel.innerText = "ASYSTOLIYA (0 BPM)";
                 rhythmLabel.className = "text-xs font-black text-rose-600 alarm-blink";
             } else if (hrVal <= 35) {
-                rhythmLabel.innerText = "Bradikardiya (22 BPM)";
+                rhythmLabel.innerText = `Bradikardiya (${hrVal} BPM)`;
                 rhythmLabel.className = "text-xs font-black text-amber-600";
             } else if (hrVal > 150) {
                 rhythmLabel.innerText = "Ventrikulyar Taxikardiya";
