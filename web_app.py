@@ -533,10 +533,23 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             renderDiseases(document.getElementById("search-box").value);
             
-            // Yangi kasallik profiliga ulanamiz
+            // 1. Avvalgi bemor ovozi va muloqot holatini to'liq tozalash
+            stopAllAudioPlayback();
+            finalizePatientText();
+            isPatientSpeaking = false;
+            
+            // 2. AudioContext larni uyg'otish (suspended holatdan chiqarish)
+            if (micAudioContext && micAudioContext.state === 'suspended') {
+                micAudioContext.resume().catch(() => {});
+            }
+            if (outAudioCtx && outAudioCtx.state === 'suspended') {
+                outAudioCtx.resume().catch(() => {});
+            }
+            
+            // 3. Yangi kasallik profiliga ulanamiz
             connectWebSocket();
             
-            // Kompressor va pulsatorga yangi kasallik ritmini yuborish
+            // 4. Kompressor va pulsatorga yangi kasallik ritmini yuborish
             if (item.bpm) {
                 fetch("/api/compressor", {
                     method: "POST",
@@ -618,6 +631,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
         }
 
+        function isAudioCurrentlyPlaying() {
+            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime - 0.05));
+        }
+
         function stopAllAudioPlayback() {
             for (let s of activeSources) {
                 try { s.stop(); } catch(e) {}
@@ -626,6 +643,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (outAudioCtx) {
                 outNextStartTime = outAudioCtx.currentTime;
             }
+            isPatientSpeaking = false;
         }
 
         function changeVolume(val) {
@@ -673,6 +691,40 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        // 48kHz / 44.1kHz -> 16kHz PCM downsampler
+        function downsampleTo16k(inputData, inputSampleRate) {
+            if (!inputData || inputData.length === 0) return null;
+            if (!inputSampleRate || inputSampleRate === 16000) {
+                const pcm16 = new Int16Array(inputData.length);
+                for (let i = 0; i < inputData.length; i++) {
+                    let s = Math.max(-1, Math.min(1, inputData[i]));
+                    pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                }
+                return pcm16;
+            }
+            
+            const ratio = inputSampleRate / 16000;
+            const newLength = Math.round(inputData.length / ratio);
+            const result = new Int16Array(newLength);
+            let offsetResult = 0;
+            let offsetBuffer = 0;
+            
+            while (offsetResult < result.length) {
+                const nextOffsetBuffer = Math.round((offsetResult + 1) * ratio);
+                let accum = 0, count = 0;
+                for (let i = offsetBuffer; i < nextOffsetBuffer && i < inputData.length; i++) {
+                    accum += inputData[i];
+                    count++;
+                }
+                const sample = count > 0 ? (accum / count) : inputData[offsetBuffer];
+                let s = Math.max(-1, Math.min(1, sample));
+                result[offsetResult] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                offsetResult++;
+                offsetBuffer = nextOffsetBuffer;
+            }
+            return result;
+        }
+
         // Live Microphone Input (16kHz PCM Streamer for Gemini Live)
         let micStream = null;
         let micAudioContext = null;
@@ -695,30 +747,32 @@ HTML_CONTENT = """<!DOCTYPE html>
                 micStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         channelCount: 1,
-                        sampleRate: 16000,
                         echoCancellation: true,
                         noiseSuppression: true,
                         autoGainControl: true
                     }
                 });
 
-                micAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                micAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (micAudioContext.state === 'suspended') {
+                    await micAudioContext.resume();
+                }
                 const source = micAudioContext.createMediaStreamSource(micStream);
 
-                // 2048 samples = ~128ms chunk
+                // 2048 samples chunk
                 micProcessor = micAudioContext.createScriptProcessor(2048, 1, 1);
+                window._micProcessor = micProcessor; // Brauzer xotiradan o'chirib yubormasligi uchun
+                
                 micProcessor.onaudioprocess = (e) => {
                     if (!isCallActive || !ws || ws.readyState !== WebSocket.OPEN) return;
                     // Bemor gapirayotganda dinamikdan chiqqan ovozni o'ziga qaytarib echo qilmaslik
-                    if (isPatientSpeaking) return;
+                    if (isAudioCurrentlyPlaying()) return;
                     
                     const input = e.inputBuffer.getChannelData(0);
-                    const pcm16 = new Int16Array(input.length);
-                    for (let i = 0; i < input.length; i++) {
-                        let s = Math.max(-1, Math.min(1, input[i]));
-                        pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    const pcm16 = downsampleTo16k(input, micAudioContext.sampleRate);
+                    if (pcm16 && pcm16.length > 0) {
+                        ws.send(pcm16.buffer);
                     }
-                    ws.send(pcm16.buffer);
                 };
 
                 // Mikrofonni dinamikka to'g'ridan-to'g'ri ulamaslik (aks-sado va qichqiriqni oldini olish)
@@ -851,23 +905,44 @@ HTML_CONTENT = """<!DOCTYPE html>
         function connectWebSocket() {
             closeLiveWebSocket();
             
+            // Holatni tozalash
+            stopAllAudioPlayback();
+            finalizePatientText();
+            isPatientSpeaking = false;
+            
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/chat/${currentKey}`;
             
-            updateStatus("⏳ Ulanmoqda...", "orange");
+            updateStatus("⏳ Bemor ulanmoqda...", "orange");
             
             ws = new WebSocket(wsUrl);
             ws.binaryType = "arraybuffer";
             
             ws.onopen = () => {
                 document.getElementById("conn-text").innerText = "Live AI ulandi";
+                
+                // Audio kontekstlarni uyg'otish
+                if (micAudioContext && micAudioContext.state === 'suspended') {
+                    micAudioContext.resume().catch(() => {});
+                }
+                if (outAudioCtx && outAudioCtx.state === 'suspended') {
+                    outAudioCtx.resume().catch(() => {});
+                }
+                
                 if (isCallActive) {
-                    updateStatus("🎙️ Jonli muloqot faol — gapiravering, bemor sizni eshitmoqda...", "red");
+                    updateStatus("🎙️ Bemor sizni eshitmoqda — gapiravering...", "red");
+                    // Yangi kasallik profiliga o'tganda bemor darhol yangi shikoyatini aytib muloqotni boshlaydi
+                    setTimeout(() => {
+                        if (ws && ws.readyState === WebSocket.OPEN && isCallActive) {
+                            ws.send(JSON.stringify({ text: "Doktor ko'rikka keldi. Bemor sifatida o'z holatingizga mos shikoyatingizni qisqa ayting." }));
+                        }
+                    }, 400);
                 } else {
                     updateStatus("✅ Tayyor", "emerald");
                 }
                 
                 // Render timeout bo'lib uzilib qolmasligi uchun har 15 sekundda heartbeat ping
+                if (pingInterval) clearInterval(pingInterval);
                 pingInterval = setInterval(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         ws.send(JSON.stringify({ type: "ping" }));
