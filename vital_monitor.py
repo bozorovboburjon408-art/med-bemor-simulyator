@@ -418,34 +418,39 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="bg-[#080c16] border border-blue-900/50 rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2 text-xs text-blue-300 font-bold">
                 <i class="fa-solid fa-wind text-cyan-400"></i>
-                <span>ARDUINO KOMPRESSOR (D7 Nasos & D8 Puls Rele):</span>
+                <span>ARDUINO: D7 (Ortiqcha Bosim Solinoidi) & D8 (Puls Rele) [Kompressor: Doimiy]:</span>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
                 <button onclick="sendManualPumpCommand('PUMP:ON', 75)" class="px-3 py-1 rounded bg-emerald-900 hover:bg-emerald-800 text-emerald-200 border border-emerald-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
-                    <i class="fa-solid fa-play text-[10px]"></i> 💨 Kompressorni Yoqish
+                    <i class="fa-solid fa-play text-[10px]"></i> 💨 Pulsni Yoqish (75 BPM)
                 </button>
                 <button onclick="stopCompressorAndZeroBPM()" class="px-3 py-1 rounded bg-red-900 hover:bg-red-800 text-red-200 border border-red-500 text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer">
-                    <i class="fa-solid fa-power-off text-[10px]"></i> 🛑 O'chirish (0 BPM)
+                    <i class="fa-solid fa-power-off text-[10px]"></i> 🛑 0 Asistoliya (Bosimni chiqarish)
                 </button>
                 <span class="text-slate-600">|</span>
                 <span class="text-xs text-slate-400">Puls:</span>
                 <button onclick="sendManualBPM(42)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    42 BPM
+                    42
                 </button>
                 <button onclick="sendManualBPM(75)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    75 BPM
+                    75
                 </button>
                 <button onclick="sendManualBPM(100)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-yellow-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    100 BPM
+                    100
                 </button>
                 <button onclick="sendManualBPM(135)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-orange-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    135 BPM
+                    135
                 </button>
                 <button onclick="stopCompressorAndZeroBPM()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 text-xs font-bold cursor-pointer transition">
-                    0 Asistoliya (Nol)
+                    0 Nol
                 </button>
-                <button onclick="sendManualPumpCommand('ROSC', 75)" class="px-2.5 py-1 rounded bg-indigo-900 hover:bg-indigo-800 text-indigo-200 border border-indigo-500 text-xs font-bold flex items-center gap-1 shadow cursor-pointer transition">
-                    <i class="fa-solid fa-sparkles text-[10px]"></i> ROSC
+                <span class="text-slate-600">|</span>
+                <span class="text-xs text-slate-400">D7 Klapan:</span>
+                <button onclick="sendWebSerialCommand('D7:ON')" title="D7 solinoidini ochib ortiqcha bosimni chiqarish" class="px-2.5 py-1 rounded bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600 text-xs font-bold cursor-pointer transition">
+                    D7: OCHISH (Chiqarish)
+                </button>
+                <button onclick="sendWebSerialCommand('D7:OFF')" title="D7 solinoidini yopish" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold cursor-pointer transition">
+                    D7: YOPISH
                 </button>
             </div>
         </div>

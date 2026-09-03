@@ -9,18 +9,32 @@
  * ======================================================================================
  */
 
+// ==================== RELE MODULI POLARITETI ====================
+// Ko'pchilik Arduino 2/4/8 kanalli ko'k rele modullari (Optopara bilan) Active-LOW bo'ladi!
+// Agar sizning relengizda LOW berganda shiqillab yonsa -> RELAY_ACTIVE_LOW = true
+// Agar HIGH berganda yonsa -> RELAY_ACTIVE_LOW = false
+#define RELAY_ACTIVE_LOW    true
+
+#if RELAY_ACTIVE_LOW
+  #define RELAY_ON   LOW
+  #define RELAY_OFF  HIGH
+#else
+  #define RELAY_ON   HIGH
+  #define RELAY_OFF  LOW
+#endif
+
 // ==================== PINLARNI SOZLASH ====================
-#define PIN_PULSE_VALVE   8   // Bo'yin/bilak havo shlangi puls relesi (D8)
-#define PIN_PUMP_POWER    7   // Havo nasosi (kompressor) relesi (D7)
-#define PIN_HEART_LED     13  // Puls indikator LED (D13)
+#define PIN_PULSE_VALVE   8   // Bo'yin/bilak tomir puls relesi (D8)
+#define PIN_RELIEF_VALVE  7   // Ortiqcha bosimni chiqarish / havoni boshqarish solinoid klapani (D7)
+#define PIN_HEART_LED     13  // Bortdagi puls LED indikatori (D13)
 #define PIN_BUZZER        9   // Monitor beeper tovushi (D9 - Ixtiyoriy)
 
-// ==================== PULS MOTORIKASI O'ZGARUVCHILARI ====================
-int targetBPM = 75;                // Veb-saytdan kelgan BPM (0 = Yurak to'xtagan)
+// ==================== PULS VA BOSIM MOTORIKASI ====================
+int targetBPM = 75;                // Veb-saytdan kelgan BPM (0 = Asistoliya/Puls to'xtagan)
 int pulseDurationMs = 120;         // Tomirning shishib turish vaqti (ms)
-bool isPulseActive = false;        // Hozir rele ochiqmi?
+bool isPulseActive = false;        // Hozir D8 puls klapani ochiqmi?
 unsigned long lastBeatTime = 0;    // Oxirgi puls vaqti
-unsigned long pulseStartTime = 0;  // Rele ochilgan vaqt
+unsigned long pulseStartTime = 0;  // Klapan ochilgan vaqt
 unsigned long nextIntervalMs = 800;// Keyingi zarbagacha bo'lgan vaqt
 
 String inputBuffer = "";           // Veb-saytdan kelayotgan buyruq buferi
@@ -29,18 +43,20 @@ String inputBuffer = "";           // Veb-saytdan kelayotgan buyruq buferi
 void setup() {
   Serial.begin(115200);
   Serial.println(F("\n========================================================"));
-  Serial.println(F("GD/H126 VITAL MONITOR TOMIR PULSATORI ISHGA TUSHDI (WEB SYNC)"));
-  Serial.println(F("Veb-saytdan buyruqlar kutilmoqda... (115200 bod)"));
+  Serial.println(F("GD/H126 VITAL MONITOR: D7 BOSIM SOLINOIDI & D8 PULS RELESI"));
+  Serial.println(F("Kompressor: Doimiy ishlaydi"));
+  Serial.println(F("D7: Bosimni chiqarish klapani | D8: Tomir puls klapani"));
+  Serial.println(F("Buyruqlar: 0, BPM:75, BPM:135, PUMP:OFF, PUMP:ON, D7:ON, D7:OFF"));
   Serial.println(F("========================================================"));
 
   pinMode(PIN_PULSE_VALVE, OUTPUT);
-  pinMode(PIN_PUMP_POWER, OUTPUT);
+  pinMode(PIN_RELIEF_VALVE, OUTPUT);
   pinMode(PIN_HEART_LED, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
 
-  // Boshlang'ich holat
-  digitalWrite(PIN_PULSE_VALVE, LOW);
-  digitalWrite(PIN_PUMP_POWER, HIGH); // Nasos tayyor
+  // Boshlang'ich xavfsiz holat:
+  digitalWrite(PIN_PULSE_VALVE, RELAY_OFF);
+  digitalWrite(PIN_RELIEF_VALVE, RELAY_OFF);
   digitalWrite(PIN_HEART_LED, LOW);
   digitalWrite(PIN_BUZZER, LOW);
 
@@ -54,7 +70,7 @@ void loop() {
   // 1. Veb-saytdan USB / Serial orqali buyruqlarni o'qish (0ms kechikish)
   readWebCommands();
 
-  // 2. Havo nasosi va rele pulsatsiyasini boshqarish
+  // 2. Solinoid klapan va rele pulsatsiyasini boshqarish
   handlePneumaticPulse(currentMillis);
 }
 
@@ -77,44 +93,60 @@ void processWebCommand(String cmd) {
   cmd.trim();
   cmd.toUpperCase();
 
-  // 1. Nol (0) qilish / To'liq to'xtatish (Barcha ehtimoliy buyruqlar: 0, BPM:0, STOP, OFF, PUMP:OFF, DYING, ASYSTOLE, 5)
+  // 1. Nol (0) qilish / To'liq to'xtatish (D8 klapan yopiladi, D7 bosimni chiqarish klapani OCHILADI)
   if (cmd == "0" || cmd == "BPM:0" || cmd == "STOP" || cmd == "OFF" || 
       cmd.indexOf("PUMP:OFF") >= 0 || cmd.indexOf("KOMPRESSOR:OFF") >= 0 || 
       cmd.indexOf("DYING") >= 0 || cmd.indexOf("ASYSTOLE") >= 0 || cmd == "5") {
-    setTargetBPM(0, "Kompressor va puls to'liq to'xtatildi (0 BPM)");
+    setTargetBPM(0, "Asistoliya: D8 puls to'xtatildi, D7 ortiqcha bosimni chiqarish ochildi (0 BPM)");
   }
-  // 2. To'g'ridan-to'g'ri BPM berilganda: masalan "BPM:135" yoki "BPM:42"
+  // 2. To'g'ridan-to'g'ri BPM berilganda (masalan "BPM:135" yoki "BPM:75")
   else if (cmd.startsWith("BPM:")) {
     int bpm = cmd.substring(4).toInt();
     setTargetBPM(bpm, "Veb: Aniq BPM");
   }
-  // 3. Kompressorni to'g'ridan-to'g'ri yoqish (PUMP:ON / KOMPRESSOR:ON / START / ON)
+  // 3. Kompressor havo oqimini yoqish (PUMP:ON)
   else if (cmd.indexOf("PUMP:ON") >= 0 || cmd.indexOf("KOMPRESSOR:ON") >= 0 || cmd == "START" || cmd == "ON") {
-    digitalWrite(PIN_PUMP_POWER, HIGH);
-    if (targetBPM <= 0) setTargetBPM(75, "Kompressor Yoqildi (Standart 75 BPM)");
-    Serial.println(F(">>> [KOMPRESSOR (PIN D7) YOQILDI]"));
+    setTargetBPM(75, "Kompressor Havo oqimi yoqildi (75 BPM)");
   }
-  // 4. Veb-saytdagi "🟢 Normal (Barqaror)" tugmasi
+  // 4. D7 Solinoidini alohida qo'lda boshqarish
+  else if (cmd == "D7:ON" || cmd == "RELIEF:ON") {
+    digitalWrite(PIN_RELIEF_VALVE, RELAY_ON);
+    Serial.println(F(">>> [D7 SOLINOID: OCHIQ (Bosim chiqmoqda)]"));
+  }
+  else if (cmd == "D7:OFF" || cmd == "RELIEF:OFF") {
+    digitalWrite(PIN_RELIEF_VALVE, RELAY_OFF);
+    Serial.println(F(">>> [D7 SOLINOID: YOPIQ (Bosim ushlab turilibdi)]"));
+  }
+  // 5. D8 Puls klapanini alohida qo'lda boshqarish
+  else if (cmd == "D8:ON") {
+    digitalWrite(PIN_PULSE_VALVE, RELAY_ON);
+    Serial.println(F(">>> [D8 KLAPAN: DOIMIY OCHIQ]"));
+  }
+  else if (cmd == "D8:OFF") {
+    digitalWrite(PIN_PULSE_VALVE, RELAY_OFF);
+    Serial.println(F(">>> [D8 KLAPAN: YOPIQ]"));
+  }
+  // 6. Veb-saytdagi "🟢 Normal (Barqaror)"
   else if (cmd.indexOf("NORMAL") >= 0 || cmd == "1") {
     setTargetBPM(75, "Veb: Normal Sinus (75 BPM)");
   }
-  // 5. Veb-saytdagi "⚡ Xuruj boshlanyapti!" (Taxikardiya) tugmasi
+  // 7. Veb-saytdagi "⚡ Xuruj boshlanyapti!" (Taxikardiya)
   else if (cmd.indexOf("TACH") >= 0 || cmd.indexOf("ATTACK") >= 0 || cmd == "2") {
-    setTargetBPM(135, "Veb: Taxikardiya Xuruji (135 BPM)");
+    setTargetBPM(135, "Veb: Taxikardiya (135 BPM)");
   }
-  // 6. Veb-saytdagi "Bradikardiya" tugmasi
+  // 8. Veb-saytdagi "Bradikardiya"
   else if (cmd.indexOf("BRAD") >= 0 || cmd == "3") {
     setTargetBPM(42, "Veb: Bradikardiya (42 BPM)");
   }
-  // 7. Veb-saytdagi "Defibrillyatsiya (Shok)" tugmasi
+  // 9. Defibrillyatsiya (Shok)
   else if (cmd.indexOf("SHOCK") >= 0) {
     handleDefibShock();
   }
-  // 8. Veb-saytdagi "✨ Bemor Tirildi (ROSC)" tugmasi
+  // 10. ROSC Jonlanish
   else if (cmd.indexOf("ROSC") >= 0 || cmd == "6") {
     handleROSCRevival();
   }
-  // 9. Agar shunchaki musbat son kelsa (masalan "90")
+  // 11. Son bo'yicha
   else if (cmd.toInt() > 0) {
     setTargetBPM(cmd.toInt(), "Veb: Qiymat bo'yicha");
   }
@@ -125,23 +157,31 @@ void setTargetBPM(int bpm, String reason) {
   targetBPM = bpm;
 
   if (targetBPM <= 0) {
-    // Puls yo'q (Yurak to'xtagan - Asistoliya)
+    // 0 BPM - Asistoliya (Yurak to'xtagan):
     targetBPM = 0;
     nextIntervalMs = 999999;
     isPulseActive = false;
-    digitalWrite(PIN_PULSE_VALVE, LOW); // Klapan darhol yopiladi
-    digitalWrite(PIN_PUMP_POWER, LOW);  // Nasos (Kompressor D7) darhol o'chadi
+    
+    // D8 puls klapani yopiladi (tomirda puls yo'qoladi)
+    digitalWrite(PIN_PULSE_VALVE, RELAY_OFF);
+    
+    // D7 klapani OCHILADI (kompressorning ortiqcha havo bosimi chiqariladi)
+    digitalWrite(PIN_RELIEF_VALVE, RELAY_ON);
+    
     digitalWrite(PIN_HEART_LED, LOW);
     noTone(PIN_BUZZER);
+    Serial.println(F(">>> [NOL QILINDI]: D8 Puls yopildi, D7 Bosim chiqarish ochildi"));
   } else {
-    // Normal / Tez / Sekin puls
-    digitalWrite(PIN_PUMP_POWER, HIGH); // Nasos yoqiladi
+    // Normal / Tez / Sekin puls (Yurak uryapti):
+    // D7 bosim chiqarish klapani yopiladi (havo tomirga yig'ilsin)
+    digitalWrite(PIN_RELIEF_VALVE, RELAY_OFF);
+    
     nextIntervalMs = 60000UL / targetBPM;
 
-    // Tezlikka qarab havoning zarba davomiyligi
-    if (targetBPM >= 120) pulseDurationMs = 80;        // Qisqa tezkor zarba
-    else if (targetBPM <= 50) pulseDurationMs = 160;   // Cho'ziqroq kuchli zarba
-    else pulseDurationMs = 120;                        // Standart me'yor
+    // Tezlikka qarab zarba davomiyligi
+    if (targetBPM >= 120) pulseDurationMs = 80;
+    else if (targetBPM <= 50) pulseDurationMs = 160;
+    else pulseDurationMs = 120;
   }
 
   Serial.print(F(">>> [WEB SYNC] "));
@@ -158,29 +198,29 @@ void handlePneumaticPulse(unsigned long currentMillis) {
   if (targetBPM <= 0) {
     if (isPulseActive) {
       isPulseActive = false;
-      digitalWrite(PIN_PULSE_VALVE, LOW);
-      digitalWrite(PIN_PUMP_POWER, LOW);
+      digitalWrite(PIN_PULSE_VALVE, RELAY_OFF);
+      digitalWrite(PIN_RELIEF_VALVE, RELAY_ON);
       digitalWrite(PIN_HEART_LED, LOW);
       noTone(PIN_BUZZER);
     }
-    return; // Puls to'xtagan
+    return;
   }
 
-  // 1. Yangi zarba vaqti keldimi? (Rele ochiladi -> Tomir shishadi)
+  // 1. Yangi zarba vaqti keldimi? (D8 rele ochiladi -> Bo'yin/bilak tomiriga havo uriladi)
   if (!isPulseActive && (currentMillis - lastBeatTime >= nextIntervalMs)) {
     isPulseActive = true;
     pulseStartTime = currentMillis;
     lastBeatTime = currentMillis;
 
-    digitalWrite(PIN_PULSE_VALVE, HIGH); // Rele ochildi -> Bo'yin/qo'lga havo uriladi
-    digitalWrite(PIN_HEART_LED, HIGH);   // Bortdagi LED yondi
-    tone(PIN_BUZZER, 880, 25);           // Monitor bleep ovozi
+    digitalWrite(PIN_PULSE_VALVE, RELAY_ON); // D8 klapan ochildi
+    digitalWrite(PIN_HEART_LED, HIGH);       // LED yondi
+    tone(PIN_BUZZER, 880, 25);               // Bleep tovushi
   }
 
-  // 2. Tomir shishib turish vaqti (80-160ms) tugadimi? (Rele yopiladi -> Havo bo'shashadi)
+  // 2. Tomir shishib turish vaqti (80-160ms) tugadimi? (D8 rele yopiladi -> Havo bo'shashadi)
   if (isPulseActive && (currentMillis - pulseStartTime >= (unsigned long)pulseDurationMs)) {
     isPulseActive = false;
-    digitalWrite(PIN_PULSE_VALVE, LOW);  // Rele yopildi -> Tomir bo'shashdi
+    digitalWrite(PIN_PULSE_VALVE, RELAY_OFF); // D8 klapan yopildi
     digitalWrite(PIN_HEART_LED, LOW);
     noTone(PIN_BUZZER);
   }
@@ -189,10 +229,10 @@ void handlePneumaticPulse(unsigned long currentMillis) {
 // ==================== SHOK VA JONLANISH EFFEKTLARI ====================
 void handleDefibShock() {
   Serial.println(F("⚡⚡⚡ [DEFIBRILLYATOR SHOK BERILDI!] ⚡⚡⚡"));
-  digitalWrite(PIN_PULSE_VALVE, HIGH);
+  digitalWrite(PIN_PULSE_VALVE, RELAY_ON);
   tone(PIN_BUZZER, 2000, 200);
   delay(200);
-  digitalWrite(PIN_PULSE_VALVE, LOW);
+  digitalWrite(PIN_PULSE_VALVE, RELAY_OFF);
   noTone(PIN_BUZZER);
   setTargetBPM(75, "Shokdan so'ng Sinus Tiklandi");
 }
