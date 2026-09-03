@@ -103,7 +103,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
-    <!-- 1. TOP HEADER (USB BUTTON, PATIENT INFO & STATUS) -->
+    <!-- 1. TOP HEADER (COMPACT ~38px) -->
     <header class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-xs shrink-0">
         <div class="flex items-center space-x-3">
             <div class="flex items-center space-x-1.5">
@@ -123,7 +123,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <div class="flex flex-wrap items-center gap-1.5 text-xs">
-            <!-- RESTORED: REAL HARDWARE WEB SERIAL USB CONNECT BUTTON -->
+            <!-- REAL HARDWARE WEB SERIAL USB CONNECT BUTTON -->
             <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse">
                 <i class="fa-brands fa-usb text-xs"></i>
                 <span id="btn-web-serial-text">🔌 USB Ulanish</span>
@@ -172,11 +172,11 @@ HTML_CONTENT = """<!DOCTYPE html>
         <span>💉 UKOL QILINDI (ADRENALIN 1mg)! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
-    <!-- 2. VITAL SIGNS & OSCILLOSCOPE MONITOR (BALANCED & FULLY VISIBLE) -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2 my-1 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2 flex-1 min-h-0 overflow-hidden">
+    <!-- 2. TOP 50% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
+    <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2 flex-1 min-h-0 overflow-hidden">
         
         <!-- LEFT 3 COLS: LIVE OSCILLOSCOPES (ECG & SpO2) -->
-        <div class="lg:col-span-3 flex flex-col justify-between gap-1.5 border-r border-slate-100 pr-2 min-h-0 overflow-hidden">
+        <div class="lg:col-span-3 flex flex-col justify-between gap-1 border-r border-slate-100 pr-2 min-h-0 overflow-hidden">
             
             <!-- 1. ECG Lead II Waveform -->
             <div class="flex-1 flex flex-col min-h-0 pb-1 border-b border-slate-100">
@@ -208,16 +208,16 @@ HTML_CONTENT = """<!DOCTYPE html>
             <canvas id="respCanvas" class="hidden" width="10" height="10"></canvas>
         </div>
 
-        <!-- RIGHT 1 COL: 4 COMPACT VITAL CARDS (HR, SpO2, NIBP, RR/Temp) -->
-        <div class="flex flex-col justify-between gap-1.5 min-h-0 overflow-hidden">
+        <!-- RIGHT 1 COL: 4 VITAL NUMERIC CARDS -->
+        <div class="flex flex-col justify-between gap-1 min-h-0 overflow-hidden">
             
             <!-- HR / PULS -->
-            <div class="bg-emerald-50/70 border border-emerald-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
+            <div class="bg-emerald-50/70 border border-emerald-300 rounded-xl p-1.5 shadow-xs flex-1 flex flex-col justify-between">
                 <div class="flex justify-between items-center text-emerald-800 font-bold text-xs">
                     <span><i class="fa-solid fa-heart-pulse mr-1 text-emerald-600"></i> HR / PULS</span>
                     <span class="text-[10px] text-slate-400">bpm</span>
                 </div>
-                <div class="flex items-baseline justify-between my-0.5">
+                <div class="flex items-baseline justify-between my-auto">
                     <span id="num-hr" class="mono text-4xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
                     <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
                         <div>YUQ: 120</div>
@@ -231,12 +231,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
 
             <!-- SpO2 -->
-            <div class="bg-sky-50/70 border border-sky-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
+            <div class="bg-sky-50/70 border border-sky-300 rounded-xl p-1.5 shadow-xs flex-1 flex flex-col justify-between">
                 <div class="flex justify-between items-center text-sky-800 font-bold text-xs">
                     <span><i class="fa-solid fa-droplet mr-1 text-sky-600"></i> SpO2</span>
                     <span class="text-[10px] text-slate-400">%</span>
                 </div>
-                <div class="flex items-baseline justify-between my-0.5">
+                <div class="flex items-baseline justify-between my-auto">
                     <span id="num-spo2" class="mono text-4xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
                     <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
                         <div>PI: 4.2%</div>
@@ -249,9 +249,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- NIBP & RR/Temp in a 2-Col Split -->
-            <div class="grid grid-cols-2 gap-1.5 shrink-0">
-                <!-- NIBP -->
+            <!-- NIBP & RR/Temp Split -->
+            <div class="grid grid-cols-2 gap-1 shrink-0">
                 <div class="bg-slate-50 border border-slate-300 rounded-xl p-1.5 text-center shadow-xs flex flex-col justify-between">
                     <div class="text-[10px] font-bold text-slate-800 flex items-center justify-between">
                         <span>NIBP</span>
@@ -263,7 +262,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <div class="text-[9px] text-slate-600 font-bold">MAP: <span id="num-map" class="text-emerald-700">93</span></div>
                 </div>
 
-                <!-- RR & Temp -->
                 <div class="bg-amber-50/60 border border-amber-300 rounded-xl p-1.5 text-center shadow-xs flex flex-col justify-between">
                     <div class="text-[10px] font-bold text-amber-800 flex items-center justify-between">
                         <span>RESP</span>
@@ -278,11 +276,11 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- 3. PROMINENT CPR 30:2 EXERCISE DASHBOARD (SPACIOUS & HIGH-VISIBILITY) -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2.5 my-0.5 shadow-xs shrink-0">
+    <!-- 3. BOTTOM 50% SECTION: CPR 30:2 EXERCISE DASHBOARD -->
+    <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
         
         <!-- Header Strip with Stage Badge -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-100 shrink-0">
             <div class="flex items-center gap-2">
                 <span class="w-6 h-6 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-heart-pulse"></i>
@@ -300,11 +298,11 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <!-- 3 Columns: A. Force Meter | B. 30:2 Cycle Hub | C. Airway & Adrenalin -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-2 mt-1.5 items-stretch">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-2 my-1 flex-1 min-h-0 items-stretch">
             
             <!-- COLUMN A (4 cols): COMPRESSION FORCE -->
-            <div class="md:col-span-4 bg-slate-50/90 border border-slate-200 rounded-xl p-2 flex flex-col justify-between shadow-xs">
-                <div class="flex justify-between items-center text-xs font-black text-slate-700">
+            <div class="md:col-span-4 bg-slate-50/90 border border-slate-200 rounded-xl p-2.5 flex flex-col justify-between shadow-xs h-full overflow-hidden">
+                <div class="flex justify-between items-center text-xs font-black text-slate-700 shrink-0">
                     <span class="flex items-center gap-1">
                         <i class="fa-solid fa-hand-fist text-rose-600"></i> BOSISH KUCHI:
                     </span>
@@ -313,14 +311,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </button>
                 </div>
 
-                <div class="flex items-baseline justify-between my-1">
+                <div class="flex items-baseline justify-between my-auto">
                     <div id="cpr-force-val" class="mono text-4xl lg:text-5xl font-black text-rose-600 tracking-tight">0.0 kg</div>
-                    <div id="cpr-eval-verdict" class="px-2 py-0.5 rounded text-[11px] font-black bg-slate-200 text-slate-700 shadow-xs">
+                    <div id="cpr-eval-verdict" class="px-2.5 py-1 rounded-lg text-xs font-black bg-slate-200 text-slate-700 shadow-xs">
                         BOSISHGA TAYYOR
                     </div>
                 </div>
 
-                <div>
+                <div class="shrink-0">
                     <div class="w-full bg-slate-200 rounded-lg h-5 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
                         <div id="cpr-force-bar" class="bg-rose-500 h-full rounded transition-all duration-75" style="width: 0%;"></div>
                         <div class="absolute inset-y-0 left-[63%] w-[28%] bg-emerald-500/25 border-x-2 border-emerald-500 pointer-events-none flex items-center justify-center">
@@ -336,8 +334,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
 
             <!-- COLUMN B (5 cols): 30:2 CYCLE COUNTERS & REAL-TIME QUALITY -->
-            <div class="md:col-span-5 bg-indigo-50/50 border border-indigo-200 rounded-xl p-2 flex flex-col justify-between shadow-xs">
-                <div class="flex justify-between items-center text-xs font-black text-indigo-900">
+            <div class="md:col-span-5 bg-indigo-50/50 border border-indigo-200 rounded-xl p-2.5 flex flex-col justify-between shadow-xs h-full overflow-hidden">
+                <div class="flex justify-between items-center text-xs font-black text-indigo-900 shrink-0">
                     <span class="flex items-center gap-1">
                         <i class="fa-solid fa-rotate text-indigo-600"></i> 30:2 SIKL HISOBI:
                     </span>
@@ -346,30 +344,30 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-1.5 my-1">
-                    <div class="bg-white border border-indigo-200 rounded-lg p-1.5 text-center shadow-xs">
+                <div class="grid grid-cols-2 gap-2 my-auto">
+                    <div class="bg-white border border-indigo-200 rounded-lg p-2 text-center shadow-xs">
                         <div class="text-[10px] font-bold text-slate-500 uppercase">Ko'krak Massaji</div>
                         <div class="flex items-baseline justify-center gap-1">
-                            <span id="cpr-cycle-comps" class="mono text-3xl font-black text-indigo-600">0</span>
+                            <span id="cpr-cycle-comps" class="mono text-3xl lg:text-4xl font-black text-indigo-600">0</span>
                             <span class="text-xs font-bold text-slate-400">/ 30</span>
                         </div>
                     </div>
 
-                    <div class="bg-white border border-sky-200 rounded-lg p-1.5 text-center shadow-xs">
+                    <div class="bg-white border border-sky-200 rounded-lg p-2 text-center shadow-xs">
                         <div class="text-[10px] font-bold text-slate-500 uppercase">Sun'iy Nafas</div>
                         <div class="flex items-baseline justify-center gap-1">
-                            <span id="cpr-cycle-vents" class="mono text-3xl font-black text-sky-600">0</span>
+                            <span id="cpr-cycle-vents" class="mono text-3xl lg:text-4xl font-black text-sky-600">0</span>
                             <span class="text-xs font-bold text-slate-400">/ 2</span>
                         </div>
                     </div>
                 </div>
 
-                <div id="cpr-cycle-badge" class="py-1 px-2 rounded-lg text-center text-xs font-black bg-indigo-100 text-indigo-900 border border-indigo-300">
+                <div id="cpr-cycle-badge" class="py-1 px-2 rounded-lg text-center text-xs font-black bg-indigo-100 text-indigo-900 border border-indigo-300 shrink-0">
                     SIKL: 0/30 ZARBA | 0/2 NAFAS
                 </div>
 
                 <!-- 4 Real-time Quality Chips -->
-                <div class="grid grid-cols-4 gap-1 mt-1 text-[9px] font-bold">
+                <div class="grid grid-cols-4 gap-1 mt-1 text-[9px] font-bold shrink-0">
                     <div id="badge-d" class="p-0.5 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs">Chuqurlik: -</div>
                     <div id="badge-r" class="p-0.5 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs">Bo'shatish: -</div>
                     <div id="badge-bpm" class="p-0.5 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs">Tezlik: -</div>
@@ -378,22 +376,22 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
 
             <!-- COLUMN C (3 cols): AIRWAY & ADRENALIN INJECTION -->
-            <div class="md:col-span-3 bg-sky-50/50 border border-sky-200 rounded-xl p-2 flex flex-col justify-between shadow-xs">
-                <div class="flex justify-between items-center text-xs font-black text-sky-900">
+            <div class="md:col-span-3 bg-sky-50/50 border border-sky-200 rounded-xl p-2.5 flex flex-col justify-between shadow-xs h-full overflow-hidden">
+                <div class="flex justify-between items-center text-xs font-black text-sky-900 shrink-0">
                     <span class="flex items-center gap-1">
                         <i class="fa-solid fa-lungs text-sky-600"></i> O'PKA BOSIMI:
                     </span>
                     <span id="cpr-bpm-val" class="mono font-black text-emerald-700 text-xs">0 /min</span>
                 </div>
 
-                <div class="flex items-baseline justify-between my-0.5">
-                    <div id="lung-p-val" class="mono text-3xl font-black text-sky-600">0.0 kPa</div>
-                    <div id="stomach-alert" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-white text-slate-600 border border-slate-200">
+                <div class="flex items-baseline justify-between my-auto">
+                    <div id="lung-p-val" class="mono text-3xl lg:text-4xl font-black text-sky-600">0.0 kPa</div>
+                    <div id="stomach-alert" class="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-slate-600 border border-slate-200">
                         Oshqozon toza
                     </div>
                 </div>
 
-                <div>
+                <div class="shrink-0">
                     <div class="w-full bg-slate-200 rounded-lg h-4 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
                         <div id="lung-p-bar" class="bg-sky-500 h-full rounded transition-all duration-75" style="width: 0%;"></div>
                         <div class="absolute inset-y-0 left-[32%] w-[56%] bg-sky-400/25 border-x border-sky-500 pointer-events-none flex items-center justify-center">
@@ -407,7 +405,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                 <div class="hidden"><span id="stomach-p-val">0.0</span></div>
 
-                <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-1 w-full py-1.5 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95">
+                <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0">
                     <i class="fa-solid fa-syringe text-xs"></i> 💉 ADRENALIN (UKOL)
                 </button>
             </div>
@@ -714,7 +712,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             const verd = document.getElementById("cpr-eval-verdict");
             if (verd) {
                 verd.innerText = "NOLGA SOZLANDI";
-                verd.className = "px-2 py-0.5 rounded text-[11px] font-black bg-emerald-100 text-emerald-800 shadow-xs";
+                verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-100 text-emerald-800 shadow-xs";
             }
         }
 
@@ -884,28 +882,28 @@ HTML_CONTENT = """<!DOCTYPE html>
                 document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-emerald-600 tracking-tight";
                 if (verd) {
                     verd.innerText = "✅ A'LO ZARBA (38-55 kg)";
-                    verd.className = "px-2 py-0.5 rounded text-[11px] font-black bg-emerald-600 text-white shadow-sm";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-600 text-white shadow-sm";
                 }
             } else if (fCurr > 55.0) {
                 forceBar.className = "bg-rose-500 h-full rounded transition-all duration-75 shadow-[0_0_12px_#ef4444]";
                 document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-rose-600 tracking-tight";
                 if (verd) {
                     verd.innerText = "🚨 JUDA QATTIQ (>55 kg)";
-                    verd.className = "px-2 py-0.5 rounded text-[11px] font-black bg-rose-600 text-white shadow-sm";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-rose-600 text-white shadow-sm";
                 }
             } else if (fCurr > 8.0) {
                 forceBar.className = "bg-amber-500 h-full rounded transition-all duration-75";
                 document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-amber-600 tracking-tight";
                 if (verd) {
                     verd.innerText = "⚠️ SAYOZ: QATTIQROQ";
-                    verd.className = "px-2 py-0.5 rounded text-[11px] font-black bg-amber-500 text-white shadow-sm";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-sm";
                 }
             } else {
                 forceBar.className = "bg-slate-300 h-full rounded transition-all duration-75";
                 document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-slate-500 tracking-tight";
                 if (verd) {
                     verd.innerText = "BOSISHGA TAYYOR";
-                    verd.className = "px-2 py-0.5 rounded text-[11px] font-black bg-slate-200 text-slate-700 shadow-xs";
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-slate-200 text-slate-700 shadow-xs";
                 }
             }
 
@@ -1022,7 +1020,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (injBtn) {
                 injBanner.classList.remove("hidden");
                 if (injBtnEl) {
-                    injBtnEl.className = "mt-1 w-full py-1.5 px-2 rounded-lg bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 alarm-blink";
+                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 alarm-blink";
                 }
                 
                 const flash = document.getElementById("flash-overlay");
@@ -1045,7 +1043,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             } else {
                 injBanner.classList.add("hidden");
                 if (injBtnEl) {
-                    injBtnEl.className = "mt-1 w-full py-1.5 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95";
+                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95";
                 }
             }
         }
