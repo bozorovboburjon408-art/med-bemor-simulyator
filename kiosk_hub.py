@@ -201,18 +201,22 @@ HUB_HTML = """<!DOCTYPE html>
                         <i class="fa-solid fa-desktop text-indigo-400"></i>
                         <span>Alohida Oyna / Kioska</span>
                     </a>
+                </div>
+            </div>
+
             <!-- APP 4: INTUBATSIYA MODULI -->
             <div class="touch-card bg-gradient-to-b from-slate-900/90 to-slate-950/90 border-2 border-purple-500/30 hover:border-purple-400/80 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
                 <div class="absolute -right-8 -top-8 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
                 <div>
                     <div class="flex items-center justify-between mb-6">
-                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                            <i class="fa-solid fa-stethoscope text-2xl text-white"></i>
+                        <div class="w-16 h-16 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 text-3xl shadow-inner">
+                            <i class="fa-solid fa-stethoscope"></i>
                         </div>
-                        <span class="px-3 py-1 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-400 text-xs font-bold mono">
-                            3 SENSOR + OVOZ
+                        <span class="text-xs font-bold font-mono px-3 py-1 rounded-full bg-purple-950 border border-purple-800 text-purple-300">
+                            ILOVA #4
                         </span>
                     </div>
+
                     <h3 class="text-2xl font-black text-white group-hover:text-purple-300 transition">
                         Intubatsiya Moduli
                     </h3>
