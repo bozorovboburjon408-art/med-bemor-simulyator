@@ -189,7 +189,12 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="flex flex-col border-r border-slate-800 pr-2">
             <div class="flex justify-between items-center text-xs font-bold text-indigo-300 mb-1">
                 <span><i class="fa-solid fa-hand-fist mr-1 text-indigo-400"></i> KUCH (f_curr):</span>
-                <span id="cpr-force-val" class="mono text-emerald-400 font-bold text-sm">0.0 kg</span>
+                <div class="flex items-center gap-1.5">
+                    <span id="cpr-force-val" class="mono text-emerald-400 font-bold text-sm">0.0 kg</span>
+                    <button type="button" onclick="tareCprForce()" title="Boshlang'ich vaznni 0 qilish (Tare)" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded border border-slate-700 text-[10px] cursor-pointer active:scale-95 transition flex items-center gap-1">
+                        <i class="fa-solid fa-scale-balanced text-[9px]"></i> 0 qilish
+                    </button>
+                </div>
             </div>
             <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden relative">
                 <div id="cpr-force-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-75" style="width: 0%;"></div>
@@ -613,10 +618,59 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        // ==================== CPR FORCE TARE & ZEROING (BOSHLANG'ICH MASSANI 0 QILISH) ====================
+        let monitorForceTare = 0.0;
+        let lastRawMonitorForce = 0.0;
+        let monitorTareCaptured = false;
+        let monitorTareSamples = [];
+
+        try {
+            const saved = localStorage.getItem("manikin_force_tare");
+            if (saved !== null) {
+                monitorForceTare = parseFloat(saved) || 0.0;
+                monitorTareCaptured = true;
+            }
+        } catch(e) {}
+
+        function tareCprForce() {
+            monitorForceTare = lastRawMonitorForce;
+            try {
+                localStorage.setItem("manikin_force_tare", monitorForceTare.toFixed(2));
+            } catch(e) {}
+            const valEl = document.getElementById("cpr-force-val");
+            if (valEl) valEl.innerText = "0.0 kg";
+            const bar = document.getElementById("cpr-force-bar");
+            if (bar) bar.style.width = "0%";
+            if (typeof sendWebSerialCommand === "function") {
+                sendWebSerialCommand("TARE");
+            }
+        }
+
         // ==================== PROCESS INCOMING ESP32 JSON ====================
         function handleHardwareData(data) {
             // Support all JSON variations: force / f_curr / force_kg
-            const fCurr = parseFloat(data.force !== undefined ? data.force : (data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0)));
+            const rawF = parseFloat(data.force !== undefined ? data.force : (data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0)));
+            lastRawMonitorForce = rawF;
+
+            // Boshlang'ich vaznni 0 deb olish (Boshida tinch turganda avtomatik nolga sozlaydi)
+            if (!monitorTareCaptured) {
+                if (rawF < 15.0) {
+                    monitorTareSamples.push(rawF);
+                    if (monitorTareSamples.length >= 4) {
+                        const avg = monitorTareSamples.reduce((a, b) => a + b, 0) / monitorTareSamples.length;
+                        if (avg > 0.15) {
+                            monitorForceTare = avg;
+                            try { localStorage.setItem("manikin_force_tare", monitorForceTare.toFixed(2)); } catch(e) {}
+                        }
+                        monitorTareCaptured = true;
+                    }
+                } else {
+                    monitorTareCaptured = true;
+                }
+            }
+
+            let fCurr = Math.max(0, rawF - monitorForceTare);
+            if (fCurr < 0.2) fCurr = 0.0; // Shovqinni nolga tenglash
             const posBtn = (data.pos_btn === 1 || data.pos_btn === true || data.pos_ok === true || data.pos_valid === true);
             const injBtn = (data.inj_btn === 1 || data.inj_btn === true || data.inj_ok === true);
             const lungP = parseFloat(data.lung_p || 0);
