@@ -485,39 +485,55 @@ HTML_CONTENT = """<!DOCTYPE html>
     </div>
 
     <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (~36px) -->
-    <footer class="bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs shrink-0 flex flex-wrap items-center justify-between gap-1 text-xs">
-        <div class="flex items-center gap-1 text-slate-700 font-bold">
+    <footer class="bg-white border border-slate-200 rounded-xl p-1 shadow-xs shrink-0 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+        <div class="flex items-center gap-1 text-slate-700 font-bold shrink-0">
             <i class="fa-solid fa-stethoscope text-indigo-600"></i>
-            <span>Ssenariylar:</span>
+            <span class="hidden sm:inline">Ssenariylar:</span>
         </div>
 
         <div class="flex flex-wrap items-center gap-1">
             <button onclick="setScenario('normal')" class="px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-heart text-emerald-600"></i> 🟢 Normal (75)
+                🟢 Normal (75)
             </button>
 
             <button onclick="setScenario('dying')" class="px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-skull-crossbones text-rose-600"></i> 🚨 0 Asistoliya
+                🚨 Asistoliya (0)
+            </button>
+
+            <button onclick="setScenario('vfib')" class="px-2 py-0.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-950 border border-red-400 font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer alarm-blink">
+                ⚡ VFib (230)
             </button>
 
             <button onclick="setScenario('attack')" class="px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-bolt-lightning text-amber-600"></i> ⚡ Taxikardiya (185)
+                ⚡ Taxikardiya (185)
+            </button>
+
+            <button onclick="setScenario('brady')" class="px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                🫀 Bradikardiya (28)
+            </button>
+
+            <button onclick="setScenario('hyper')" class="px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                🔴 Gipertoniya (220)
             </button>
 
             <button onclick="setScenario('hypoxia')" class="px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-lungs text-sky-600"></i> 🫁 Gipoksiya (74%)
+                🫁 Gipoksiya (74%)
+            </button>
+
+            <button onclick="setScenario('opioid')" class="px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                💉 Opioid Koma (RR 4)
             </button>
 
             <button onclick="setScenario('shock')" class="px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-droplet-slash text-purple-600"></i> 🩸 Shok (65/35)
+                🩸 Shok (65/35)
             </button>
 
-            <button onclick="openMedCabinetModal()" class="px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-pills text-purple-600"></i> 💊 Dorilar
+            <button onclick="openMedCabinetModal()" class="px-2 py-0.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-pills"></i> 💊 Dorilar
             </button>
 
-            <button onclick="defibrillateShock()" class="px-2 py-0.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> ⚡ Defibrilyator
+            <button onclick="defibrillateShock()" class="px-2 py-0.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Defibrilyator
             </button>
         </div>
     </footer>
@@ -2432,6 +2448,23 @@ HTML_CONTENT = """<!DOCTYPE html>
                 return;
             }
 
+            if (type === "vfib") {
+                target.hr = 230; target.spo2 = 0; target.sys = 0; target.dia = 0; target.rr = 0;
+                current.hr = 230; current.spo2 = 0; current.sys = 0; current.dia = 0; current.rr = 0;
+                current.rhythm = "vfib";
+                current.mode = "vfib";
+                transitionSteps = 0;
+                totalSteps = 0;
+                updateNumericsUI();
+                updateBanner("⚡ QORINCHALAR FIBRILLYATSIYASI (VFIB - 230 BPM)! TEZDA DEFIBRILLYATOR (SHOK) URIB JONLANTIRING!", "bg-red-600 text-white border-red-800 alarm-blink font-black");
+                if (stageBadge) {
+                    stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-600 alarm-blink"></span><span>KATASTROFA: VFIB (DEFIBRILLYATOR TALAB QILINADI)</span>`;
+                    stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-red-200 text-red-950 border border-red-400 flex items-center gap-1.5 shadow-sm";
+                }
+                startAsystoleTone();
+                return;
+            }
+
             if (type === "normal") {
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                 current.mode = "normal";
@@ -2446,10 +2479,25 @@ HTML_CONTENT = """<!DOCTYPE html>
                 current.mode = "attack";
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA (185 BPM)! AMIODARON YOKI METOPROLOL KERAK!", "bg-amber-100 text-amber-900 border-amber-400 alarm-blink font-black");
                 stopAsystoleTone();
+            } else if (type === "brady") {
+                target = { hr: 28, spo2: 91, sys: 85, dia: 50, rr: 12, temp: 36.1, mode: "brady", rhythm: "brady" };
+                current.mode = "brady";
+                updateBanner("🫀 BRADIKARDIYA & AV-BLOKADA (28 BPM)! ATROPIN YOKI ADRENALIN TALAB QILINADI!", "bg-orange-100 text-orange-900 border-orange-400 alarm-blink font-black");
+                stopAsystoleTone();
+            } else if (type === "hyper") {
+                target = { hr: 115, spo2: 95, sys: 220, dia: 130, rr: 24, temp: 36.8, mode: "hyper", rhythm: "sinus" };
+                current.mode = "hyper";
+                updateBanner("🔴 GIPERTONIK KRIZ: AYoTB KESKIN OSHDI (220/130 mmHg)! NITROGLITSERIN YOKI FUROSEMID KERAK!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
+                stopAsystoleTone();
             } else if (type === "hypoxia") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
                 current.mode = "hypoxia";
                 updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI (74%)! DEKSAMETAZON KERAK!", "bg-sky-100 text-sky-900 border-sky-400 alarm-blink font-black");
+                stopAsystoleTone();
+            } else if (type === "opioid") {
+                target = { hr: 42, spo2: 62, sys: 80, dia: 50, rr: 4, temp: 35.2, mode: "opioid", rhythm: "sinus" };
+                current.mode = "opioid";
+                updateBanner("💉 OPIOID KOMA: NAFAS TORMOZLANISHI (RR 4/min, SpO2 62%)! NALOKSON (0.4mg) VA SUN'IY NAFAS KERAK!", "bg-teal-100 text-teal-900 border-teal-400 alarm-blink font-black");
                 stopAsystoleTone();
             } else if (type === "shock") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
@@ -2549,12 +2597,21 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById("num-temp").innerText = current.temp.toFixed(1);
 
             const rhythmLabel = document.getElementById("ecg-rhythm-name");
-            if (hrVal <= 0) {
+            if (current.rhythm === "vfib" || (current.mode === "vfib" && hrVal > 0)) {
+                rhythmLabel.innerText = "Qorinchalar Fibrillyatsiyasi (VFib)";
+                rhythmLabel.className = "text-xs font-black text-rose-600 alarm-blink";
+            } else if (hrVal <= 0) {
                 rhythmLabel.innerText = "ASYSTOLIYA (0 BPM)";
                 rhythmLabel.className = "text-xs font-black text-rose-600 alarm-blink";
-            } else if (hrVal <= 35) {
-                rhythmLabel.innerText = `Bradikardiya (${hrVal} BPM)`;
-                rhythmLabel.className = "text-xs font-black text-amber-600";
+            } else if (hrVal <= 35 || current.mode === "brady") {
+                rhythmLabel.innerText = `Bradikardiya & AV-Blokada (${hrVal} BPM)`;
+                rhythmLabel.className = "text-xs font-black text-orange-600";
+            } else if (current.mode === "hyper") {
+                rhythmLabel.innerText = "Gipertonik Kriz (Sinus Ritmi)";
+                rhythmLabel.className = "text-xs font-black text-rose-600";
+            } else if (current.mode === "opioid") {
+                rhythmLabel.innerText = "Opioid Bradipnoe (Sinus Ritmi)";
+                rhythmLabel.className = "text-xs font-black text-teal-600";
             } else if (hrVal > 150) {
                 rhythmLabel.innerText = "Ventrikulyar Taxikardiya";
                 rhythmLabel.className = "text-xs font-black text-amber-600";
@@ -2592,6 +2649,9 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function getECGY(phase, hr) {
             if (hr <= 0) return 0;
+            if (current.rhythm === "vfib" || current.mode === "vfib") {
+                return Math.sin(phase * 45) * 0.55 + Math.cos(phase * 22) * 0.35 + (Math.sin(phase * 75) * 0.15);
+            }
             if (hr > 160) return Math.sin(phase * Math.PI * 2) * 0.8;
             const p = phase % 1.0;
             if (p < 0.15) return 0;
