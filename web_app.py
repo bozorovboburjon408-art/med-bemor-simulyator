@@ -16,7 +16,7 @@ from google.genai import types
 import uvicorn
 from medication_labels import LABELS_HTML, get_labels_html
 from medication_manager import load_medications, add_or_update_medication, delete_medication, reset_to_defaults
-from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest, ScanMedicationRequest
+from vital_monitor import HTML_CONTENT as MONITOR_HTML, get_monitor_html, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest, ScanMedicationRequest
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
 from kiosk_hub import HUB_HTML
 from intubation_simulator import INTUBATION_HTML
@@ -1217,7 +1217,7 @@ async def get_print_labels():
 @app.get("/monitor", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)
 async def get_monitor():
-    return HTMLResponse(content=MONITOR_HTML)
+    return HTMLResponse(content=get_monitor_html())
 
 @app.post("/api/compressor")
 async def api_compressor(req: CompressorRequest):

@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import socket
 import asyncio
 import json
@@ -148,26 +149,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <span id="btn-web-serial-text">🔌 USB Ulanish</span>
             </button>
 
-            <!-- DORI SKANERI / JAVONI TUGMASI -->
-            <button id="btn-med-cabinet" onclick="openMedCabinetModal()" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition">
-                <i class="fa-solid fa-barcode text-xs"></i>
-                <span>📷 Dori Skaneri</span>
-                <span id="active-med-badge-top" class="px-1.5 py-0.2 rounded bg-purple-900 text-[10px] text-purple-100 font-mono">ADR-01</span>
-            </button>
 
-            <!-- JONLI TEZKOR SHTRIX / QR SKANER DARCHASI -->
-            <div class="flex items-center gap-1 bg-white border-2 border-purple-400 focus-within:border-purple-600 rounded-lg px-2 py-0.5 shadow-xs transition" title="Shtrix/QR kod skaneri (skanerlaganda bu darchada yoziladi va avtomatik qabul qilinadi)">
-                <i class="fa-solid fa-barcode text-purple-600 text-xs"></i>
-                <input type="text" id="top-quick-barcode" placeholder="📷 QR / Kod..." autocomplete="off" onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();scanQuickBarcode();}" oninput="onQuickBarcodeInput(this.value)" class="w-24 sm:w-28 md:w-32 bg-transparent text-xs font-mono font-black text-purple-950 placeholder-slate-400 focus:outline-none uppercase">
-                <span id="top-quick-barcode-status" class="hidden text-[10px] font-black text-emerald-600">✓</span>
-                <button type="button" onclick="scanQuickBarcode()" class="text-[10px] font-black text-purple-700 hover:text-purple-900 bg-purple-100 hover:bg-purple-200 px-1 py-0.5 rounded cursor-pointer" title="Qidirish / Tanlash">OK</button>
-            </div>
-
-            <!-- A4 CHOP ETISH (STIKERLAR) TUGMASI -->
-            <a href="/vital/labels" target="_blank" title="Barcha 10 ta dori shtrix va QR kodlarini 1 ta A4 varaqda chop etish" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition active:scale-95">
-                <i class="fa-solid fa-print text-xs"></i>
-                <span>🖨️ A4 Stikerlar</span>
-            </a>
 
             <div id="hw-badge" class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
@@ -588,7 +570,234 @@ HTML_CONTENT = """<!DOCTYPE html>
     <!-- JAVASCRIPT ENGINE -->
     <script>
         // ==================== DORI-DARMONLAR BAZASI (MEDICATION DATABASE) ====================
-        const MEDICATION_DB = __MEDICATIONS_JSON__;
+        const MEDICATION_DB = [
+        {
+                "id": "adrenalin",
+                "code": "ADR-01",
+                "name": "Adrenalin (Epinefrin) 1 mg/ml",
+                "barcodes": [
+                        "ADR01",
+                        "ADR-01",
+                        "ADRENALIN",
+                        "EPINEPHRINE",
+                        "4780001001"
+                ],
+                "group": "Adrenomimetik (Vazopressor)",
+                "desc": "Yurak to'xtashi, asistoliya va anafilaktik shokda asosiy vosita.",
+                "badgeBg": "#7e22ce",
+                "btnColor": "bg-purple-600 hover:bg-purple-700",
+                "appropriate_for": [
+                        "asystole",
+                        "bradycardia",
+                        "shock",
+                        "hypoxia"
+                ],
+                "dangerous_for": [
+                        "tachycardia"
+                ]
+        },
+        {
+                "id": "amiodaron",
+                "code": "AMI-02",
+                "name": "Amiodaron (Kordaron) 150 mg",
+                "barcodes": [
+                        "AMI02",
+                        "AMI-02",
+                        "AMIODARON",
+                        "CORDARONE",
+                        "4780001002"
+                ],
+                "group": "Antiaritmik (III-sinf)",
+                "desc": "Qorincha taxikardiyasi (VTach) va aritmiyalarni to'xtatuvchi.",
+                "badgeBg": "#0284c7",
+                "btnColor": "bg-sky-600 hover:bg-sky-700",
+                "appropriate_for": [
+                        "tachycardia"
+                ],
+                "dangerous_for": [
+                        "bradycardia",
+                        "asystole"
+                ]
+        },
+        {
+                "id": "atropin",
+                "code": "ATR-03",
+                "name": "Atropin sulfat 1 mg/ml",
+                "barcodes": [
+                        "ATR03",
+                        "ATR-03",
+                        "ATROPIN",
+                        "ATROPINE",
+                        "4780001003"
+                ],
+                "group": "M-Xolinoblokator",
+                "desc": "Sust puls (bradikardiya) va AV-blokadalarda ritmni oshiradi.",
+                "badgeBg": "#d97706",
+                "btnColor": "bg-amber-600 hover:bg-amber-700",
+                "appropriate_for": [
+                        "bradycardia"
+                ],
+                "dangerous_for": [
+                        "tachycardia"
+                ]
+        },
+        {
+                "id": "nitro",
+                "code": "NIT-04",
+                "name": "Nitroglitserin 0.5 mg",
+                "barcodes": [
+                        "NIT04",
+                        "NIT-04",
+                        "NITRO",
+                        "NITROGLYCERIN",
+                        "4780001004"
+                ],
+                "group": "Periferik vazodilatator",
+                "desc": "O'tkir gipertonik kriz va stenokardiyada bosimni tushiradi.",
+                "badgeBg": "#e11d48",
+                "btnColor": "bg-rose-600 hover:bg-rose-700",
+                "appropriate_for": [
+                        "attack"
+                ],
+                "dangerous_for": [
+                        "shock",
+                        "asystole"
+                ]
+        },
+        {
+                "id": "metoprolol",
+                "code": "MET-05",
+                "name": "Metoprolol (Beta-blokator) 5 mg",
+                "barcodes": [
+                        "MET05",
+                        "MET-05",
+                        "METOPROLOL",
+                        "BETALOC",
+                        "4780001005"
+                ],
+                "group": "Beta-1 adrenoblokator",
+                "desc": "Taxikardiyada puls va miokard kislorod talabini pasaytiradi.",
+                "badgeBg": "#4f46e5",
+                "btnColor": "bg-indigo-600 hover:bg-indigo-700",
+                "appropriate_for": [
+                        "tachycardia"
+                ],
+                "dangerous_for": [
+                        "bradycardia",
+                        "asystole",
+                        "hypoxia"
+                ]
+        },
+        {
+                "id": "saline",
+                "code": "SAL-06",
+                "name": "Fizrastvor (0.9% NaCl) 500 ml",
+                "barcodes": [
+                        "SAL06",
+                        "SAL-06",
+                        "NACL",
+                        "FIZRASTVOR",
+                        "SALINE",
+                        "4780001006"
+                ],
+                "group": "Kristalloid plazma o'rnini bosuvchi",
+                "desc": "Gipovolemik va qon yo'qotish shokida qon bosimini tiklaydi.",
+                "badgeBg": "#2563eb",
+                "btnColor": "bg-blue-600 hover:bg-blue-700",
+                "appropriate_for": [
+                        "shock",
+                        "hypoxia"
+                ],
+                "dangerous_for": []
+        },
+        {
+                "id": "dexa",
+                "code": "DEX-07",
+                "name": "Deksametazon 8 mg/2ml",
+                "barcodes": [
+                        "DEX07",
+                        "DEX-07",
+                        "DEXA",
+                        "DEXAMETHASONE",
+                        "4780001007"
+                ],
+                "group": "Glikokortikosteroid (Gormon)",
+                "desc": "Bronxospazm, anafilaksiya va o'tkir gipoksiyani bartaraf etadi.",
+                "badgeBg": "#059669",
+                "btnColor": "bg-emerald-600 hover:bg-emerald-700",
+                "appropriate_for": [
+                        "hypoxia"
+                ],
+                "dangerous_for": []
+        },
+        {
+                "id": "naloxone",
+                "code": "NAL-08",
+                "name": "Nalokson 0.4 mg/ml",
+                "barcodes": [
+                        "NAL08",
+                        "NAL-08",
+                        "NALOXON",
+                        "NALOXONE",
+                        "4780001008"
+                ],
+                "group": "Opioid retseptorlari antagonisti",
+                "desc": "Narkotik intoksikatsiyasi va nafas tormozlanishiga qarshi vosita.",
+                "badgeBg": "#0d9488",
+                "btnColor": "bg-teal-600 hover:bg-teal-700",
+                "appropriate_for": [
+                        "hypoxia"
+                ],
+                "dangerous_for": []
+        },
+        {
+                "id": "kcl",
+                "code": "KCL-09",
+                "name": "Kaliy xlorid (KCl 4%) 20 ml",
+                "barcodes": [
+                        "KCL09",
+                        "KCL-09",
+                        "KCL",
+                        "POTASSIUM",
+                        "4780001009"
+                ],
+                "group": "Elektrolit (Toksik konsentrat)",
+                "desc": "DIQQAT: Sof holda vena ichiga yuborish kardioplegiya chaqiradi!",
+                "badgeBg": "#dc2626",
+                "btnColor": "bg-red-600 hover:bg-red-700",
+                "appropriate_for": [],
+                "dangerous_for": [
+                        "asystole",
+                        "normal",
+                        "shock",
+                        "bradycardia",
+                        "tachycardia"
+                ]
+        },
+        {
+                "id": "furosemide",
+                "code": "FUR-10",
+                "name": "Furosemid (Laziks) 20 mg",
+                "barcodes": [
+                        "FUR10",
+                        "FUR-10",
+                        "FUROSEMID",
+                        "LASIX",
+                        "4780001010"
+                ],
+                "group": "Halqa diuretigi",
+                "desc": "O'pka shishi va gipertoniyada tezkor suyuqlik haydovchi vosita.",
+                "badgeBg": "#0891b2",
+                "btnColor": "bg-cyan-600 hover:bg-cyan-700",
+                "appropriate_for": [
+                        "attack"
+                ],
+                "dangerous_for": [
+                        "shock",
+                        "asystole"
+                ]
+        }
+];
 
         let selectedMedication = MEDICATION_DB[0]; // Default Adrenalin
         let current = {
@@ -1179,10 +1388,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function syncBarcodeToInputs(val) {
-            const topInput = document.getElementById("top-quick-barcode");
-            if (topInput && document.activeElement !== topInput) {
-                topInput.value = val;
-            }
             const manualInput = document.getElementById("manual-barcode-input");
             if (manualInput && document.activeElement !== manualInput) {
                 manualInput.value = val;
@@ -1200,12 +1405,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const codeToProcess = barcodeBuffer.trim();
                     barcodeBuffer = "";
                     processScannedMedication(codeToProcess);
-                    return;
-                }
-                const topInput = document.getElementById("top-quick-barcode");
-                if (topInput && topInput.value.trim().length >= 2 && document.activeElement === topInput) {
-                    e.preventDefault();
-                    scanQuickBarcode();
                     return;
                 }
                 const manualInput = document.getElementById("manual-barcode-input");
@@ -1249,22 +1448,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (!rawCode || !rawCode.trim()) return;
             const clean = rawCode.trim();
             const matched = matchMedication(clean);
-
-            // Skaner natijasini input darchasida aks ettirish
-            const topInput = document.getElementById("top-quick-barcode");
-            if (topInput) {
-                topInput.value = matched ? matched.code : clean.toUpperCase();
-                topInput.classList.add("ring-2", matched ? "ring-emerald-500" : "ring-rose-500");
-                setTimeout(() => topInput.classList.remove("ring-2", "ring-emerald-500", "ring-rose-500"), 1500);
-            }
-            const statusBadge = document.getElementById("top-quick-barcode-status");
-            if (statusBadge) {
-                statusBadge.innerText = matched ? "✓" : "✗";
-                statusBadge.className = matched ? "text-[10px] font-black text-emerald-600" : "text-[10px] font-black text-rose-600";
-                statusBadge.classList.remove("hidden");
-                setTimeout(() => statusBadge.classList.add("hidden"), 3000);
-            }
-
             if (matched) {
                 selectedMedication = matched;
                 playScannerBeep();
@@ -1295,32 +1478,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     true
                 );
             }
-        }
-
-        function scanQuickBarcode() {
-            const input = document.getElementById("top-quick-barcode");
-            if (input && input.value.trim()) {
-                processScannedMedication(input.value.trim());
-            }
-        }
-
-        let quickInputTimeout = null;
-        function onQuickBarcodeInput(val) {
-            if (!val) return;
-            const converted = convertCyrillicToLatin(val).toUpperCase();
-            if (converted !== val) {
-                const input = document.getElementById("top-quick-barcode");
-                if (input) input.value = converted;
-            }
-            if (quickInputTimeout) clearTimeout(quickInputTimeout);
-            quickInputTimeout = setTimeout(() => {
-                if (val.trim().length >= 3) {
-                    const m = matchMedication(val);
-                    if (m) {
-                        processScannedMedication(val);
-                    }
-                }
-            }, 200);
         }
 
         function scanManualBarcode() {
@@ -1372,11 +1529,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         function updateSelectedMedicationUI() {
             const topBadge = document.getElementById("active-med-badge-top");
             if (topBadge) topBadge.innerText = selectedMedication.code;
-
-            const topQuick = document.getElementById("top-quick-barcode");
-            if (topQuick && document.activeElement !== topQuick) {
-                topQuick.value = selectedMedication.code;
-            }
 
             const nameEl = document.getElementById("active-med-name");
             if (nameEl) nameEl.innerText = `${selectedMedication.name} (${selectedMedication.code})`;
@@ -2512,13 +2664,17 @@ class ScanMedicationRequest(BaseModel):
 async def get_print_labels():
     return HTMLResponse(content=get_labels_html())
 
+def get_monitor_html() -> str:
+    meds = load_medications()
+    meds_json = json.dumps(meds, ensure_ascii=False)
+    return re.sub(r'const MEDICATION_DB = \[[\s\S]*?\];', f'const MEDICATION_DB = {meds_json};', HTML_CONTENT)
+
+MONITOR_HTML = get_monitor_html()
+
 @app.get("/", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)
 async def get_monitor():
-    meds = load_medications()
-    meds_json = json.dumps(meds, ensure_ascii=False)
-    rendered = HTML_CONTENT.replace("__MEDICATIONS_JSON__", meds_json)
-    return HTMLResponse(content=rendered)
+    return HTMLResponse(content=get_monitor_html())
 
 @app.post("/api/compressor")
 async def api_compressor(req: CompressorRequest):
