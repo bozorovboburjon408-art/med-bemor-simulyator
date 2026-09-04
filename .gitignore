@@ -8,4 +8,5 @@ env/
 venv/
 *.tmp
 *.mp3
+!static/audio/*.mp3
 bemor_javobi.wav

@@ -203,6 +203,32 @@ HTML_CONTENT = """<!DOCTYPE html>
         <span id="inj-banner-text">💉 UKOL QILINDI! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
+    <!-- PATIENT VOICE & REVIVAL POPUP -->
+    <div id="patient-revived-toast" class="hidden my-0.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white border-2 border-emerald-300 rounded-xl p-2 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+        <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-base shrink-0 animate-bounce">
+                <i class="fa-solid fa-heart-pulse text-rose-300"></i>
+            </span>
+            <div>
+                <div class="text-[10px] uppercase tracking-wider font-black text-emerald-200 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
+                    <span>Bemor Jonlandi (Anvar Karimov, 40 yosh)</span>
+                </div>
+                <div id="patient-revived-speech" class="text-xs md:text-sm font-black text-white italic">
+                    "Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!"
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            <span class="px-2.5 py-1 rounded-lg bg-white/25 text-[11px] font-black tracking-wide border border-white/30">
+                🎉 ROSC: 75 BPM
+            </span>
+            <button onclick="dismissRevivedToast()" class="text-white/80 hover:text-white p-1 rounded cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- 2. TOP 50% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
     <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2 flex-1 min-h-0 overflow-hidden">
         
@@ -822,6 +848,139 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        // ==================== BEMOR OVOZI VA JONLANISH EFFEKTLARI ====================
+        let activeVoiceAudio = null;
+        function playVoiceAudio(src, fallbackText) {
+            if (!soundEnabled || monitorVolume <= 0) return;
+            try {
+                if (activeVoiceAudio) {
+                    activeVoiceAudio.pause();
+                    activeVoiceAudio = null;
+                }
+                activeVoiceAudio = new Audio(src);
+                activeVoiceAudio.volume = Math.min(1.0, monitorVolume);
+                const p = activeVoiceAudio.play();
+                if (p !== undefined) {
+                    p.catch(err => {
+                        console.warn("Audio play error, fallback to speech synthesis:", err);
+                        speakWithFallback(fallbackText);
+                    });
+                }
+            } catch(e) {
+                speakWithFallback(fallbackText);
+            }
+        }
+
+        function speakWithFallback(text) {
+            if (!text || !('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = "uz-UZ";
+                utter.rate = 0.95;
+                utter.pitch = 1.0;
+                window.speechSynthesis.speak(utter);
+            } catch(e) {}
+        }
+
+        function playRevivalChime() {
+            if (!soundEnabled || monitorVolume <= 0) return;
+            initAudio();
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 garmonik akkord
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                    gain.gain.setValueAtTime(0.0001, now + idx * 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.25 * monitorVolume, now + idx * 0.12 + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 1.2);
+                    osc.connect(gain);
+                    gain.connect(masterCompressor || audioCtx.destination);
+                    osc.start(now + idx * 0.12);
+                    osc.stop(now + idx * 0.12 + 1.25);
+                });
+            } catch(e) {}
+        }
+
+        function playDeepBreathSound() {
+            if (!soundEnabled || monitorVolume <= 0) return;
+            initAudio();
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const bufferSize = Math.floor(audioCtx.sampleRate * 1.2);
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.5;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = "bandpass";
+                filter.frequency.setValueAtTime(350, now);
+                filter.frequency.exponentialRampToValueAtTime(1300, now + 0.6);
+                filter.frequency.exponentialRampToValueAtTime(250, now + 1.2);
+                filter.Q.setValueAtTime(3.0, now);
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.exponentialRampToValueAtTime(0.35 * monitorVolume, now + 0.5);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(masterCompressor || audioCtx.destination);
+
+                noise.start(now);
+                noise.stop(now + 1.2);
+            } catch(e) {}
+        }
+
+        function dismissRevivedToast() {
+            const toast = document.getElementById("patient-revived-toast");
+            if (toast) toast.classList.add("hidden");
+        }
+
+        function triggerPatientRevivedExperience(customSpeech) {
+            const toast = document.getElementById("patient-revived-toast");
+            const speechEl = document.getElementById("patient-revived-speech");
+            const speechText = customSpeech || "Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!";
+            
+            if (speechEl) speechEl.innerText = `"${speechText}"`;
+            if (toast) {
+                toast.classList.remove("hidden");
+                setTimeout(() => {
+                    dismissRevivedToast();
+                }, 9000);
+            }
+
+            // 1. Chuqur nafas olish tovushi (Gasping / Inhalation effect)
+            playDeepBreathSound();
+
+            // 2. Musiqiy garmonik qo'ng'iroq (Chime)
+            setTimeout(() => {
+                playRevivalChime();
+            }, 450);
+
+            // 3. Bemorning o'zbekcha minnatdorchilik ovozi
+            setTimeout(() => {
+                playVoiceAudio('/static/audio/patient_revived.mp3', speechText);
+            }, 950);
+
+            // Yashil bayram chaqnashi
+            const flash = document.getElementById("flash-overlay");
+            if (flash) {
+                flash.classList.add("inj-success");
+                setTimeout(() => flash.classList.remove("inj-success"), 1500);
+            }
+        }
+
         // ==================== CPR 30:2 SIKLI VA BOSQICHLI JONLANISH MANTIQI ====================
         let cprState = "idle";
         let peakForce = 0;
@@ -1336,6 +1495,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                             stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 alarm-blink"></span><span>1-BOSQICH: YURAK TIKLANMOQDA (5s -> 22 BPM)</span>`;
                             stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-amber-100 text-amber-900 border border-amber-400 flex items-center gap-1.5 shadow-sm";
                         }
+
+                        // Ovozli bildirish: 1-bosqich zaif puls paydo bo'ldi
+                        playRevivalChime();
+                        setTimeout(() => {
+                            playVoiceAudio('/static/audio/cpr_stage1_pulse.mp3', "Reanimatsiya muvaffaqiyatli! Zaif puls paydo bo'ldi. Tezlik bilan Adrenalin yuboring!");
+                        }, 500);
                     } else {
                         updateBanner(`⚠️ SIKL YETARLI EMAS (Aniqlik: ${accuracyPct}% < 80%). Qayta 30:2 bajaring!`, "bg-rose-100 text-rose-900 border-rose-400 font-bold");
                     }
@@ -1417,6 +1582,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const msg = `✅ TO'G'RI DORI: ${medName} yuborildi! Qon orqali yurakka yetib bormoqda (${delaySec}s)...`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+
+                    // Ovozli bildirish: Adrenalin yuborildi
+                    playVoiceAudio('/static/audio/adrenalin_injected.mp3', "Adrenalin yuborildi. Dori qon orqali yurakka yetib bormoqda.");
 
                     if (injectionCountdownTimer) clearInterval(injectionCountdownTimer);
                     injectionCountdownTimer = setInterval(() => {
@@ -1869,6 +2037,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                         const injBanner = document.getElementById("inj-banner");
                         if (injBanner) injBanner.classList.add("hidden");
                         injectionInProgress = false;
+                        cprRevivalStage = 0;
+                        triggerPatientRevivedExperience("Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!");
                     }
                 }
                 updateNumericsUI();
