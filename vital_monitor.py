@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
+from medication_labels import LABELS_HTML
 try:
     import serial
     import serial.tools.list_ports
@@ -24,6 +25,13 @@ except:
     pass
 
 app = FastAPI(title="ICU & CPR Imtihon Xonasi - Aqlli Vital Monitor & Dori Skaneri")
+
+try:
+    from fastapi.staticfiles import StaticFiles
+    os.makedirs("static", exist_ok=True)
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+except Exception:
+    pass
 
 active_websockets: List[WebSocket] = []
 
@@ -145,6 +153,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <span>📷 Dori Skaneri</span>
                 <span id="active-med-badge-top" class="px-1.5 py-0.2 rounded bg-purple-900 text-[10px] text-purple-100 font-mono">ADR-01</span>
             </button>
+
+            <!-- A4 CHOP ETISH (STIKERLAR) TUGMASI -->
+            <a href="/vital/labels" target="_blank" title="Barcha 10 ta dori shtrix va QR kodlarini 1 ta A4 varaqda chop etish" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition active:scale-95">
+                <i class="fa-solid fa-print text-xs"></i>
+                <span>🖨️ A4 Stikerlar</span>
+            </a>
 
             <div id="hw-badge" class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
@@ -511,8 +525,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
 
             <!-- Modal Footer -->
-            <div class="bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs">
-                <span class="text-slate-500">💡 Maslahat: Haqiqiy USB skaner avtomatik ishlaydi!</span>
+            <div class="bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs gap-2">
+                <a href="/vital/labels" target="_blank" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-lg flex items-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-print"></i> 🖨️ A4 Chop Etish (10 ta Shtrix & QR Kod)
+                </a>
                 <button onclick="closeMedCabinetModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 font-bold rounded-lg cursor-pointer">
                     Yopish
                 </button>
@@ -2114,6 +2130,12 @@ class CompressorRequest(BaseModel):
 class ScanMedicationRequest(BaseModel):
     barcode: Optional[str] = None
     med_id: Optional[str] = None
+
+@app.get("/vital/labels", response_class=HTMLResponse)
+@app.get("/labels", response_class=HTMLResponse)
+@app.get("/print_labels", response_class=HTMLResponse)
+async def get_print_labels():
+    return HTMLResponse(content=LABELS_HTML)
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)

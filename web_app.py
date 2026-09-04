@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from google import genai
 from google.genai import types
 import uvicorn
+from medication_labels import LABELS_HTML
 from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest, ScanMedicationRequest
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
 from kiosk_hub import HUB_HTML
@@ -1205,6 +1206,12 @@ async def get_sw():
 @app.get("/", response_class=HTMLResponse)
 async def get_index():
     return HTMLResponse(content=HTML_CONTENT)
+
+@app.get("/vital/labels", response_class=HTMLResponse)
+@app.get("/labels", response_class=HTMLResponse)
+@app.get("/print_labels", response_class=HTMLResponse)
+async def get_print_labels():
+    return HTMLResponse(content=LABELS_HTML)
 
 @app.get("/monitor", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)
