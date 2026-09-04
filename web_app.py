@@ -14,7 +14,8 @@ from fastapi.staticfiles import StaticFiles
 from google import genai
 from google.genai import types
 import uvicorn
-from medication_labels import LABELS_HTML
+from medication_labels import LABELS_HTML, get_labels_html
+from medication_manager import load_medications, add_or_update_medication, delete_medication, reset_to_defaults
 from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest, ScanMedicationRequest
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
 from kiosk_hub import HUB_HTML
@@ -1211,7 +1212,7 @@ async def get_index():
 @app.get("/labels", response_class=HTMLResponse)
 @app.get("/print_labels", response_class=HTMLResponse)
 async def get_print_labels():
-    return HTMLResponse(content=LABELS_HTML)
+    return HTMLResponse(content=get_labels_html())
 
 @app.get("/monitor", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)
@@ -1261,6 +1262,38 @@ async def get_photo():
     return JSONResponse(content={"error": "Photo not found"}, status_code=404)
 
 
+
+@app.get("/api/medications")
+async def api_get_medications():
+    return JSONResponse(content=load_medications())
+
+@app.post("/api/medications")
+async def api_save_medication(request: Request):
+    try:
+        data = await request.json()
+        saved = add_or_update_medication(data)
+        for ws in monitor_websockets:
+            try: await ws.send_text(json.dumps({"type": "meds_updated"}))
+            except: pass
+        return JSONResponse(content={"status": "ok", "medication": saved})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=400)
+
+@app.delete("/api/medications/{med_id}")
+async def api_delete_medication(med_id: str):
+    ok = delete_medication(med_id)
+    for ws in monitor_websockets:
+        try: await ws.send_text(json.dumps({"type": "meds_updated"}))
+        except: pass
+    return JSONResponse(content={"status": "ok" if ok else "not_found"})
+
+@app.post("/api/medications/reset")
+async def api_reset_medications():
+    meds = reset_to_defaults()
+    for ws in monitor_websockets:
+        try: await ws.send_text(json.dumps({"type": "meds_updated"}))
+        except: pass
+    return JSONResponse(content={"status": "ok", "medications": meds})
 
 @app.post("/api/scan_medication")
 async def api_scan_medication(req: ScanMedicationRequest):
