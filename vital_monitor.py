@@ -1115,7 +1115,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                             activeVoiceSource.buffer = decodedData;
 
                             const gainNode = audioCtx.createGain();
-                            gainNode.gain.setValueAtTime(5.0, audioCtx.currentTime); // 500% Kuchaytirilgan Ovoz (Maximal Baland Ovoz)
+                            gainNode.gain.setValueAtTime(2.2, audioCtx.currentTime); // 220% Musiqiy tiniq kuchaytiruvchi ovoz (Baland, ammo shovqinsiz va tiniq)
 
                             activeVoiceSource.connect(gainNode);
                             gainNode.connect(audioCtx.destination);
@@ -1151,7 +1151,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 onPatientSpeechStart();
                 const utter = new SpeechSynthesisUtterance(text);
                 utter.lang = "uz-UZ";
-                utter.rate = 0.95;
+                utter.rate = 0.90; // Doniqiy va ravon talaffuz uchun 0.90 me'yori
                 utter.pitch = 1.0;
                 utter.volume = 1.0;
                 utter.onend = () => { onPatientSpeechEnd(); };
@@ -1870,6 +1870,14 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         window.addEventListener("keydown", (e) => {
+            const activeEl = document.activeElement;
+            const activeTag = activeEl ? activeEl.tagName : '';
+            
+            // Agar foydalanuvchi matnli inputda (masalan, AI bemor savoli #input-ai-patient-text) yozayotgan bo'lsa, skanerni o'tkazib yuboramiz
+            if (activeEl && (activeTag === 'INPUT' || activeTag === 'TEXTAREA') && activeEl.id !== 'manual-barcode-input') {
+                return;
+            }
+
             const now = Date.now();
 
             // Skaner terminator kalitlari: Enter yoki Tab
@@ -3043,6 +3051,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             const diaVal = Math.round(current.dia);
             const mapVal = Math.round((sysVal + 2 * diaVal) / 3);
             const rrVal = Math.round(current.rr);
+
+            // Bemor holati tiklanganda yoki o'lim/vfib dan boshqa ssenariyga o'tilganda uzoq tiiiiit ovozini o'chiramiz
+            if (current.mode !== "dying" && current.mode !== "vfib") {
+                stopAsystoleTone();
+            }
 
             document.getElementById("num-hr").innerText = hrVal;
             document.getElementById("num-pr").innerText = hrVal;
