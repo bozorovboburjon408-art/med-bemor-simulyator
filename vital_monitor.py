@@ -1535,8 +1535,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             updateAIPatientSubtitle();
 
             const qLower = docQuestion.toLowerCase().trim();
-            let patientResponse = "";
-
             const mode = current.mode || "normal";
             const hr = Math.round(current.hr);
             const sys = Math.round(current.sys);
@@ -1551,141 +1549,79 @@ HTML_CONTENT = """<!DOCTYPE html>
                     if (spokenText) {
                         speakAIPatientResponse(spokenText);
                     }
-                }, 300);
+                }, 200);
             };
 
-            // 1. CHUQUR KOMA YOKI HUSHSIZLIK (ASYSTOLE, VFIB, OPIOID KOMA)
-            if (mode === "dying" || mode === "vfib" || hr <= 5) {
-                patientResponse = "🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Bemor savollarga javob bera olmaydi, darhol CPR massaji va Defibrillyator qo'llang!";
-                respond(patientResponse);
+            // 1. BARCODE VA DORI KODLARI TEKSHIRUVI (Shtrixkodlar, ADR-01, ATR-03, AMI-02...)
+            if (/^\d{6,16}$/.test(qLower) || /^(adr|atr|ami|fur|met|nit|nal|dex|sal|kcl)/.test(qLower)) {
+                processSmartMedicationAdministration(docQuestion);
+                return;
+            }
+
+            // 2. CHUQUR KOMA YOKI HUSHSIZLIK (ASYSTOLE, VFIB, OPIOID KOMA)
+            if (mode === "dying" || mode === "asystole" || mode === "vfib" || hr <= 5) {
+                respond("🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Bemor savollarga javob bera olmaydi, darhol CPR massaji va Defibrillyator qo'llang!");
                 return;
             }
             if (mode === "opioid" || rr <= 6) {
-                patientResponse = "(Bemor chuqur komada, javob bermaydi)... Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Og'riqli ta'sirga zaif javob bor. Nalokson (0.4mg) va sun'iy nafas talab qilinadi!";
-                respond(patientResponse);
+                respond("(Bemor chuqur komada, javob bermaydi)... Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Og'riqli ta'sirga zaif javob bor. Nalokson (0.4mg) va sun'iy nafas talab qilinadi!");
                 return;
             }
 
-            // 2. SALOMLASHISH VA MULOQOT ("salom", "assalomu alaykum", "xayrli", "tinchlikmi", "qalaysiz")
+            // 3. TELEMETRIYA / TASHXIS SAVOLLARI ("puls", "bosim", "satratsiya", "harorat", "ritm")
+            if (qLower.includes("puls") || qLower.includes("yurak urishi") || qLower.includes("bosim") || qLower.includes("saturatsiya") || qLower.includes("spo2")) {
+                if (qLower.includes("puls") || qLower.includes("urishi")) {
+                    respond("Doktor, hozir yurak urishim daqiqasiga " + hr + " marta. " + (hr > 120 ? "Juda tez urib ketyapti!" : hr < 50 ? "Sekin urib holsizlantiryapti..." : "Me'yorida urmoqda."));
+                } else if (qLower.includes("bosim")) {
+                    respond("Doktor, qon bosimim " + sys + " mm simob ustuniga teng. " + (sys > 160 ? "Juda baland, ensam og'riyapti!" : sys < 90 ? "Juda tushib ketgan, boshim aylanmoqda..." : "Barqaror."));
+                } else {
+                    respond("Kislorod saturatsiyam " + spo2 + "%. " + (spo2 < 90 ? "Nafasim qisib bo'g'ilyapman!" : "Nafas olishim me'yorida."));
+                }
+                return;
+            }
+
+            // 4. CHUQUR MULOQOT UCHUN REAL GEMINI LLM API
+            fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ kasallik_id: mode, text: docQuestion })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.text) {
+                    respond(data.text);
+                } else {
+                    fallbackLocalNLP(qLower, mode, respond);
+                }
+            })
+            .catch(err => {
+                fallbackLocalNLP(qLower, mode, respond);
+            });
+        }
+
+        function fallbackLocalNLP(qLower, mode, respond) {
+            let patientResponse = "";
             if (qLower.includes("salom") || qLower.includes("alaykum") || qLower.includes("xayrli") || qLower.includes("qalaysiz") || qLower.includes("yaxshimisiz")) {
-                if (mode === "hyper" || sys >= 190) {
-                    patientResponse = "Vaalaykum assalom, doktor! Boshim juda o'tkir og'riyapti, ensam tars yorilib ketay deyapti... Yordam bering!";
-                } else if (mode === "attack" || hr >= 160) {
-                    patientResponse = "Assalomu alaykum, doktor... Yuragim ko'kragimdan chiqib ketayotganday o'ta tez urib ketdi! Qaltirayapman, yordam bering!";
-                } else if (mode === "brady" || hr <= 35) {
-                    patientResponse = "(Zaif va sekin ovozda)... Vaalaykum assalom, doktor... Boshim qorong'ulashib, ko'zlarim tindib ketyapti... Holsizman...";
-                } else if (mode === "hypoxia" || spo2 <= 80) {
-                    patientResponse = "(Hansiqlab)... As-salomu... alaykum doktor... Havoo yetmayapti... Bo'g'ilyapman...";
-                } else if (mode === "shock" || sys <= 75) {
-                    patientResponse = "(Qaltirab va kuchsiz)... Vaalaykum assalom, doktor... Og'zim qurib ketdi, bosimim tushib hushimdan ketyapman...";
-                } else if (mode === "anaphylaxis") {
-                    patientResponse = "(Bo'g'ilib va xirillab)... Assalomu alaykum, doktor! Tomog'im va tilim shishib, badanimni allergik toshma bosib ketdi, bo'g'ilyapman!";
-                } else {
-                    patientResponse = "Vaalaykum assalom, doktor! Ahvolim yaxshi, rahmat. O'zimni me'yorida his qilyapman.";
-                }
-                respond(patientResponse);
-                return;
-            }
-
-            // 3. SHAXSIYAT / ISM / YOSH ("ism", "kim", "yosh")
-            if (qLower.includes("ism") || qLower.includes("kimsiz") || qLower.includes("yosh") || qLower.includes("otangiz")) {
+                if (mode === "hyper") patientResponse = "Vaalaykum assalom, doktor! Boshim juda o'tkir og'riyapti, ensam tars yorilib ketay deyapti... Yordam bering!";
+                else if (mode === "attack") patientResponse = "Assalomu alaykum, doktor... Yuragim ko'kragimdan chiqib ketayotganday o'ta tez urib ketdi!";
+                else if (mode === "brady") patientResponse = "(Zaif ovozda)... Vaalaykum assalom, doktor... Boshim qorong'ulashib, holsizlanayapman...";
+                else patientResponse = "Vaalaykum assalom, doktor! Ahvolim yaxshi, rahmat.";
+            } else if (qLower.includes("ism") || qLower.includes("kimsiz") || qLower.includes("yosh")) {
                 patientResponse = "Ismim Anvar Karimov, yoshim 40 da, doktor.";
-                respond(patientResponse);
-                return;
-            }
-
-            // 4. ANAMNEZ / ALLERGIYA / SABAB ("nima bo'ldi", "sabab", "allergiya", "toshma", "dori", "yedingiz", "ichdingiz", "ukol")
-            if (qLower.includes("nima bo'ldi") || qLower.includes("sabab") || qLower.includes("allergiya") || qLower.includes("toshma") || qLower.includes("dori") || qLower.includes("yedingiz") || qLower.includes("ichdingiz")) {
-                if (mode === "anaphylaxis") {
-                    patientResponse = "Doktor, yangi dori ichganimdan (yoki taomdan) keyin to'satdan badanimga qichishuvchi eshakemi toshmasi toshdi, tilim va tomog'im shishib bo'g'ilishni boshladim!";
-                } else if (mode === "hyper") {
-                    patientResponse = "Doktor, ishda o'tkir stress va asabiylashishdan keyin ensamda og'riq turib, qon bosimim oshib ketdi.";
-                } else if (mode === "attack") {
-                    patientResponse = "To'satdan ko'kragimda kuchli qaltiroq va tez urish boshlandi, xuruj tutib qoldi.";
-                } else if (mode === "hypoxia") {
-                    patientResponse = "Bronxial astma xuruji tutib qoldi, aerozol ham yordam bermadi, bo'g'ilyapman.";
-                } else if (mode === "shock") {
-                    patientResponse = "Qon ketishi va suyuqlik yo'qotishdan keyin darmonim qolmadi, bosimim quladi.";
-                } else {
-                    patientResponse = "Ilgari o'simliklar gulchangiga allergiyam bor edi, lekin hozir hech qanday nojo'ya ta'sir sezmayapman.";
-                }
-                respond(patientResponse);
-                return;
-            }
-
-            // 5. OG'RIQ VA SHIKOYATLAR ("og'riy", "qayer", "joy", "yurak", "ko'krak", "ensa")
-            if (qLower.includes("og'riy") || qLower.includes("qayer") || qLower.includes("joy") || qLower.includes("kasal") || qLower.includes("qiynay")) {
-                if (mode === "hyper") {
-                    patientResponse = "Doktor, ensa qismimda o'tkir va tars-tars uruvchi og'riq bor, ko'nglim ayniyapti.";
-                } else if (mode === "attack") {
-                    patientResponse = "Ko'kragimning o'rtasida va yurak sohamda kuchli siqilish va sanchiq bor!";
-                } else if (mode === "anaphylaxis") {
-                    patientResponse = "Tomog'im ichida achishish va shish bor, terimda kuchli qichishish va toshmalar bor!";
-                } else if (mode === "shock") {
-                    patientResponse = "Qornimda va butun tanamda kuchli holsizlik va sovuq ter bosishi bor.";
-                } else {
-                    patientResponse = "Hozir hech qayerim og'rimayapti, doktor. Og'riqlar yo'qoldi.";
-                }
-                respond(patientResponse);
-                return;
-            }
-
-            // 6. NAFAS VA TOMOQ ("nafas", "bo'g'ilish", "havo", "tomoq", "o'pka")
-            if (qLower.includes("nafas") || qLower.includes("bo'g'ilish") || qLower.includes("havo") || qLower.includes("tomoq") || qLower.includes("o'pka")) {
-                if (mode === "hypoxia") {
-                    patientResponse = "(Hansiqlab)... Dok-tor... Havoo... yetmayapti... Bo'g'ilyapman... Yordam bering...";
-                } else if (mode === "anaphylaxis") {
-                    patientResponse = "Tilim va tomoq yo'llarim shishib ketganidan nafas yo'lim to'silib, stridor bo'g'ilish yuz beryapti!";
-                } else if (mode === "attack") {
-                    patientResponse = "Yuragim tez urganidan nafasim qisib, yetishmayapti.";
-                } else if (mode === "hyper") {
-                    patientResponse = "Bosimim balandligidan ko'kragim siqilib, nafas olishim og'irlashyapti.";
-                } else {
-                    patientResponse = "Nafas olishim bir maromda va yengil, kislorod yetarli, doktor.";
-                }
-                respond(patientResponse);
-                return;
-            }
-
-            // 7. BOSH VA HUSH ("bosh", "aylanyapti", "ko'z", "hush", "tindib")
-            if (qLower.includes("bosh") || qLower.includes("aylanyapti") || qLower.includes("ko'z") || qLower.includes("hush") || qLower.includes("tindib")) {
-                if (mode === "hyper") {
-                    patientResponse = "Bosimim 220 mmHg ga chiqib ketganidan boshim tars yorilib ketay deyapti, ko'zlarim tindib ketyapti!";
-                } else if (mode === "brady" || mode === "shock") {
-                    patientResponse = "Qon bosimim va pulsim o'ta tushib ketganidan boshim qorong'ulashib, hushimdan ketyapman...";
-                } else {
-                    patientResponse = "Boshim aylanmayapti, ko'zlarim ravshan ko'ryapti, doktor.";
-                }
-                respond(patientResponse);
-                return;
-            }
-
-            // 8. MINNATDORCHILIK VA AHVOL ("rahmat", "tuzuk", "yaxshi", "qandaysiz", "tuzal")
-            if (qLower.includes("rahmat") || qLower.includes("tuzuk") || qLower.includes("tuzal") || qLower.includes("tuzaldingizmi")) {
-                if (mode === "normal") {
-                    patientResponse = "Rahmat doktor, o'zimni juda yaxshi his qilyapman! Sizga katta rahmat, yuragim ham, nafasim ham me'yorida!";
-                } else {
-                    patientResponse = "Katta rahmat doktor, lekin hali ahvolim og'ir, iltimos davolashni davom ettiring...";
-                }
-                respond(patientResponse);
-                return;
-            }
-
-            // 9. DEFAULT SSENARIY BO'YICHA TUShUNTIRISH
-            if (mode === "hyper") {
-                patientResponse = "Boshim tars yorilib ketay deyapti, doktor! Iltimos, bosimimni tushiradigan dori bering...";
+            } else if (mode === "hyper") {
+                patientResponse = "Boshim tars yorilib ketay deyapti, doktor! Ensamda kuchli lo'qqillash bor...";
             } else if (mode === "attack") {
-                patientResponse = "Doktor... Yuragim ko'kragimdan chiqib ketayotganday tez urib ketdi! Qaltirayapman, nafasim qisib ketyapti!";
+                patientResponse = "Yuragim ko'kragimdan chiqib ketayotganday tez urib ketdi, doktor!";
             } else if (mode === "brady") {
-                patientResponse = "(Zaif ovozda)... Doktor... Boshim juda qorong'ulashib ketdi... Holsizman, yuragim to'xtab qolayotgandek sekin uryapti...";
+                patientResponse = "Doktor... Boshim qorong'ulashib ketdi, holsizman...";
             } else if (mode === "hypoxia") {
-                patientResponse = "(Hansiqlab va qisqa nafas bilan)... Dok-tor... Havoo... yetmayapti... Bo'g'ilyapman... Yordam bering...";
+                patientResponse = "(Hansiqlab)... Dok-tor... Havoo... yetmayapti... Bo'g'ilyapman...";
             } else if (mode === "shock") {
-                patientResponse = "(Qaltirab va kuchsiz ovozda)... Quruq ter bosyapti... Og'zim qurib ketdi... Bosimim tushib, hushimdan ketyapman...";
+                patientResponse = "Bosimim tushib, hushimdan ketyapman, doktor...";
             } else if (mode === "anaphylaxis") {
-                patientResponse = "(Bo'g'ilib)... Doktor, badanim toshma va shish, nafasim qisib bo'g'ilyapman! IM Adrenalin va kislorod bering!";
+                patientResponse = "Doktor, badanim toshma va shish, nafasim qisib bo'g'ilyapman!";
             } else {
-                patientResponse = "Rahmat doktor, o'zimni juda yaxshi his qilyapman! Ko'kragimdagi og'riqlar yo'qoldi, yuragim me'yorida uryapti.";
+                patientResponse = "O'zimni yaxshi his qilyapman, rahmat doktor.";
             }
             respond(patientResponse);
         }
@@ -3105,7 +3041,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             if (type === "normal") {
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
-                current.mode = "normal";
+                current.mode = "normal"; current.rr = 16; current.hr = 75; current.sys = 120;
                 updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-100 text-emerald-900 border-emerald-300 font-bold");
                 if (stageBadge) {
                     stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>STATUS: BARQAROR NORMAL (75 BPM)</span>`;
@@ -3114,42 +3050,42 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
             } else if (type === "attack" || type === "tachycardia" || type === "taxikardiya") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
-                current.mode = "attack";
+                current.mode = "attack"; current.rr = 34; current.hr = 185;
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA (185 BPM)! AMIODARON YOKI METOPROLOL KERAK!", "bg-amber-100 text-amber-900 border-amber-400 alarm-blink font-black");
                 stopAsystoleTone();
             } else if (type === "brady" || type === "bradicardia" || type === "bradikardiya") {
                 target = { hr: 28, spo2: 91, sys: 85, dia: 50, rr: 12, temp: 36.1, mode: "brady", rhythm: "brady" };
-                current.mode = "brady";
+                current.mode = "brady"; current.rr = 12; current.hr = 28;
                 updateBanner("🫀 BRADIKARDIYA & AV-BLOKADA (28 BPM)! ATROPIN YOKI ADRENALIN TALAB QILINADI!", "bg-orange-100 text-orange-900 border-orange-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_brady.mp3', "Diqqat! Og'ir bradikardiya va AV-blokada!");
             } else if (type === "hyper" || type === "gipertoniya") {
                 target = { hr: 115, spo2: 95, sys: 220, dia: 130, rr: 24, temp: 36.8, mode: "hyper", rhythm: "sinus" };
-                current.mode = "hyper";
+                current.mode = "hyper"; current.rr = 24; current.hr = 115; current.sys = 220;
                 updateBanner("🔴 GIPERTONIK KRIZ: AYoTB KESKIN OSHDI (220/130 mmHg)! NITROGLITSERIN YOKI FUROSEMID KERAK!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_hyper.mp3', "Xavfli gipertonik kriz!");
             } else if (type === "hypoxia" || type === "gipoksiya") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
-                current.mode = "hypoxia";
+                current.mode = "hypoxia"; current.rr = 38; current.hr = 135;
                 updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI (74%)! DEKSAMETAZON KERAK!", "bg-sky-100 text-sky-900 border-sky-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_hypoxia.mp3', "Diqqat! Gipoksiya va kislorod yetishmovchiligi!");
             } else if (type === "opioid") {
                 target = { hr: 42, spo2: 62, sys: 80, dia: 50, rr: 4, temp: 35.2, mode: "opioid", rhythm: "sinus" };
-                current.mode = "opioid";
+                current.mode = "opioid"; current.rr = 4; current.hr = 42;
                 updateBanner("💉 OPIOID KOMA: NAFAS TORMOZLANISHI (RR 4/min, SpO2 62%)! NALOKSON (0.4mg) VA SUN'IY NAFAS KERAK!", "bg-teal-100 text-teal-900 border-teal-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_opioid.mp3', "Favqulodda holat! Opioid komasi!");
             } else if (type === "shock" || type === "shok") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
-                current.mode = "shock";
+                current.mode = "shock"; current.rr = 28; current.hr = 145;
                 updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI (65/35)! FIZRASTVOR INFUSIYASI KERAK!", "bg-purple-100 text-purple-900 border-purple-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_shock.mp3', "Xavfli shok holati! Qon bosimi keskin tushib ketdi!");
             } else if (type === "anaphylaxis" || type === "anafilaksiya") {
                 target = { hr: 140, spo2: 78, sys: 70, dia: 40, rr: 32, temp: 37.8, mode: "anaphylaxis", rhythm: "sinus" };
-                current.mode = "anaphylaxis";
+                current.mode = "anaphylaxis"; current.rr = 32; current.hr = 140;
                 updateBanner("🐝 ANAFILAKTIK SHOK: STRIDOR, ANGIOEDEMA VA GIPOTENZIYA (70/40 mmHg)! BIRINCHI TANLOV: IM ADRENALIN 0.5mg (1:1000)!", "bg-pink-100 text-pink-950 border-pink-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_anaphylaxis.mp3', "Kritik holat! Anafilaktik shok!");

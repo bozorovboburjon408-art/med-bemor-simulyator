@@ -1375,9 +1375,23 @@ class ChatRequest(BaseModel):
     kasallik_id: str
     text: str
 
+MAP_VITAL_TO_KASALLIK = {
+    "brady": "bradikardiya",
+    "hyper": "gipertoniya",
+    "attack": "taxikardiya",
+    "vfib": "aritmiya",
+    "hypoxia": "gipoksiya",
+    "shock": "shok",
+    "anaphylaxis": "anafilaksiya",
+    "opioid": "opioid",
+    "dying": "normal",
+    "asystole": "normal"
+}
+
 @app.post("/api/chat")
 async def api_chat(req: ChatRequest):
-    kasallik = KASALLIKLAR.get(req.kasallik_id, KASALLIKLAR["normal"])
+    k_id = MAP_VITAL_TO_KASALLIK.get(req.kasallik_id, req.kasallik_id)
+    kasallik = KASALLIKLAR.get(k_id, KASALLIKLAR.get("normal"))
     
     system_prompt = f"""Sen tibbiy ta'lim manikeni va bemorsan. Isming Anvar Karimov (40 yosh).
 KASALLIK VA SHIKOYATING:
@@ -1393,7 +1407,7 @@ QAT'IY QOIDALAR:
     client = genai.Client(api_key=API_KEY)
     
     reply_text = ""
-    for model_name in ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"]:
+    for model_name in ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-3-flash-preview"]:
         try:
             resp = await client.aio.models.generate_content(
                 model=model_name,
