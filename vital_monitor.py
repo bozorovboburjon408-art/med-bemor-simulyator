@@ -1553,17 +1553,20 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
 
             // 1. BARCODE VA DORI KODLARI TEKSHIRUVI (Shtrixkodlar, ADR-01, ATR-03, AMI-02...)
-            if (/^\d{6,16}$/.test(qLower) || /^(adr|atr|ami|fur|met|nit|nal|dex|sal|kcl)/.test(qLower)) {
+            // Faqat raqamli barkodlar yoki KICHIK HARF + TIRE + RAQAM formatidagi dori kodlari
+            const isBarcodeNum = /^\d{6,16}$/.test(qLower);
+            const isDrugCode = /^(adr|atr|ami|fur|met|nit|nal|dex|sal|kcl)[-_\d]/.test(qLower);
+            if (isBarcodeNum || isDrugCode) {
                 processSmartMedicationAdministration(docQuestion);
                 return;
             }
 
-            // 2. CHUQUR KOMA YOKI HUSHSIZLIK (ASYSTOLE, VFIB, OPIOID KOMA)
-            if (mode === "dying" || mode === "asystole" || mode === "vfib" || hr <= 5) {
+            // 2. CHUQUR KOMA YOKI HUSHSIZLIK (ASYSTOLE, VFIB)
+            if (mode === "dying" || mode === "asystole" || mode === "vfib") {
                 respond("🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Bemor savollarga javob bera olmaydi, darhol CPR massaji va Defibrillyator qo'llang!");
                 return;
             }
-            if (mode === "opioid" || rr <= 6) {
+            if (mode === "opioid") {
                 respond("(Bemor chuqur komada, javob bermaydi)... Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Og'riqli ta'sirga zaif javob bor. Nalokson (0.4mg) va sun'iy nafas talab qilinadi!");
                 return;
             }
@@ -3041,7 +3044,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             if (type === "normal") {
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
-                current.mode = "normal"; current.rr = 16; current.hr = 75; current.sys = 120;
+                current.mode = "normal";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-100 text-emerald-900 border-emerald-300 font-bold");
                 if (stageBadge) {
                     stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>STATUS: BARQAROR NORMAL (75 BPM)</span>`;
@@ -3050,42 +3054,49 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
             } else if (type === "attack" || type === "tachycardia" || type === "taxikardiya") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
-                current.mode = "attack"; current.rr = 34; current.hr = 185;
+                current.mode = "attack";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA (185 BPM)! AMIODARON YOKI METOPROLOL KERAK!", "bg-amber-100 text-amber-900 border-amber-400 alarm-blink font-black");
                 stopAsystoleTone();
             } else if (type === "brady" || type === "bradicardia" || type === "bradikardiya") {
                 target = { hr: 28, spo2: 91, sys: 85, dia: 50, rr: 12, temp: 36.1, mode: "brady", rhythm: "brady" };
-                current.mode = "brady"; current.rr = 12; current.hr = 28;
+                current.mode = "brady";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("🫀 BRADIKARDIYA & AV-BLOKADA (28 BPM)! ATROPIN YOKI ADRENALIN TALAB QILINADI!", "bg-orange-100 text-orange-900 border-orange-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_brady.mp3', "Diqqat! Og'ir bradikardiya va AV-blokada!");
             } else if (type === "hyper" || type === "gipertoniya") {
                 target = { hr: 115, spo2: 95, sys: 220, dia: 130, rr: 24, temp: 36.8, mode: "hyper", rhythm: "sinus" };
-                current.mode = "hyper"; current.rr = 24; current.hr = 115; current.sys = 220;
+                current.mode = "hyper";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("🔴 GIPERTONIK KRIZ: AYoTB KESKIN OSHDI (220/130 mmHg)! NITROGLITSERIN YOKI FUROSEMID KERAK!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_hyper.mp3', "Xavfli gipertonik kriz!");
             } else if (type === "hypoxia" || type === "gipoksiya") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
-                current.mode = "hypoxia"; current.rr = 38; current.hr = 135;
+                current.mode = "hypoxia";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI (74%)! DEKSAMETAZON KERAK!", "bg-sky-100 text-sky-900 border-sky-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_hypoxia.mp3', "Diqqat! Gipoksiya va kislorod yetishmovchiligi!");
             } else if (type === "opioid") {
                 target = { hr: 42, spo2: 62, sys: 80, dia: 50, rr: 4, temp: 35.2, mode: "opioid", rhythm: "sinus" };
-                current.mode = "opioid"; current.rr = 4; current.hr = 42;
+                current.mode = "opioid";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("💉 OPIOID KOMA: NAFAS TORMOZLANISHI (RR 4/min, SpO2 62%)! NALOKSON (0.4mg) VA SUN'IY NAFAS KERAK!", "bg-teal-100 text-teal-900 border-teal-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_opioid.mp3', "Favqulodda holat! Opioid komasi!");
             } else if (type === "shock" || type === "shok") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
-                current.mode = "shock"; current.rr = 28; current.hr = 145;
+                current.mode = "shock";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI (65/35)! FIZRASTVOR INFUSIYASI KERAK!", "bg-purple-100 text-purple-900 border-purple-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_shock.mp3', "Xavfli shok holati! Qon bosimi keskin tushib ketdi!");
             } else if (type === "anaphylaxis" || type === "anafilaksiya") {
                 target = { hr: 140, spo2: 78, sys: 70, dia: 40, rr: 32, temp: 37.8, mode: "anaphylaxis", rhythm: "sinus" };
-                current.mode = "anaphylaxis"; current.rr = 32; current.hr = 140;
+                current.mode = "anaphylaxis";
+                transitionSteps = 120; totalSteps = 120;
                 updateBanner("🐝 ANAFILAKTIK SHOK: STRIDOR, ANGIOEDEMA VA GIPOTENZIYA (70/40 mmHg)! BIRINCHI TANLOV: IM ADRENALIN 0.5mg (1:1000)!", "bg-pink-100 text-pink-950 border-pink-400 alarm-blink font-black");
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_anaphylaxis.mp3', "Kritik holat! Anafilaktik shok!");
