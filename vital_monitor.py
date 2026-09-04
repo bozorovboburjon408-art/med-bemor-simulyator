@@ -5,7 +5,7 @@ import asyncio
 import json
 import threading
 import time
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -23,7 +23,7 @@ try:
 except:
     pass
 
-app = FastAPI(title="Reanimatsiya va Bemor Hayotiy Ko'rsatkichlari Monitori (ESP32 Live)")
+app = FastAPI(title="ICU & CPR Imtihon Xonasi - Aqlli Vital Monitor & Dori Skaneri")
 
 active_websockets: List[WebSocket] = []
 
@@ -38,6 +38,8 @@ latest_telemetry = {
     "lung_p": 0.0,
     "stomach_p": 0.0,
     "inj_ok": False,
+    "barcode": "",
+    "med_id": "",
     "timestamp": 0
 }
 
@@ -46,7 +48,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ICU Bemor Hayotiy Ko'rsatkichlari & CPR Simulyatori</title>
+    <title>ICU Imtihon Xonasi: Vital Monitor & Dori Skaneri Simulyatori</title>
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -82,12 +84,20 @@ HTML_CONTENT = """<!DOCTYPE html>
             animation: shockFlash 0.6s ease-out;
         }
 
-        @keyframes injFlash {
-            0% { background-color: rgba(168, 85, 247, 0.45); }
+        @keyframes injFlashSuccess {
+            0% { background-color: rgba(34, 197, 94, 0.45); }
             100% { background-color: transparent; }
         }
-        .inj-active {
-            animation: injFlash 1.2s ease-out;
+        .inj-success {
+            animation: injFlashSuccess 1.2s ease-out;
+        }
+
+        @keyframes injFlashDanger {
+            0% { background-color: rgba(239, 68, 68, 0.55); }
+            100% { background-color: transparent; }
+        }
+        .inj-danger {
+            animation: injFlashDanger 1.5s ease-out;
         }
 
         @keyframes alarmBlink {
@@ -108,7 +118,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="flex items-center space-x-3">
             <div class="flex items-center space-x-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 alarm-blink"></span>
-                <span class="font-black text-sm tracking-wider text-slate-900">ICU PATIENT & CPR MONITOR</span>
+                <span class="font-black text-sm tracking-wider text-slate-900">ICU IMTIHON XONASI & CPR MONITOR</span>
             </div>
             <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5">
                 KOYKA: <span class="text-slate-900 font-bold">#04</span>
@@ -127,6 +137,13 @@ HTML_CONTENT = """<!DOCTYPE html>
             <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse">
                 <i class="fa-brands fa-usb text-xs"></i>
                 <span id="btn-web-serial-text">🔌 USB Ulanish</span>
+            </button>
+
+            <!-- DORI SKANERI / JAVONI TUGMASI -->
+            <button id="btn-med-cabinet" onclick="openMedCabinetModal()" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition">
+                <i class="fa-solid fa-barcode text-xs"></i>
+                <span>📷 Dori Skaneri</span>
+                <span id="active-med-badge-top" class="px-1.5 py-0.2 rounded bg-purple-900 text-[10px] text-purple-100 font-mono">ADR-01</span>
             </button>
 
             <div id="hw-badge" class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold">
@@ -169,7 +186,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     <!-- INJECTION NOTIFICATION POPUP -->
     <div id="inj-banner" class="hidden my-0.5 bg-purple-100 border border-purple-400 rounded-xl p-1.5 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink">
         <i class="fa-solid fa-syringe text-purple-600 text-sm mr-1"></i> 
-        <span id="inj-banner-text">💉 UKOL QILINDI (ADRENALIN 1mg)! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
+        <span id="inj-banner-text">💉 UKOL QILINDI! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
     <!-- 2. TOP 50% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
@@ -276,19 +293,26 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- 3. BOTTOM 50% SECTION: CPR 30:2 EXERCISE DASHBOARD -->
+    <!-- 3. BOTTOM 50% SECTION: CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
     <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
         
-        <!-- Header Strip with Stage Badge -->
+        <!-- Header Strip with Stage Badge and Prepared Drug Banner -->
         <div class="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-100 shrink-0">
             <div class="flex items-center gap-2">
                 <span class="w-6 h-6 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs font-black">
                     <i class="fa-solid fa-heart-pulse"></i>
                 </span>
                 <div>
-                    <span class="text-xs font-black text-slate-900 uppercase tracking-wide">YURAK-O'PKA REANIMATSIYASI (CPR 30:2) BOSHQARUVI</span>
+                    <span class="text-xs font-black text-slate-900 uppercase tracking-wide">YURAK-O'PKA REANIMATSIYASI (CPR 30:2) VA FARMAKOTERAPIYA</span>
                     <span class="text-[10px] text-slate-500 font-semibold ml-2">Standart: 30 zarba + 2 nafas</span>
                 </div>
+            </div>
+
+            <!-- Prepared Medication Status Chip -->
+            <div id="active-med-chip" class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-900 border border-purple-300 flex items-center gap-1.5 shadow-xs cursor-pointer hover:bg-purple-100 transition" onclick="openMedCabinetModal()">
+                <i class="fa-solid fa-syringe text-purple-600"></i>
+                <span>TAYYOR DORI:</span>
+                <span id="active-med-name" class="font-black text-purple-700">Adrenalin 1mg/ml (ADR-01)</span>
             </div>
 
             <div id="cpr-stage-badge" class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1.5">
@@ -297,7 +321,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
         </div>
 
-        <!-- 3 Columns: A. Force Meter | B. 30:2 Cycle Hub | C. Airway & Adrenalin -->
+        <!-- 3 Columns: A. Force Meter | B. 30:2 Cycle Hub | C. Airway & Smart Injection -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-2 my-1 flex-1 min-h-0 items-stretch">
             
             <!-- COLUMN A (4 cols): COMPRESSION FORCE -->
@@ -375,7 +399,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- COLUMN C (3 cols): AIRWAY & ADRENALIN INJECTION -->
+            <!-- COLUMN C (3 cols): AIRWAY & SMART INJECTION HUB -->
             <div class="md:col-span-3 bg-sky-50/50 border border-sky-200 rounded-xl p-2.5 flex flex-col justify-between shadow-xs h-full overflow-hidden">
                 <div class="flex justify-between items-center text-xs font-black text-sky-900 shrink-0">
                     <span class="flex items-center gap-1">
@@ -405,8 +429,9 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                 <div class="hidden"><span id="stomach-p-val">0.0</span></div>
 
+                <!-- SMART INJECTION BUTTON -->
                 <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0">
-                    <i class="fa-solid fa-syringe text-xs"></i> 💉 ADRENALIN (UKOL)
+                    <i class="fa-solid fa-syringe text-xs"></i> <span id="inj-btn-label">💉 UKOL: ADRENALIN</span>
                 </button>
             </div>
 
@@ -431,19 +456,19 @@ HTML_CONTENT = """<!DOCTYPE html>
             </button>
 
             <button onclick="setScenario('attack')" class="px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-bolt-lightning text-amber-600"></i> ⚡ Taxikardiya
+                <i class="fa-solid fa-bolt-lightning text-amber-600"></i> ⚡ Taxikardiya (185)
             </button>
 
             <button onclick="setScenario('hypoxia')" class="px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-lungs text-sky-600"></i> 🫁 Gipoksiya
+                <i class="fa-solid fa-lungs text-sky-600"></i> 🫁 Gipoksiya (74%)
             </button>
 
             <button onclick="setScenario('shock')" class="px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-droplet-slash text-purple-600"></i> 🩸 Shok
+                <i class="fa-solid fa-droplet-slash text-purple-600"></i> 🩸 Shok (65/35)
             </button>
 
-            <button onclick="triggerManualInjection()" class="px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-syringe text-indigo-600"></i> 💉 Ukol (Adrenalin)
+            <button onclick="openMedCabinetModal()" class="px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-pills text-purple-600"></i> 💊 Dorilar
             </button>
 
             <button onclick="defibrillateShock()" class="px-2 py-0.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
@@ -452,8 +477,156 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </footer>
 
+    <!-- ==================== DORI JAVONI VA SHTRIX-KODLAR MODALI ==================== -->
+    <div id="med-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden z-50 flex items-center justify-center p-3 select-none">
+        <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header -->
+            <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-barcode text-sm"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-black text-slate-900 text-sm">IMTIHON DORILAR JAVONI & QR/SHTRIX-KOD SKANERI</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">Skaner orqali o'tkazing yoki quyidagi ampulalardan tanlang</p>
+                    </div>
+                </div>
+                <button onclick="closeMedCabinetModal()" class="w-8 h-8 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Manual Barcode Scanner Input -->
+            <div class="p-3 bg-purple-50/70 border-b border-purple-100 flex items-center gap-2">
+                <i class="fa-solid fa-barcode text-purple-600 text-lg"></i>
+                <input type="text" id="manual-barcode-input" placeholder="Shtrix-kodni skanerlang yoki yozing (masalan: ADR-01, AMI-02)..." onkeydown="if(event.key==='Enter') scanManualBarcode()" class="flex-1 px-3 py-1.5 bg-white border border-purple-300 rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <button onclick="scanManualBarcode()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg cursor-pointer">
+                    Skanerlash
+                </button>
+            </div>
+
+            <!-- Medication List Grid -->
+            <div id="med-list-container" class="p-3 overflow-y-auto max-h-[60vh] grid grid-cols-1 md:grid-cols-2 gap-2">
+                <!-- Javascript will populate medications here -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs">
+                <span class="text-slate-500">💡 Maslahat: Haqiqiy USB skaner avtomatik ishlaydi!</span>
+                <button onclick="closeMedCabinetModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 font-bold rounded-lg cursor-pointer">
+                    Yopish
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT ENGINE -->
     <script>
+        // ==================== DORI-DARMONLAR BAZASI (MEDICATION DATABASE) ====================
+        const MEDICATION_DB = [
+            {
+                id: "adrenalin",
+                code: "ADR-01",
+                name: "Adrenalin (Epinefrin) 1 mg/ml",
+                barcodes: ["ADR01", "ADR-01", "ADRENALIN", "EPINEPHRINE", "4780001001"],
+                group: "Adrenomimetik (Vazopressor)",
+                desc: "Yurak to'xtashi, asistoliya va anafilaktik shokda asosiy vosita.",
+                badgeColor: "bg-purple-100 text-purple-900 border-purple-300",
+                btnColor: "bg-purple-600 hover:bg-purple-700"
+            },
+            {
+                id: "amiodaron",
+                code: "AMI-02",
+                name: "Amiodaron (Kordaron) 150 mg",
+                barcodes: ["AMI02", "AMI-02", "AMIODARON", "CORDARONE", "4780001002"],
+                group: "Antiaritmik (III-sinf)",
+                desc: "Qorincha taxikardiyasi (VTach) va aritmiyalarni to'xtatuvchi.",
+                badgeColor: "bg-sky-100 text-sky-900 border-sky-300",
+                btnColor: "bg-sky-600 hover:bg-sky-700"
+            },
+            {
+                id: "atropin",
+                code: "ATR-03",
+                name: "Atropin sulfat 1 mg/ml",
+                barcodes: ["ATR03", "ATR-03", "ATROPIN", "ATROPINE", "4780001003"],
+                group: "M-Xolinoblokator",
+                desc: "Sust puls (bradikardiya) va AV-blokadalarda ritmni oshiradi.",
+                badgeColor: "bg-amber-100 text-amber-900 border-amber-300",
+                btnColor: "bg-amber-600 hover:bg-amber-700"
+            },
+            {
+                id: "nitro",
+                code: "NIT-04",
+                name: "Nitroglitserin 0.5 mg",
+                barcodes: ["NIT04", "NIT-04", "NITRO", "NITROGLYCERIN", "4780001004"],
+                group: "Periferik vazodilatator",
+                desc: "O'tkir gipertonik kriz va stenokardiyada bosimni tushiradi.",
+                badgeColor: "bg-rose-100 text-rose-900 border-rose-300",
+                btnColor: "bg-rose-600 hover:bg-rose-700"
+            },
+            {
+                id: "metoprolol",
+                code: "MET-05",
+                name: "Metoprolol (Beta-blokator) 5 mg",
+                barcodes: ["MET05", "MET-05", "METOPROLOL", "BETALOC", "4780001005"],
+                group: "Beta-1 adrenoblokator",
+                desc: "Taxikardiyada puls va miokard kislorod talabini pasaytiradi.",
+                badgeColor: "bg-indigo-100 text-indigo-900 border-indigo-300",
+                btnColor: "bg-indigo-600 hover:bg-indigo-700"
+            },
+            {
+                id: "saline",
+                code: "SAL-06",
+                name: "Fizrastvor (0.9% NaCl) 500 ml",
+                barcodes: ["SAL06", "SAL-06", "NACL", "FIZRASTVOR", "SALINE", "4780001006"],
+                group: "Kristalloid plazma o'rnini bosuvchi",
+                desc: "Gipovolemik va qon yo'qotish shokida qon bosimini tiklaydi.",
+                badgeColor: "bg-blue-100 text-blue-900 border-blue-300",
+                btnColor: "bg-blue-600 hover:bg-blue-700"
+            },
+            {
+                id: "dexa",
+                code: "DEX-07",
+                name: "Deksametazon 8 mg/2ml",
+                barcodes: ["DEX07", "DEX-07", "DEXA", "DEXAMETHASONE", "4780001007"],
+                group: "Glikokortikosteroid (Gormon)",
+                desc: "Bronxospazm, anafilaksiya va o'tkir gipoksiyani bartaraf etadi.",
+                badgeColor: "bg-emerald-100 text-emerald-900 border-emerald-300",
+                btnColor: "bg-emerald-600 hover:bg-emerald-700"
+            },
+            {
+                id: "naloxone",
+                code: "NAL-08",
+                name: "Nalokson 0.4 mg/ml",
+                barcodes: ["NAL08", "NAL-08", "NALOXON", "NALOXONE", "4780001008"],
+                group: "Opioid retseptorlari antagonisti",
+                desc: "Narkotik intoksikatsiyasi va nafas tormozlanishiga qarshi vosita.",
+                badgeColor: "bg-teal-100 text-teal-900 border-teal-300",
+                btnColor: "bg-teal-600 hover:bg-teal-700"
+            },
+            {
+                id: "kcl",
+                code: "KCL-09",
+                name: "Kaliy xlorid (KCl 4%) 20 ml",
+                barcodes: ["KCL09", "KCL-09", "KCL", "POTASSIUM", "4780001009"],
+                group: "Elektrolit (Toksik konsentrat)",
+                desc: "DIQQAT: Sof holda vena ichiga yuborish kardioplegiya chaqiradi!",
+                badgeColor: "bg-red-100 text-red-900 border-red-300",
+                btnColor: "bg-red-600 hover:bg-red-700"
+            },
+            {
+                id: "furosemide",
+                code: "FUR-10",
+                name: "Furosemid (Laziks) 20 mg",
+                barcodes: ["FUR10", "FUR-10", "FUROSEMID", "LASIX", "4780001010"],
+                group: "Halqa diuretigi",
+                desc: "O'pka shishi va gipertoniyada tezkor suyuqlik haydovchi vosita.",
+                badgeColor: "bg-cyan-100 text-cyan-900 border-cyan-300",
+                btnColor: "bg-cyan-600 hover:bg-cyan-700"
+            }
+        ];
+
+        let selectedMedication = MEDICATION_DB[0]; // Default Adrenalin
         let current = {
             hr: 75,
             spo2: 98,
@@ -497,6 +670,40 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
+        }
+
+        function playScannerBeep() {
+            initAudio();
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1800, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(masterCompressor || audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.12);
+            } catch(e) {}
+        }
+
+        function playAlarmErrorTone() {
+            initAudio();
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sawtooth";
+                osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(240, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+                osc.connect(gain);
+                gain.connect(masterCompressor || audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.45);
+            } catch(e) {}
         }
 
         function changeMonitorVolume(val) {
@@ -613,7 +820,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         let cprCycleCorrectComps = 0;
         let cprCycleVents = 0;
         let cprCycleCorrectVents = 0;
-        let cprRevivalStage = 0; // 0: Asistoliya, 1: Ozroq jonlanish (22 BPM), 2: To'liq o'ziga kelish (ROSC)
+        let cprRevivalStage = 0; // 0: Asistoliya, 1: 22 BPM jonlanish, 2: To'liq tiklanish (ROSC)
 
         let injectionInProgress = false;
         let injectionCountdownTimer = null;
@@ -717,6 +924,124 @@ HTML_CONTENT = """<!DOCTYPE html>
                 verd.innerText = "NOLGA SOZLANDI";
                 verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-100 text-emerald-800 shadow-xs";
             }
+        }
+
+        // ==================== BARCODE SCANNER LOGIC (HARDWARE HID & UI) ====================
+        let barcodeBuffer = "";
+        let lastBarcodeKeyTime = 0;
+
+        window.addEventListener("keydown", (e) => {
+            // Ignore if currently typing inside the manual input field
+            if (e.target && e.target.id === "manual-barcode-input") {
+                return;
+            }
+            const now = Date.now();
+            if (e.key === "Enter") {
+                if (barcodeBuffer.trim().length >= 2) {
+                    processScannedMedication(barcodeBuffer.trim());
+                    barcodeBuffer = "";
+                }
+            } else if (e.key.length === 1) {
+                // USB barcode scanners burst keys within 50-80ms
+                if (now - lastBarcodeKeyTime > 250) {
+                    barcodeBuffer = "";
+                }
+                barcodeBuffer += e.key;
+                lastBarcodeKeyTime = now;
+            }
+        });
+
+        function processScannedMedication(rawCode) {
+            const clean = rawCode.trim().toUpperCase();
+            const matched = MEDICATION_DB.find(m => 
+                m.code.toUpperCase() === clean ||
+                m.barcodes.some(b => b.toUpperCase() === clean) ||
+                m.id.toUpperCase() === clean ||
+                m.name.toUpperCase().includes(clean)
+            );
+
+            if (matched) {
+                selectedMedication = matched;
+                playScannerBeep();
+                updateSelectedMedicationUI();
+
+                const bannerMsg = `💊 DORI SKANERLANDI: ${matched.name} [${matched.code}] — Manikenga ukol qilish kutilmoqda...`;
+                updateBanner(bannerMsg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+
+                const injText = document.getElementById("inj-banner-text");
+                if (injText) injText.innerText = `💉 DORI TAYYORLANDI: ${matched.name}`;
+
+                closeMedCabinetModal();
+            } else {
+                playAlarmErrorTone();
+                updateBanner(`⚠️ NOMA'LUM BARKOD: "${rawCode}" — Dori topilmadi!`, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+            }
+        }
+
+        function scanManualBarcode() {
+            const input = document.getElementById("manual-barcode-input");
+            if (input && input.value.trim()) {
+                processScannedMedication(input.value.trim());
+                input.value = "";
+            }
+        }
+
+        function selectMedicationDirect(medId) {
+            const med = MEDICATION_DB.find(m => m.id === medId);
+            if (med) {
+                selectedMedication = med;
+                playScannerBeep();
+                updateSelectedMedicationUI();
+                updateBanner(`💊 TANLANDI: ${med.name} [${med.code}] — Manikenga ukol qilish kutilmoqda...`, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+                closeMedCabinetModal();
+            }
+        }
+
+        function updateSelectedMedicationUI() {
+            const topBadge = document.getElementById("active-med-badge-top");
+            if (topBadge) topBadge.innerText = selectedMedication.code;
+
+            const nameEl = document.getElementById("active-med-name");
+            if (nameEl) nameEl.innerText = `${selectedMedication.name} (${selectedMedication.code})`;
+
+            const btnLabel = document.getElementById("inj-btn-label");
+            if (btnLabel) btnLabel.innerText = `💉 UKOL: ${selectedMedication.name.split(' ')[0].toUpperCase()}`;
+        }
+
+        function openMedCabinetModal() {
+            const modal = document.getElementById("med-modal");
+            const container = document.getElementById("med-list-container");
+            if (!modal || !container) return;
+
+            container.innerHTML = MEDICATION_DB.map(m => `
+                <div class="border border-slate-200 rounded-xl p-2.5 bg-slate-50/70 hover:bg-white flex flex-col justify-between transition shadow-xs ${selectedMedication.id === m.id ? 'ring-2 ring-purple-600 bg-purple-50/50' : ''}">
+                    <div class="flex justify-between items-start gap-1">
+                        <div>
+                            <div class="font-black text-xs text-slate-900">${m.name}</div>
+                            <div class="text-[10px] font-bold text-slate-500">${m.group}</div>
+                        </div>
+                        <span class="mono px-1.5 py-0.5 rounded text-[10px] font-black bg-white border border-slate-300 text-slate-700 shadow-xs">${m.code}</span>
+                    </div>
+                    <p class="text-[9px] text-slate-600 my-1 leading-tight">${m.desc}</p>
+                    <div class="flex justify-between items-center mt-1 pt-1 border-t border-slate-200">
+                        <span class="mono text-[9px] text-slate-400"><i class="fa-solid fa-barcode mr-1"></i>${m.barcodes[0]}</span>
+                        <button onclick="selectMedicationDirect('${m.id}')" class="px-2.5 py-1 rounded text-white text-[10px] font-black ${m.btnColor} cursor-pointer active:scale-95 transition shadow-xs">
+                            <i class="fa-solid fa-check mr-1"></i> ${selectedMedication.id === m.id ? 'Tayyor' : 'Skanerlash'}
+                        </button>
+                    </div>
+                </div>
+            `).join("");
+
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                const input = document.getElementById("manual-barcode-input");
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function closeMedCabinetModal() {
+            const modal = document.getElementById("med-modal");
+            if (modal) modal.classList.add("hidden");
         }
 
         // ==================== RESTORED WEB SERIAL API (REAL HARDWARE USB) ====================
@@ -837,6 +1162,10 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         // ==================== PROCESS INCOMING HARDWARE JSON ====================
         function handleHardwareData(data) {
+            if (data.barcode || data.med_code || data.med_id) {
+                processScannedMedication(data.barcode || data.med_code || data.med_id);
+            }
+
             const rawF = parseFloat(data.force !== undefined ? data.force : (data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0)));
             lastRawMonitorForce = rawF;
 
@@ -957,7 +1286,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 lungStatus.className = "text-[9px] text-slate-500 font-semibold mt-0.5 text-center";
             }
 
-            // --- 30:2 SIKL: NAFASNI HISOBGA OLISH VA 5 SEKUNDDA SEKIN JONLANISH (22 BPM) ---
+            // --- 30:2 SIKL: NAFASNI HISOBGA OLISH VA 5s SEKIN JONLANISH (22 BPM) ---
             if (lungP >= 0.5 && !window._monitorVentTriggered) {
                 window._monitorVentTriggered = true;
                 cprCycleVents++;
@@ -972,7 +1301,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const accuracyPct = Math.round((totalCorrect / totalActs) * 100);
 
                     if (accuracyPct >= 80) {
-                        // 1-BOSQICH: 5 SEKUND DAVOMIDA 22 BPM GA SEKIN TIKLANSIN!
                         cprRevivalStage = 1;
                         target.hr = 22;
                         target.spo2 = 62;
@@ -981,7 +1309,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                         target.rr = 6;
                         current.rhythm = "brady";
                         
-                        // 50 qadam * 100ms = 5000ms = 5 soniya
                         totalSteps = 50;
                         transitionSteps = 50;
                         stopAsystoleTone();
@@ -1018,7 +1345,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             // 6. Ukol / Inyeksiya (Touch Pin 4)
             if (injBtn) {
-                processInjectionAction();
+                processSmartMedicationAdministration();
             } else if (!injectionInProgress) {
                 const injBanner = document.getElementById("inj-banner");
                 const injBtnEl = document.getElementById("inj-badge-small");
@@ -1029,9 +1356,13 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // ==================== INJECTION: 5s DELAY + 10s SMOOTH RECOVERY ====================
-        function processInjectionAction() {
+        // ==================== AQLLI FARMAKOLOGIK REAKSIYA DVIGATELI ====================
+        function processSmartMedicationAdministration() {
             if (injectionInProgress) return;
+
+            const med = selectedMedication;
+            const medId = med.id;
+            const medName = med.name;
 
             const injBanner = document.getElementById("inj-banner");
             const injText = document.getElementById("inj-banner-text");
@@ -1042,67 +1373,300 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             const flash = document.getElementById("flash-overlay");
-            if (flash) {
-                flash.classList.add("inj-active");
-                setTimeout(() => flash.classList.remove("inj-active"), 1200);
-            }
 
-            if (cprRevivalStage === 1 || (current.hr <= 35 && cprCount >= 10)) {
-                injectionInProgress = true;
-                cprRevivalStage = 2;
+            // Baholash: joriy holat nima?
+            const isAsystoleOrCPR = (current.hr <= 5 || current.mode === "dying" || cprRevivalStage === 1);
+            const isTachycardia = (current.mode === "attack" || current.hr >= 160);
+            const isBradycardia = (current.hr <= 35 && current.hr > 5);
+            const isHypoxia = (current.mode === "hypoxia" || current.spo2 <= 80);
+            const isShock = (current.mode === "shock" || current.sys <= 75);
+            const isNormal = (current.mode === "normal" && current.hr > 50 && current.hr < 110);
 
-                let delaySec = 5;
-                const stageBadge = document.getElementById("cpr-stage-badge");
-                if (stageBadge) {
-                    stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-500 alarm-blink"></span><span>2-BOSQICH: ADRENALIN YURAKKA YETIB BORMOQDA (${delaySec}s)...</span>`;
-                    stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-purple-100 text-purple-900 border border-purple-400 flex items-center gap-1.5 shadow-sm";
+            // --- 1. ASISTOLIYA / CPR JARAYONI ---
+            if (isAsystoleOrCPR) {
+                if (medId === "adrenalin") {
+                    // TO'G'RI DORI!
+                    flash.classList.add("inj-success");
+                    setTimeout(() => flash.classList.remove("inj-success"), 1200);
+
+                    injectionInProgress = true;
+                    cprRevivalStage = 2;
+
+                    let delaySec = 5;
+                    const stageBadge = document.getElementById("cpr-stage-badge");
+                    if (stageBadge) {
+                        stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-500 alarm-blink"></span><span>2-BOSQICH: ADRENALIN YURAKKA YETIB BORMOQDA (${delaySec}s)...</span>`;
+                        stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-purple-100 text-purple-900 border border-purple-400 flex items-center gap-1.5 shadow-sm";
+                    }
+                    const msg = `✅ TO'G'RI DORI: ${medName} yuborildi! Qon orqali yurakka yetib bormoqda (${delaySec}s)...`;
+                    if (injText) injText.innerText = msg;
+                    updateBanner(msg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+
+                    if (injectionCountdownTimer) clearInterval(injectionCountdownTimer);
+                    injectionCountdownTimer = setInterval(() => {
+                        delaySec--;
+                        if (delaySec > 0) {
+                            if (stageBadge) {
+                                stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-500 alarm-blink"></span><span>2-BOSQICH: ADRENALIN YURAKKA YETIB BORMOQDA (${delaySec}s)...</span>`;
+                            }
+                            const curMsg = `✅ TO'G'RI DORI: ${medName} yuborildi! Dori yetib bormoqda (${delaySec}s)...`;
+                            if (injText) injText.innerText = curMsg;
+                            updateBanner(curMsg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+                        } else {
+                            clearInterval(injectionCountdownTimer);
+                            injectionCountdownTimer = null;
+
+                            // 10 soniya davomida 75 BPM ga tiklanish
+                            target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                            totalSteps = 100;
+                            transitionSteps = 100;
+                            stopAsystoleTone();
+
+                            if (stageBadge) {
+                                stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink"></span><span>2-BOSQICH: YURAK RITMI SEKIN TIKLANMOQDA (10s -> 75 BPM)</span>`;
+                                stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-400 flex items-center gap-1.5 shadow-sm";
+                            }
+                            const recMsg = `🟢 2-BOSQICH: ADRENALIN TA'SIR QILDI! YURAK RITMI TIKLANMOQDA (10s davomida 75 BPM ga)...`;
+                            if (injText) injText.innerText = recMsg;
+                            updateBanner(recMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                        }
+                    }, 1000);
+                } else if (medId === "kcl") {
+                    // KATASTROFIK XATO! Kaliy xlorid asistoliyada o'lim
+                    flash.classList.add("inj-danger");
+                    setTimeout(() => flash.classList.remove("inj-danger"), 1500);
+                    playAlarmErrorTone();
+                    stopAsystoleTone();
+                    startAsystoleTone();
+
+                    target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 35.5, mode: "dying", rhythm: "asystole" };
+                    current = { ...target };
+                    transitionSteps = 0;
+                    cprRevivalStage = 0;
+
+                    const err = `🚨 O'LIMGA OLIB KELUVCHI XATO: Asistoliyada ${medName} qilindi! Toksik kardioplegiya, miokard butunlay falajlandi!`;
+                    if (injText) injText.innerText = err;
+                    updateBanner(err, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+
+                    const stageBadge = document.getElementById("cpr-stage-badge");
+                    if (stageBadge) {
+                        stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-600 alarm-blink"></span><span>KATASTROFA: TOKSIK ASISTOLIYA (${med.code})</span>`;
+                        stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-rose-200 text-rose-950 border border-rose-400 flex items-center gap-1.5 shadow-sm";
+                    }
+                } else {
+                    // Boshqa nomutanosib dori
+                    flash.classList.add("inj-danger");
+                    setTimeout(() => flash.classList.remove("inj-danger"), 1200);
+                    playAlarmErrorTone();
+
+                    const warn = `❌ MOS EMAS: Asistoliyada ${medName} foydasiz! ACLS bo'yicha Adrenalin 1mg talab qilinadi!`;
+                    if (injText) injText.innerText = warn;
+                    updateBanner(warn, "bg-rose-100 text-rose-900 border-rose-400 font-black");
                 }
-                const msg = `💉 2-BOSQICH: ADRENALIN 1mg YUBORILDI! DORI QON ORQALI YURAKKA YETIB BORMOQDA (${delaySec} soniya)...`;
-                if (injText) injText.innerText = msg;
-                updateBanner(msg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
-
-                if (injectionCountdownTimer) clearInterval(injectionCountdownTimer);
-                injectionCountdownTimer = setInterval(() => {
-                    delaySec--;
-                    if (delaySec > 0) {
-                        if (stageBadge) {
-                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-500 alarm-blink"></span><span>2-BOSQICH: ADRENALIN YURAKKA YETIB BORMOQDA (${delaySec}s)...</span>`;
-                        }
-                        const curMsg = `💉 2-BOSQICH: ADRENALIN 1mg YUBORILDI! DORI QON ORQALI YURAKKA YETIB BORMOQDA (${delaySec} soniya)...`;
-                        if (injText) injText.innerText = curMsg;
-                        updateBanner(curMsg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
-                    } else {
-                        clearInterval(injectionCountdownTimer);
-                        injectionCountdownTimer = null;
-
-                        // 5 sekund kutgandan so'ng -> keyingi 10 sekund davomida sekin-sekin tiklanish (100 * 100ms = 10000ms = 10 soniya)
-                        target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
-                        totalSteps = 100;
-                        transitionSteps = 100;
-                        stopAsystoleTone();
-
-                        if (stageBadge) {
-                            stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink"></span><span>2-BOSQICH: YURAK RITMI SEKIN TIKLANMOQDA (10s -> 75 BPM)</span>`;
-                            stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-400 flex items-center gap-1.5 shadow-sm";
-                        }
-                        const recMsg = `🟢 2-BOSQICH: ADRENALIN TA'SIR QILDI! YURAK RITMI SEKIN TIKLANMOQDA (10 soniya davomida 75 BPM ga)...`;
-                        if (injText) injText.innerText = recMsg;
-                        updateBanner(recMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
-                    }
-                }, 1000);
-            } else {
-                updateBanner("💉 ADRENALIN 1mg YUBORILDI!", "bg-purple-100 text-purple-900 border-purple-400 font-bold");
-                setTimeout(() => {
-                    if (injBanner) injBanner.classList.add("hidden");
-                    if (injBtnEl) {
-                        injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
-                    }
-                }, 1500);
             }
+
+            // --- 2. O'TKIR TAXIKARDIYA (VTach / SVT 185 BPM) ---
+            else if (isTachycardia) {
+                if (medId === "amiodaron" || medId === "metoprolol") {
+                    // TO'G'RI DORI!
+                    flash.classList.add("inj-success");
+                    setTimeout(() => flash.classList.remove("inj-success"), 1200);
+                    injectionInProgress = true;
+
+                    let delaySec = 5;
+                    const msg = `✅ TO'G'RI DORI: ${medName} yuborildi! Antiaritmik ta'sir boshlanmoqda (${delaySec}s)...`;
+                    if (injText) injText.innerText = msg;
+                    updateBanner(msg, "bg-sky-100 text-sky-900 border-sky-400 font-black");
+
+                    if (injectionCountdownTimer) clearInterval(injectionCountdownTimer);
+                    injectionCountdownTimer = setInterval(() => {
+                        delaySec--;
+                        if (delaySec > 0) {
+                            const curMsg = `✅ Antiaritmik ta'sir yetib bormoqda (${delaySec}s)...`;
+                            if (injText) injText.innerText = curMsg;
+                            updateBanner(curMsg, "bg-sky-100 text-sky-900 border-sky-400 font-black");
+                        } else {
+                            clearInterval(injectionCountdownTimer);
+                            injectionCountdownTimer = null;
+
+                            // 10s da 185 dan 80 BPM ga normallashish
+                            target = { hr: 78, spo2: 98, sys: 125, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                            totalSteps = 100;
+                            transitionSteps = 100;
+
+                            const okMsg = `🟢 A'LO DAVO: ${medName} ta'sirida taxikardiya to'xtatildi, sinus ritmi tiklandi (78 BPM)!`;
+                            if (injText) injText.innerText = okMsg;
+                            updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                        }
+                    }, 1000);
+                } else if (medId === "adrenalin" || medId === "atropin") {
+                    // KATASTROFIK XATO! Taxikardiyada Adrenalin berilsa -> Fibrillyatsiya va Asistoliya
+                    flash.classList.add("inj-danger");
+                    setTimeout(() => flash.classList.remove("inj-danger"), 1500);
+                    playAlarmErrorTone();
+
+                    target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 36.5, mode: "dying", rhythm: "asystole" };
+                    current.hr = 220; // avval qorincha titrashi
+                    current.rhythm = "vtach";
+                    transitionSteps = 30; // 3 soniyada 0 ga qulash
+
+                    const errMsg = `🚨 OG'IR XATO: Taxikardiyada ${medName} berildi! Qorinchalar titrashi (VFib) va yurak to'xtashi yuz berdi!`;
+                    if (injText) injText.innerText = errMsg;
+                    updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    startAsystoleTone();
+                } else {
+                    playAlarmErrorTone();
+                    const warn = `⚠️ NOMUTANOSIB: Taxikardiyada ${medName} yetarli samara bermaydi. Amiodaron yoki Metoprolol zarur!`;
+                    if (injText) injText.innerText = warn;
+                    updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                }
+            }
+
+            // --- 3. BRADIKARDIYA (22 - 35 BPM) ---
+            else if (isBradycardia) {
+                if (medId === "atropin" || medId === "adrenalin") {
+                    // TO'G'RI DORI!
+                    flash.classList.add("inj-success");
+                    setTimeout(() => flash.classList.remove("inj-success"), 1200);
+
+                    target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                    totalSteps = 80;
+                    transitionSteps = 80;
+
+                    const okMsg = `✅ TO'G'RI DAVO: ${medName} ta'sirida bradikardiya bartaraf etildi, puls 75 BPM ga chiqdi!`;
+                    if (injText) injText.innerText = okMsg;
+                    updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                } else if (medId === "metoprolol") {
+                    // XATO! Bradikardiyada beta-blokator berilsa yurak to'xtaydi
+                    flash.classList.add("inj-danger");
+                    setTimeout(() => flash.classList.remove("inj-danger"), 1500);
+                    playAlarmErrorTone();
+
+                    target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 36.0, mode: "dying", rhythm: "asystole" };
+                    current = { ...target };
+                    transitionSteps = 0;
+                    startAsystoleTone();
+
+                    const errMsg = `🚨 QO'POL XATO: Bradikardiyada Beta-blokator (${medName}) berildi! To'liq AV-blokada va yurak to'xtadi!`;
+                    if (injText) injText.innerText = errMsg;
+                    updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                } else {
+                    playAlarmErrorTone();
+                    const warn = `⚠️ MOS EMAS: Bradikardiyada ${medName} ritmni oshirmaydi. Atropin yoki Adrenalin tanlang!`;
+                    if (injText) injText.innerText = warn;
+                    updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                }
+            }
+
+            // --- 4. GIPOKSIYA (SpO2 74%, RR 38) ---
+            else if (isHypoxia) {
+                if (medId === "dexa" || medId === "adrenalin" || medId === "saline") {
+                    // TO'G'RI DORI!
+                    flash.classList.add("inj-success");
+                    setTimeout(() => flash.classList.remove("inj-success"), 1200);
+
+                    target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                    totalSteps = 80;
+                    transitionSteps = 80;
+
+                    const okMsg = `✅ TO'G'RI DAVO: ${medName} ta'sirida bronxospazm ochildi, kislorod 98% ga tiklandi!`;
+                    if (injText) injText.innerText = okMsg;
+                    updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                } else if (medId === "metoprolol") {
+                    // XATO! Beta-blokator bronxospazmni kuchaytiradi
+                    flash.classList.add("inj-danger");
+                    setTimeout(() => flash.classList.remove("inj-danger"), 1500);
+                    playAlarmErrorTone();
+
+                    current.spo2 = 55;
+                    current.rr = 45;
+                    updateNumericsUI();
+
+                    const errMsg = `🚨 OG'IR ASORAT: Gipoksiyada Beta-blokator berildi! Bronxospazm keskin kuchaydi (SpO2 55%)!`;
+                    if (injText) injText.innerText = errMsg;
+                    updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                } else {
+                    playAlarmErrorTone();
+                    const warn = `⚠️ MOS EMAS: Gipoksiyada ${medName} bronxlarni kengaytirmaydi. Deksametazon talab qilinadi!`;
+                    if (injText) injText.innerText = warn;
+                    updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                }
+            }
+
+            // --- 5. SHOK / KOLLAPS (BP 65/35, HR 145) ---
+            else if (isShock) {
+                if (medId === "saline" || medId === "adrenalin") {
+                    // TO'G'RI DORI!
+                    flash.classList.add("inj-success");
+                    setTimeout(() => flash.classList.remove("inj-success"), 1200);
+
+                    target = { hr: 78, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                    totalSteps = 80;
+                    transitionSteps = 80;
+
+                    const okMsg = `✅ TO'G'RI DAVO: ${medName} infuziyasi gemodinamika va qon bosimini tikladi (120/80 mmHg)!`;
+                    if (injText) injText.innerText = okMsg;
+                    updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                } else if (medId === "nitro" || medId === "furosemide") {
+                    // KATASTROFA! Shokda vazodilatator yoki diuretik qon bosimini 0 ga tushiradi
+                    flash.classList.add("inj-danger");
+                    setTimeout(() => flash.classList.remove("inj-danger"), 1500);
+                    playAlarmErrorTone();
+
+                    target = { hr: 0, spo2: 0, sys: 20, dia: 10, rr: 4, temp: 35.5, mode: "dying", rhythm: "asystole" };
+                    current = { ...target };
+                    transitionSteps = 0;
+                    startAsystoleTone();
+
+                    const errMsg = `🚨 GIPOVOLEMIK KOLLAPS: Shokda vazodilatator (${medName}) berildi! Bosim 20 mmHg ga quladi va yurak to'xtadi!`;
+                    if (injText) injText.innerText = errMsg;
+                    updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                } else {
+                    playAlarmErrorTone();
+                    const warn = `⚠️ MOS EMAS: Shokda infuzion hajm (Fizrastvor) yoki vazopressor talab qilinadi!`;
+                    if (injText) injText.innerText = warn;
+                    updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                }
+            }
+
+            // --- 6. NORMAL / SOG'LOM BEMOR (HR 75, BP 120/80) ---
+            else {
+                if (medId === "adrenalin") {
+                    // Sog'lomga adrenalin qilinsa taxikardiya chaqiradi
+                    target = { hr: 160, spo2: 96, sys: 180, dia: 110, rr: 28, temp: 37.0, mode: "attack", rhythm: "vtach" };
+                    totalSteps = 60;
+                    transitionSteps = 60;
+                    const msg = `⚠️ SOG'LOMGA ADRENALIN BERILDI: Doza ortishi oqibatida taxikardiya (160 BPM) va gipertoniya boshlandi!`;
+                    if (injText) injText.innerText = msg;
+                    updateBanner(msg, "bg-amber-100 text-amber-900 border-amber-400 font-black");
+                } else if (medId === "kcl") {
+                    flash.classList.add("inj-danger");
+                    setTimeout(() => flash.classList.remove("inj-danger"), 1500);
+                    playAlarmErrorTone();
+                    target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 36.0, mode: "dying", rhythm: "asystole" };
+                    current = { ...target };
+                    transitionSteps = 0;
+                    startAsystoleTone();
+                    const msg = `🚨 TOKSIK O'LIM: Sog'lom bemorga konsentrlangan Kaliy Xlorid qilindi! Kardioplegiya va asistoliya!`;
+                    if (injText) injText.innerText = msg;
+                    updateBanner(msg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                } else {
+                    updateBanner(`ℹ️ ${medName} yuborildi. Parametrlarda jiddiy o'zgarish yo'q.`, "bg-slate-100 text-slate-800 border-slate-300 font-bold");
+                }
+            }
+
+            setTimeout(() => {
+                if (!injectionInProgress && injBanner) {
+                    injBanner.classList.add("hidden");
+                }
+                if (injBtnEl) {
+                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
+                }
+            }, 3000);
         }
 
         function triggerManualInjection() {
-            processInjectionAction();
+            processSmartMedicationAdministration();
             handleHardwareData({
                 force: lastRawMonitorForce,
                 pos_btn: 1,
@@ -1185,10 +1749,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                 target.hr = 0; target.spo2 = 0; target.sys = 0; target.dia = 0; target.rr = 0;
                 current.hr = 0; current.spo2 = 0; current.sys = 0; current.dia = 0; current.rr = 0;
                 current.rhythm = "asystole";
+                current.mode = "dying";
                 transitionSteps = 0;
                 totalSteps = 0;
                 updateNumericsUI();
-                updateBanner("🚨 ASISTOLIYA: YURAK TO'XTADI (0 BPM)! CPR (30:2) TALAB QILINADI!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
+                updateBanner("🚨 ASISTOLIYA: YURAK TO'XTADI (0 BPM)! CPR (30:2) VA ADRENALIN TALAB QILINADI!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
                 if (stageBadge) {
                     stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500 alarm-blink"></span><span>0-BOSQICH: ASISTOLIYA (CPR TALAB QILINADI)</span>`;
                     stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-rose-100 text-rose-900 border border-rose-400 flex items-center gap-1.5 shadow-sm";
@@ -1199,6 +1764,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             if (type === "normal") {
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
+                current.mode = "normal";
                 updateBanner("🟢 STATUS: BARQAROR (NORMAL)", "bg-emerald-100 text-emerald-900 border-emerald-300 font-bold");
                 if (stageBadge) {
                     stageBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>STATUS: BARQAROR NORMAL (75 BPM)</span>`;
@@ -1207,15 +1773,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
             } else if (type === "attack") {
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
-                updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA VA GIPERTONIK KRIZ!", "bg-amber-100 text-amber-900 border-amber-400 alarm-blink font-black");
+                current.mode = "attack";
+                updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA (185 BPM)! AMIODARON YOKI METOPROLOL KERAK!", "bg-amber-100 text-amber-900 border-amber-400 alarm-blink font-black");
                 stopAsystoleTone();
             } else if (type === "hypoxia") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
-                updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI!", "bg-sky-100 text-sky-900 border-sky-400 alarm-blink font-black");
+                current.mode = "hypoxia";
+                updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI (74%)! DEKSAMETAZON KERAK!", "bg-sky-100 text-sky-900 border-sky-400 alarm-blink font-black");
                 stopAsystoleTone();
             } else if (type === "shock") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
-                updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI!", "bg-purple-100 text-purple-900 border-purple-400 alarm-blink font-black");
+                current.mode = "shock";
+                updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI (65/35)! FIZRASTVOR INFUSIYASI KERAK!", "bg-purple-100 text-purple-900 border-purple-400 alarm-blink font-black");
                 stopAsystoleTone();
             }
         }
@@ -1482,6 +2051,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         window.onload = () => {
+            updateSelectedMedicationUI();
             updateNumericsUI();
             connectTelemetryWebSocket();
             requestAnimationFrame(animate);
@@ -1541,6 +2111,10 @@ threading.Thread(target=auto_detect_arduino_port, daemon=True).start()
 class CompressorRequest(BaseModel):
     cmd: str
 
+class ScanMedicationRequest(BaseModel):
+    barcode: Optional[str] = None
+    med_id: Optional[str] = None
+
 @app.get("/", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)
 async def get_monitor():
@@ -1549,6 +2123,16 @@ async def get_monitor():
 @app.post("/api/compressor")
 async def api_compressor(req: CompressorRequest):
     return JSONResponse(content={"status": "ok", "cmd": req.cmd})
+
+@app.post("/api/scan_medication")
+async def api_scan_medication(req: ScanMedicationRequest):
+    data = {"barcode": req.barcode or req.med_id, "med_id": req.med_id}
+    for ws in active_websockets:
+        try:
+            await ws.send_text(json.dumps(data))
+        except:
+            pass
+    return JSONResponse(content={"status": "ok", "scanned": data})
 
 @app.post("/api/telemetry")
 async def post_telemetry(request: Request):
@@ -1597,9 +2181,10 @@ if __name__ == "__main__":
     local_ip = get_local_ip()
     port = int(os.environ.get("PORT", 8500))
     print("=" * 65)
-    print("  🏥 ICU BEMOR MONITORI - ESP32 TELEMETRIYASI")
+    print("  🏥 ICU IMTIHON XONASI & DORI SKANERI MONITORI")
     print("=" * 65)
     print(f"  Monitor ekrani:       http://localhost:{port}")
+    print(f"  Dori skanerlash:      POST http://localhost:{port}/api/scan_medication")
     print(f"  JSON qabul qilish:    POST http://localhost:{port}/api/telemetry")
     print("=" * 65 + "\n")
     

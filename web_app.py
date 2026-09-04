@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from google import genai
 from google.genai import types
 import uvicorn
-from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest
+from vital_monitor import HTML_CONTENT as MONITOR_HTML, active_websockets as monitor_websockets, latest_telemetry, send_serial_hw_command, CompressorRequest, ScanMedicationRequest
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
 from kiosk_hub import HUB_HTML
 from intubation_simulator import INTUBATION_HTML
@@ -1254,6 +1254,16 @@ async def get_photo():
     return JSONResponse(content={"error": "Photo not found"}, status_code=404)
 
 
+
+@app.post("/api/scan_medication")
+async def api_scan_medication(req: ScanMedicationRequest):
+    data = {"barcode": req.barcode or req.med_id, "med_id": req.med_id}
+    for ws in monitor_websockets:
+        try:
+            await ws.send_text(json.dumps(data))
+        except:
+            pass
+    return JSONResponse(content={"status": "ok", "scanned": data})
 
 @app.post("/api/telemetry")
 async def post_telemetry(request: Request):
