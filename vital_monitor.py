@@ -2062,6 +2062,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         window.onload = () => {
+            fetchMedicationsFromServer();
             updateSelectedMedicationUI();
             updateNumericsUI();
             connectTelemetryWebSocket();
