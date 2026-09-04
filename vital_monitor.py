@@ -1153,11 +1153,31 @@ HTML_CONTENT = """<!DOCTYPE html>
             try {
                 window.speechSynthesis.cancel();
                 onPatientSpeechStart();
-                const utter = new SpeechSynthesisUtterance(text);
+
+                // Qavs ichidagi sahna izohlarini (masalan: "(shoshmasdan gapirib)", "(Zaif ovozda)") va emojilarni olib tashlaymiz
+                const cleanText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝/g, "").trim();
+                if (!cleanText) {
+                    onPatientSpeechEnd();
+                    return;
+                }
+
+                const utter = new SpeechSynthesisUtterance(cleanText);
                 utter.lang = "uz-UZ";
-                utter.rate = 0.90; // Doniqiy va ravon talaffuz uchun 0.90 me'yori
-                utter.pitch = 1.0;
+                utter.rate = 0.88; // Doniqiy va sekinroq me'yordagi talaffuz
+                utter.pitch = 0.82; // Erkak kishi (Anvar Karimov, 40 yosh) ovozi uchun past va salmoqli ton (Male pitch)
                 utter.volume = 1.0;
+
+                const voices = window.speechSynthesis.getVoices();
+                if (voices && voices.length > 0) {
+                    const maleUzVoice = voices.find(v => v.lang.includes("uz") && (v.name.includes("Sardor") || v.name.includes("Male")));
+                    const uzVoice = voices.find(v => v.lang.includes("uz"));
+                    if (maleUzVoice) {
+                        utter.voice = maleUzVoice;
+                    } else if (uzVoice) {
+                        utter.voice = uzVoice;
+                    }
+                }
+
                 utter.onend = () => { onPatientSpeechEnd(); };
                 utter.onerror = () => { onPatientSpeechEnd(); };
                 window.speechSynthesis.speak(utter);
@@ -1526,7 +1546,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             const respond = (text) => {
                 setTimeout(() => {
                     appendChatBubble("patient", text);
-                    speakAIPatientResponse(text);
+                    // Ovozli ijro uchun qavs ichidagi sahna izohlarini (masalan: "(Zaif va sekin ovozda)", "(shoshmasdan gapirib)") olib tashlaymiz
+                    const spokenText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝/g, "").trim();
+                    if (spokenText) {
+                        speakAIPatientResponse(spokenText);
+                    }
                 }, 300);
             };
 
