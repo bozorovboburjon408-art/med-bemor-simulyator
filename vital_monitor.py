@@ -981,21 +981,45 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         // ==================== BEMOR OVOZI VA JONLANISH EFFEKTLARI ====================
         let activeVoiceAudio = null;
+        let activeVoiceSource = null;
+
         function playVoiceAudio(src, fallbackText) {
             if (!soundEnabled) return;
+            initAudio();
             try {
                 if (activeVoiceAudio) {
-                    activeVoiceAudio.pause();
+                    try { activeVoiceAudio.pause(); } catch(e) {}
                     activeVoiceAudio = null;
                 }
-                activeVoiceAudio = new Audio(src);
-                activeVoiceAudio.volume = 1.0; // Inson nutqi baland va tiniq eshitilishi uchun 100% ga belgilandi
-                const p = activeVoiceAudio.play();
-                if (p !== undefined) {
-                    p.catch(err => {
-                        console.warn("Audio play error, fallback to speech synthesis:", err);
-                        speakWithFallback(fallbackText);
-                    });
+                if (activeVoiceSource) {
+                    try { activeVoiceSource.stop(); } catch(e) {}
+                    activeVoiceSource = null;
+                }
+
+                if (audioCtx && audioCtx.state !== 'closed') {
+                    fetch(src)
+                        .then(res => res.arrayBuffer())
+                        .then(buffer => audioCtx.decodeAudioData(buffer))
+                        .then(decodedData => {
+                            activeVoiceSource = audioCtx.createBufferSource();
+                            activeVoiceSource.buffer = decodedData;
+
+                            const gainNode = audioCtx.createGain();
+                            gainNode.gain.setValueAtTime(5.0, audioCtx.currentTime); // 500% Kuchaytirilgan Ovoz (Maximal Baland Ovoz)
+
+                            activeVoiceSource.connect(gainNode);
+                            gainNode.connect(audioCtx.destination);
+                            activeVoiceSource.start(0);
+                        })
+                        .catch(err => {
+                            activeVoiceAudio = new Audio(src);
+                            activeVoiceAudio.volume = 1.0;
+                            activeVoiceAudio.play().catch(() => speakWithFallback(fallbackText));
+                        });
+                } else {
+                    activeVoiceAudio = new Audio(src);
+                    activeVoiceAudio.volume = 1.0;
+                    activeVoiceAudio.play().catch(() => speakWithFallback(fallbackText));
                 }
             } catch(e) {
                 speakWithFallback(fallbackText);
@@ -1010,6 +1034,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 utter.lang = "uz-UZ";
                 utter.rate = 0.95;
                 utter.pitch = 1.0;
+                utter.volume = 1.0;
                 window.speechSynthesis.speak(utter);
             } catch(e) {}
         }
