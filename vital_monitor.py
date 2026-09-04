@@ -10,7 +10,8 @@ from pydantic import BaseModel
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
-from medication_labels import LABELS_HTML
+from medication_manager import load_medications
+from medication_labels import LABELS_HTML, get_labels_html
 try:
     import serial
     import serial.tools.list_ports
@@ -154,6 +155,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <span id="active-med-badge-top" class="px-1.5 py-0.2 rounded bg-purple-900 text-[10px] text-purple-100 font-mono">ADR-01</span>
             </button>
 
+            <!-- JONLI TEZKOR SHTRIX / QR SKANER DARCHASI -->
+            <div class="flex items-center gap-1 bg-white border-2 border-purple-400 focus-within:border-purple-600 rounded-lg px-2 py-0.5 shadow-xs transition" title="Shtrix/QR kod skaneri (skanerlaganda bu darchada yoziladi va avtomatik qabul qilinadi)">
+                <i class="fa-solid fa-barcode text-purple-600 text-xs"></i>
+                <input type="text" id="top-quick-barcode" placeholder="📷 QR / Kod..." autocomplete="off" onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();scanQuickBarcode();}" oninput="onQuickBarcodeInput(this.value)" class="w-24 sm:w-28 md:w-32 bg-transparent text-xs font-mono font-black text-purple-950 placeholder-slate-400 focus:outline-none uppercase">
+                <span id="top-quick-barcode-status" class="hidden text-[10px] font-black text-emerald-600">✓</span>
+                <button type="button" onclick="scanQuickBarcode()" class="text-[10px] font-black text-purple-700 hover:text-purple-900 bg-purple-100 hover:bg-purple-200 px-1 py-0.5 rounded cursor-pointer" title="Qidirish / Tanlash">OK</button>
+            </div>
+
             <!-- A4 CHOP ETISH (STIKERLAR) TUGMASI -->
             <a href="/vital/labels" target="_blank" title="Barcha 10 ta dori shtrix va QR kodlarini 1 ta A4 varaqda chop etish" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition active:scale-95">
                 <i class="fa-solid fa-print text-xs"></i>
@@ -184,10 +193,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Volume Slider -->
             <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded-lg">
                 <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
-                    <i id="audio-icon" class="fa-solid fa-volume-high text-emerald-600 text-xs"></i>
-                    <span id="audio-text" class="text-xs font-bold">100%</span>
+                    <i id="audio-icon" class="fa-solid fa-volume-low text-emerald-600 text-xs"></i>
+                    <span id="audio-text" class="text-xs font-bold">35%</span>
                 </button>
-                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="1.0" oninput="changeMonitorVolume(this.value)" class="w-12 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi (100% Maksimal)">
+                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="0.35" oninput="changeMonitorVolume(this.value)" class="w-12 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi (35% Me'yoriy)">
             </div>
 
             <button onclick="toggleFullScreen()" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
@@ -201,6 +210,20 @@ HTML_CONTENT = """<!DOCTYPE html>
     <div id="inj-banner" class="hidden my-0.5 bg-purple-100 border border-purple-400 rounded-xl p-1.5 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink">
         <i class="fa-solid fa-syringe text-purple-600 text-sm mr-1"></i> 
         <span id="inj-banner-text">💉 UKOL QILINDI! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
+    </div>
+
+    <!-- BARCODE SCANNER TOAST NOTIFICATION -->
+    <div id="barcode-scan-toast" class="hidden my-0.5 bg-purple-600 text-white border-2 border-purple-300 rounded-xl p-2 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200">
+        <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-sm font-bold shrink-0">
+                <i class="fa-solid fa-barcode"></i>
+            </span>
+            <div>
+                <div id="scan-toast-title" class="text-[10px] font-black uppercase text-purple-200 tracking-wide">📷 SHTRIX-KOD QABUL QILINDI</div>
+                <div id="scan-toast-msg" class="text-xs font-black text-white">Adrenalin 1 mg/ml (ADR-01) — Manikenga ukol qilishga tayyor!</div>
+            </div>
+        </div>
+        <span class="mono px-2 py-0.5 rounded bg-white/20 text-xs font-black" id="scan-toast-badge">ADR-01</span>
     </div>
 
     <!-- PATIENT VOICE & REVIVAL POPUP -->
@@ -539,7 +562,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Manual Barcode Scanner Input -->
             <div class="p-3 bg-purple-50/70 border-b border-purple-100 flex items-center gap-2">
                 <i class="fa-solid fa-barcode text-purple-600 text-lg"></i>
-                <input type="text" id="manual-barcode-input" placeholder="Shtrix-kodni skanerlang yoki yozing (masalan: ADR-01, AMI-02)..." onkeydown="if(event.key==='Enter') scanManualBarcode()" class="flex-1 px-3 py-1.5 bg-white border border-purple-300 rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <input type="text" id="manual-barcode-input" placeholder="Shtrix-kodni skanerlang yoki yozing (masalan: ADR-01, AMI-02)..." onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();scanManualBarcode();}" oninput="onManualBarcodeInput(this.value)" class="flex-1 px-3 py-1.5 bg-white border border-purple-300 rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase">
                 <button onclick="scanManualBarcode()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-lg cursor-pointer">
                     Skanerlash
                 </button>
@@ -565,108 +588,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     <!-- JAVASCRIPT ENGINE -->
     <script>
         // ==================== DORI-DARMONLAR BAZASI (MEDICATION DATABASE) ====================
-        const MEDICATION_DB = [
-            {
-                id: "adrenalin",
-                code: "ADR-01",
-                name: "Adrenalin (Epinefrin) 1 mg/ml",
-                barcodes: ["ADR01", "ADR-01", "ADRENALIN", "EPINEPHRINE", "4780001001"],
-                group: "Adrenomimetik (Vazopressor)",
-                desc: "Yurak to'xtashi, asistoliya va anafilaktik shokda asosiy vosita.",
-                badgeColor: "bg-purple-100 text-purple-900 border-purple-300",
-                btnColor: "bg-purple-600 hover:bg-purple-700"
-            },
-            {
-                id: "amiodaron",
-                code: "AMI-02",
-                name: "Amiodaron (Kordaron) 150 mg",
-                barcodes: ["AMI02", "AMI-02", "AMIODARON", "CORDARONE", "4780001002"],
-                group: "Antiaritmik (III-sinf)",
-                desc: "Qorincha taxikardiyasi (VTach) va aritmiyalarni to'xtatuvchi.",
-                badgeColor: "bg-sky-100 text-sky-900 border-sky-300",
-                btnColor: "bg-sky-600 hover:bg-sky-700"
-            },
-            {
-                id: "atropin",
-                code: "ATR-03",
-                name: "Atropin sulfat 1 mg/ml",
-                barcodes: ["ATR03", "ATR-03", "ATROPIN", "ATROPINE", "4780001003"],
-                group: "M-Xolinoblokator",
-                desc: "Sust puls (bradikardiya) va AV-blokadalarda ritmni oshiradi.",
-                badgeColor: "bg-amber-100 text-amber-900 border-amber-300",
-                btnColor: "bg-amber-600 hover:bg-amber-700"
-            },
-            {
-                id: "nitro",
-                code: "NIT-04",
-                name: "Nitroglitserin 0.5 mg",
-                barcodes: ["NIT04", "NIT-04", "NITRO", "NITROGLYCERIN", "4780001004"],
-                group: "Periferik vazodilatator",
-                desc: "O'tkir gipertonik kriz va stenokardiyada bosimni tushiradi.",
-                badgeColor: "bg-rose-100 text-rose-900 border-rose-300",
-                btnColor: "bg-rose-600 hover:bg-rose-700"
-            },
-            {
-                id: "metoprolol",
-                code: "MET-05",
-                name: "Metoprolol (Beta-blokator) 5 mg",
-                barcodes: ["MET05", "MET-05", "METOPROLOL", "BETALOC", "4780001005"],
-                group: "Beta-1 adrenoblokator",
-                desc: "Taxikardiyada puls va miokard kislorod talabini pasaytiradi.",
-                badgeColor: "bg-indigo-100 text-indigo-900 border-indigo-300",
-                btnColor: "bg-indigo-600 hover:bg-indigo-700"
-            },
-            {
-                id: "saline",
-                code: "SAL-06",
-                name: "Fizrastvor (0.9% NaCl) 500 ml",
-                barcodes: ["SAL06", "SAL-06", "NACL", "FIZRASTVOR", "SALINE", "4780001006"],
-                group: "Kristalloid plazma o'rnini bosuvchi",
-                desc: "Gipovolemik va qon yo'qotish shokida qon bosimini tiklaydi.",
-                badgeColor: "bg-blue-100 text-blue-900 border-blue-300",
-                btnColor: "bg-blue-600 hover:bg-blue-700"
-            },
-            {
-                id: "dexa",
-                code: "DEX-07",
-                name: "Deksametazon 8 mg/2ml",
-                barcodes: ["DEX07", "DEX-07", "DEXA", "DEXAMETHASONE", "4780001007"],
-                group: "Glikokortikosteroid (Gormon)",
-                desc: "Bronxospazm, anafilaksiya va o'tkir gipoksiyani bartaraf etadi.",
-                badgeColor: "bg-emerald-100 text-emerald-900 border-emerald-300",
-                btnColor: "bg-emerald-600 hover:bg-emerald-700"
-            },
-            {
-                id: "naloxone",
-                code: "NAL-08",
-                name: "Nalokson 0.4 mg/ml",
-                barcodes: ["NAL08", "NAL-08", "NALOXON", "NALOXONE", "4780001008"],
-                group: "Opioid retseptorlari antagonisti",
-                desc: "Narkotik intoksikatsiyasi va nafas tormozlanishiga qarshi vosita.",
-                badgeColor: "bg-teal-100 text-teal-900 border-teal-300",
-                btnColor: "bg-teal-600 hover:bg-teal-700"
-            },
-            {
-                id: "kcl",
-                code: "KCL-09",
-                name: "Kaliy xlorid (KCl 4%) 20 ml",
-                barcodes: ["KCL09", "KCL-09", "KCL", "POTASSIUM", "4780001009"],
-                group: "Elektrolit (Toksik konsentrat)",
-                desc: "DIQQAT: Sof holda vena ichiga yuborish kardioplegiya chaqiradi!",
-                badgeColor: "bg-red-100 text-red-900 border-red-300",
-                btnColor: "bg-red-600 hover:bg-red-700"
-            },
-            {
-                id: "furosemide",
-                code: "FUR-10",
-                name: "Furosemid (Laziks) 20 mg",
-                barcodes: ["FUR10", "FUR-10", "FUROSEMID", "LASIX", "4780001010"],
-                group: "Halqa diuretigi",
-                desc: "O'pka shishi va gipertoniyada tezkor suyuqlik haydovchi vosita.",
-                badgeColor: "bg-cyan-100 text-cyan-900 border-cyan-300",
-                btnColor: "bg-cyan-600 hover:bg-cyan-700"
-            }
-        ];
+        const MEDICATION_DB = __MEDICATIONS_JSON__;
 
         let selectedMedication = MEDICATION_DB[0]; // Default Adrenalin
         let current = {
@@ -688,7 +610,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         let masterGain = null;
         let masterCompressor = null;
         let soundEnabled = true;
-        let monitorVolume = 1.0;
+        let monitorVolume = 0.35;
         let asystoleOsc = null;
         let lastBeatTime = 0;
 
@@ -722,7 +644,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 osc.type = "sine";
                 osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(1800, audioCtx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
                 osc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
@@ -739,7 +661,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 osc.type = "sawtooth";
                 osc.frequency.setValueAtTime(320, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(240, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.20, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
                 osc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
@@ -775,7 +697,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             initAudio();
             soundEnabled = !soundEnabled;
             if (soundEnabled && monitorVolume === 0) {
-                monitorVolume = 1.0;
+                monitorVolume = 0.35;
             }
             const slider = document.getElementById("monitor-volume-slider");
             if (slider) slider.value = soundEnabled ? monitorVolume : 0;
@@ -798,14 +720,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const gain1 = audioCtx.createGain();
                 osc1.type = "sine";
                 osc1.frequency.setValueAtTime(freq, now);
-                gain1.gain.setValueAtTime(1.0, now);
+                gain1.gain.setValueAtTime(0.18, now);
                 gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
 
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
                 osc2.type = "triangle";
                 osc2.frequency.setValueAtTime(freq * 1.5, now);
-                gain2.gain.setValueAtTime(0.45, now);
+                gain2.gain.setValueAtTime(0.06, now);
                 gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
 
                 osc1.connect(gain1);
@@ -831,7 +753,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const gain = audioCtx.createGain();
                 asystoleOsc.type = "triangle";
                 asystoleOsc.frequency.setValueAtTime(850, now);
-                gain.gain.setValueAtTime(0.85, now);
+                gain.gain.setValueAtTime(0.20, now);
                 asystoleOsc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
                 asystoleOsc.start(now);
@@ -1101,39 +1023,247 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // ==================== BARCODE SCANNER LOGIC (HARDWARE HID & UI) ====================
+        // ==================== BARCODE & QR SCANNER LOGIC (HARDWARE HID, CYRILLIC FIX & AUTO-DEBOUNCE) ====================
+        const CYRILLIC_TO_LATIN_MAP = {
+            "й": "q",
+            "Й": "Q",
+            "ц": "w",
+            "Ц": "W",
+            "у": "e",
+            "У": "E",
+            "к": "r",
+            "К": "R",
+            "е": "t",
+            "Е": "T",
+            "н": "y",
+            "Н": "Y",
+            "г": "u",
+            "Г": "U",
+            "ш": "i",
+            "Ш": "I",
+            "щ": "o",
+            "Щ": "O",
+            "з": "p",
+            "З": "P",
+            "х": "[",
+            "Х": "[",
+            "ъ": "]",
+            "Ъ": "]",
+            "ф": "a",
+            "Ф": "A",
+            "ы": "s",
+            "Ы": "S",
+            "в": "d",
+            "В": "D",
+            "а": "f",
+            "А": "F",
+            "п": "g",
+            "П": "G",
+            "р": "h",
+            "Р": "H",
+            "о": "j",
+            "О": "J",
+            "л": "k",
+            "Л": "K",
+            "д": "l",
+            "Д": "L",
+            "ж": ";",
+            "Ж": ";",
+            "э": "'",
+            "Э": "'",
+            "я": "z",
+            "Я": "Z",
+            "ч": "x",
+            "Ч": "X",
+            "с": "c",
+            "С": "C",
+            "м": "v",
+            "М": "V",
+            "и": "b",
+            "И": "B",
+            "т": "n",
+            "Т": "N",
+            "ь": "m",
+            "Ь": "M",
+            "б": ",",
+            "Б": ",",
+            "ю": ".",
+            "Ю": "."
+};
+
+        function convertCyrillicToLatin(str) {
+            if (!str) return "";
+            return String(str).split('').map(ch => CYRILLIC_TO_LATIN_MAP[ch] || ch).join('');
+        }
+
+        function matchMedication(raw) {
+            if (!raw) return null;
+            let s = String(raw).trim();
+            if (!s) return null;
+
+            // QR kod orqali URL kelgan bo'lsa (masalan https://...?code=ADR-01)
+            try {
+                if (s.includes("://") || s.startsWith("/")) {
+                    const u = new URL(s, window.location.origin);
+                    const q = u.searchParams.get("code") || u.searchParams.get("barcode") || u.searchParams.get("id");
+                    if (q) s = q.trim();
+                    else {
+                        const parts = u.pathname.split("/").filter(Boolean);
+                        if (parts.length > 0) s = parts[parts.length - 1];
+                    }
+                }
+            } catch(e) {}
+
+            const latin = convertCyrillicToLatin(s).toUpperCase().trim();
+            const rawUpper = s.toUpperCase().trim();
+            const cleanAlphaNum = latin.replace(/[^A-Z0-9]/g, "");
+
+            for (const med of MEDICATION_DB) {
+                const medCodeUpper = (med.code || "").toUpperCase();
+                const medCodeClean = medCodeUpper.replace(/[^A-Z0-9]/g, "");
+                const medIdUpper = (med.id || "").toUpperCase();
+
+                // 1. To'g'ridan-to'g'ri kod bo'yicha moslik (ADR-01, ADR01, adr-01, ФВК-01)
+                if (latin === medCodeUpper || rawUpper === medCodeUpper) return med;
+                if (cleanAlphaNum && cleanAlphaNum === medCodeClean) return med;
+                if (latin === medIdUpper || rawUpper === medIdUpper) return med;
+
+                // 2. Barcodes massivi bo'yicha
+                if (Array.isArray(med.barcodes)) {
+                    for (const b of med.barcodes) {
+                        const bUpper = b.toUpperCase();
+                        const bClean = bUpper.replace(/[^A-Z0-9]/g, "");
+                        if (latin === bUpper || rawUpper === bUpper) return med;
+                        if (cleanAlphaNum && cleanAlphaNum === bClean) return med;
+                    }
+                }
+
+                // 3. Dori nomi yoki ID qismi bo'yicha moslik
+                if (cleanAlphaNum.length >= 3) {
+                    const medNameUpper = (med.name || "").toUpperCase();
+                    if (medNameUpper.includes(latin) || medNameUpper.includes(cleanAlphaNum) || latin.includes(medIdUpper)) {
+                        return med;
+                    }
+                }
+            }
+            return null;
+        }
+
         let barcodeBuffer = "";
         let lastBarcodeKeyTime = 0;
+        let barcodeDebounceTimer = null;
+        let scanToastTimeout = null;
+
+        function showBarcodeScanToast(title, msg, badge, isError = false) {
+            const toast = document.getElementById("barcode-scan-toast");
+            const titleEl = document.getElementById("scan-toast-title");
+            const msgEl = document.getElementById("scan-toast-msg");
+            const badgeEl = document.getElementById("scan-toast-badge");
+            if (!toast) return;
+
+            if (titleEl) titleEl.innerText = title;
+            if (msgEl) msgEl.innerText = msg;
+            if (badgeEl) badgeEl.innerText = badge;
+
+            if (isError) {
+                toast.className = "my-0.5 bg-rose-600 text-white border-2 border-rose-300 rounded-xl p-2 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200";
+            } else {
+                toast.className = "my-0.5 bg-purple-600 text-white border-2 border-purple-300 rounded-xl p-2 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200";
+            }
+            toast.classList.remove("hidden");
+
+            if (scanToastTimeout) clearTimeout(scanToastTimeout);
+            scanToastTimeout = setTimeout(() => {
+                toast.classList.add("hidden");
+            }, 4500);
+        }
+
+        function syncBarcodeToInputs(val) {
+            const topInput = document.getElementById("top-quick-barcode");
+            if (topInput && document.activeElement !== topInput) {
+                topInput.value = val;
+            }
+            const manualInput = document.getElementById("manual-barcode-input");
+            if (manualInput && document.activeElement !== manualInput) {
+                manualInput.value = val;
+            }
+        }
 
         window.addEventListener("keydown", (e) => {
-            // Ignore if currently typing inside the manual input field
-            if (e.target && e.target.id === "manual-barcode-input") {
-                return;
-            }
             const now = Date.now();
-            if (e.key === "Enter") {
+
+            // Skaner terminator kalitlari: Enter yoki Tab
+            if (e.key === "Enter" || e.key === "Tab") {
                 if (barcodeBuffer.trim().length >= 2) {
-                    processScannedMedication(barcodeBuffer.trim());
+                    e.preventDefault();
+                    if (barcodeDebounceTimer) clearTimeout(barcodeDebounceTimer);
+                    const codeToProcess = barcodeBuffer.trim();
+                    barcodeBuffer = "";
+                    processScannedMedication(codeToProcess);
+                    return;
+                }
+                const topInput = document.getElementById("top-quick-barcode");
+                if (topInput && topInput.value.trim().length >= 2 && document.activeElement === topInput) {
+                    e.preventDefault();
+                    scanQuickBarcode();
+                    return;
+                }
+                const manualInput = document.getElementById("manual-barcode-input");
+                if (manualInput && manualInput.value.trim().length >= 2 && document.activeElement === manualInput) {
+                    e.preventDefault();
+                    scanManualBarcode();
+                    return;
+                }
+            }
+
+            // Oddiy harf/raqam tugmalari (USB HID skaner o'qiyotganda)
+            if (e.key && e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                // Agar belgilar orasidagi vaqt 350ms dan ortiq bo'lsa, yangi o'qish deb hisoblanadi
+                if (now - lastBarcodeKeyTime > 350) {
                     barcodeBuffer = "";
                 }
-            } else if (e.key.length === 1) {
-                // USB barcode scanners burst keys within 50-80ms
-                if (now - lastBarcodeKeyTime > 250) {
-                    barcodeBuffer = "";
-                }
-                barcodeBuffer += e.key;
                 lastBarcodeKeyTime = now;
+
+                const convertedChar = CYRILLIC_TO_LATIN_MAP[e.key] || e.key;
+                barcodeBuffer += convertedChar;
+
+                // Ekranda skaner natijasini jonli ko'rsatib borish
+                syncBarcodeToInputs(barcodeBuffer);
+
+                // Debounce auto-detect: Agar skaner Enter yubormasa ham, 140ms sukutdan keyin dori qabul qilinadi
+                if (barcodeDebounceTimer) clearTimeout(barcodeDebounceTimer);
+                barcodeDebounceTimer = setTimeout(() => {
+                    if (barcodeBuffer.trim().length >= 2) {
+                        const candidate = barcodeBuffer.trim();
+                        const m = matchMedication(candidate);
+                        if (m || candidate.length >= 5) {
+                            barcodeBuffer = "";
+                            processScannedMedication(candidate);
+                        }
+                    }
+                }, 140);
             }
         });
 
         function processScannedMedication(rawCode) {
-            const clean = rawCode.trim().toUpperCase();
-            const matched = MEDICATION_DB.find(m => 
-                m.code.toUpperCase() === clean ||
-                m.barcodes.some(b => b.toUpperCase() === clean) ||
-                m.id.toUpperCase() === clean ||
-                m.name.toUpperCase().includes(clean)
-            );
+            if (!rawCode || !rawCode.trim()) return;
+            const clean = rawCode.trim();
+            const matched = matchMedication(clean);
+
+            // Skaner natijasini input darchasida aks ettirish
+            const topInput = document.getElementById("top-quick-barcode");
+            if (topInput) {
+                topInput.value = matched ? matched.code : clean.toUpperCase();
+                topInput.classList.add("ring-2", matched ? "ring-emerald-500" : "ring-rose-500");
+                setTimeout(() => topInput.classList.remove("ring-2", "ring-emerald-500", "ring-rose-500"), 1500);
+            }
+            const statusBadge = document.getElementById("top-quick-barcode-status");
+            if (statusBadge) {
+                statusBadge.innerText = matched ? "✓" : "✗";
+                statusBadge.className = matched ? "text-[10px] font-black text-emerald-600" : "text-[10px] font-black text-rose-600";
+                statusBadge.classList.remove("hidden");
+                setTimeout(() => statusBadge.classList.add("hidden"), 3000);
+            }
 
             if (matched) {
                 selectedMedication = matched;
@@ -1146,11 +1276,51 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const injText = document.getElementById("inj-banner-text");
                 if (injText) injText.innerText = `💉 DORI TAYYORLANDI: ${matched.name}`;
 
+                showBarcodeScanToast(
+                    "📷 DORI SHTRIX-KODI QABUL QILINDI",
+                    `${matched.name} [${matched.code}] — Manikenga ukol qilishga tayyorlandi!`,
+                    matched.code,
+                    false
+                );
+
                 closeMedCabinetModal();
             } else {
                 playAlarmErrorTone();
-                updateBanner(`⚠️ NOMA'LUM BARKOD: "${rawCode}" — Dori topilmadi!`, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                const displayCode = convertCyrillicToLatin(clean).toUpperCase();
+                updateBanner(`⚠️ NOMA'LUM BARKOD: "${displayCode}" — Dori topilmadi!`, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                showBarcodeScanToast(
+                    "⚠️ NOMA'LUM BARKOD / QR KOD",
+                    `"${displayCode}" kodi bo'yicha bazadan dori topilmadi. Qayta urinib ko'ring yoki /vital/labels sahifasidan stikerni o'qing.`,
+                    displayCode,
+                    true
+                );
             }
+        }
+
+        function scanQuickBarcode() {
+            const input = document.getElementById("top-quick-barcode");
+            if (input && input.value.trim()) {
+                processScannedMedication(input.value.trim());
+            }
+        }
+
+        let quickInputTimeout = null;
+        function onQuickBarcodeInput(val) {
+            if (!val) return;
+            const converted = convertCyrillicToLatin(val).toUpperCase();
+            if (converted !== val) {
+                const input = document.getElementById("top-quick-barcode");
+                if (input) input.value = converted;
+            }
+            if (quickInputTimeout) clearTimeout(quickInputTimeout);
+            quickInputTimeout = setTimeout(() => {
+                if (val.trim().length >= 3) {
+                    const m = matchMedication(val);
+                    if (m) {
+                        processScannedMedication(val);
+                    }
+                }
+            }, 200);
         }
 
         function scanManualBarcode() {
@@ -1161,6 +1331,27 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        let manualInputTimeout = null;
+        function onManualBarcodeInput(val) {
+            if (!val) return;
+            const converted = convertCyrillicToLatin(val).toUpperCase();
+            if (converted !== val) {
+                const input = document.getElementById("manual-barcode-input");
+                if (input) input.value = converted;
+            }
+            if (manualInputTimeout) clearTimeout(manualInputTimeout);
+            manualInputTimeout = setTimeout(() => {
+                if (val.trim().length >= 3) {
+                    const m = matchMedication(val);
+                    if (m) {
+                        processScannedMedication(val);
+                        const input = document.getElementById("manual-barcode-input");
+                        if (input) input.value = "";
+                    }
+                }
+            }, 200);
+        }
+
         function selectMedicationDirect(medId) {
             const med = MEDICATION_DB.find(m => m.id === medId);
             if (med) {
@@ -1168,6 +1359,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                 playScannerBeep();
                 updateSelectedMedicationUI();
                 updateBanner(`💊 TANLANDI: ${med.name} [${med.code}] — Manikenga ukol qilish kutilmoqda...`, "bg-purple-100 text-purple-900 border-purple-400 font-black");
+                showBarcodeScanToast(
+                    "💊 DORI TANLANDI",
+                    `${med.name} [${med.code}] — Manikenga ukol qilishga tayyor!`,
+                    med.code,
+                    false
+                );
                 closeMedCabinetModal();
             }
         }
@@ -1175,6 +1372,11 @@ HTML_CONTENT = """<!DOCTYPE html>
         function updateSelectedMedicationUI() {
             const topBadge = document.getElementById("active-med-badge-top");
             if (topBadge) topBadge.innerText = selectedMedication.code;
+
+            const topQuick = document.getElementById("top-quick-barcode");
+            if (topQuick && document.activeElement !== topQuick) {
+                topQuick.value = selectedMedication.code;
+            }
 
             const nameEl = document.getElementById("active-med-name");
             if (nameEl) nameEl.innerText = `${selectedMedication.name} (${selectedMedication.code})`;
@@ -1312,6 +1514,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                                         const data = JSON.parse(line);
                                         handleHardwareData(data);
                                     } catch(e) {}
+                                } else if (line.length >= 2) {
+                                    // USB Serial orqali kelgan to'g'ridan-to'g'ri barkod
+                                    processScannedMedication(line);
                                 }
                             }
                         }
@@ -1985,7 +2190,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 osc.type = "sawtooth";
                 osc.frequency.setValueAtTime(160, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
@@ -2305,12 +2510,15 @@ class ScanMedicationRequest(BaseModel):
 @app.get("/labels", response_class=HTMLResponse)
 @app.get("/print_labels", response_class=HTMLResponse)
 async def get_print_labels():
-    return HTMLResponse(content=LABELS_HTML)
+    return HTMLResponse(content=get_labels_html())
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)
 async def get_monitor():
-    return HTMLResponse(content=HTML_CONTENT)
+    meds = load_medications()
+    meds_json = json.dumps(meds, ensure_ascii=False)
+    rendered = HTML_CONTENT.replace("__MEDICATIONS_JSON__", meds_json)
+    return HTMLResponse(content=rendered)
 
 @app.post("/api/compressor")
 async def api_compressor(req: CompressorRequest):
