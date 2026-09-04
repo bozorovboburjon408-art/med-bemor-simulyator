@@ -176,9 +176,9 @@ HTML_CONTENT = """<!DOCTYPE html>
             <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded-lg">
                 <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
                     <i id="audio-icon" class="fa-solid fa-volume-low text-emerald-600 text-xs"></i>
-                    <span id="audio-text" class="text-xs font-bold">35%</span>
+                    <span id="audio-text" class="text-xs font-bold">20%</span>
                 </button>
-                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="0.35" oninput="changeMonitorVolume(this.value)" class="w-12 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi (35% Me'yoriy)">
+                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="0.20" oninput="changeMonitorVolume(this.value)" class="w-12 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi (20% Me'yoriy)">
             </div>
 
             <button onclick="toggleFullScreen()" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
@@ -819,7 +819,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         let masterGain = null;
         let masterCompressor = null;
         let soundEnabled = true;
-        let monitorVolume = 0.35;
+        let monitorVolume = 0.20;
         let asystoleOsc = null;
         let lastBeatTime = 0;
 
@@ -853,7 +853,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 osc.type = "sine";
                 osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(1800, audioCtx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.10, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
                 osc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
@@ -870,7 +870,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 osc.type = "sawtooth";
                 osc.frequency.setValueAtTime(320, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(240, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.20, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
                 osc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
@@ -906,7 +906,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             initAudio();
             soundEnabled = !soundEnabled;
             if (soundEnabled && monitorVolume === 0) {
-                monitorVolume = 0.35;
+                monitorVolume = 0.20;
             }
             const slider = document.getElementById("monitor-volume-slider");
             if (slider) slider.value = soundEnabled ? monitorVolume : 0;
@@ -929,14 +929,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const gain1 = audioCtx.createGain();
                 osc1.type = "sine";
                 osc1.frequency.setValueAtTime(freq, now);
-                gain1.gain.setValueAtTime(0.18, now);
+                gain1.gain.setValueAtTime(0.10, now);
                 gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
 
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
                 osc2.type = "triangle";
                 osc2.frequency.setValueAtTime(freq * 1.5, now);
-                gain2.gain.setValueAtTime(0.06, now);
+                gain2.gain.setValueAtTime(0.03, now);
                 gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
 
                 osc1.connect(gain1);
@@ -962,7 +962,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const gain = audioCtx.createGain();
                 asystoleOsc.type = "triangle";
                 asystoleOsc.frequency.setValueAtTime(850, now);
-                gain.gain.setValueAtTime(0.20, now);
+                gain.gain.setValueAtTime(0.12, now);
                 asystoleOsc.connect(gain);
                 gain.connect(masterCompressor || audioCtx.destination);
                 asystoleOsc.start(now);
@@ -982,14 +982,14 @@ HTML_CONTENT = """<!DOCTYPE html>
         // ==================== BEMOR OVOZI VA JONLANISH EFFEKTLARI ====================
         let activeVoiceAudio = null;
         function playVoiceAudio(src, fallbackText) {
-            if (!soundEnabled || monitorVolume <= 0) return;
+            if (!soundEnabled) return;
             try {
                 if (activeVoiceAudio) {
                     activeVoiceAudio.pause();
                     activeVoiceAudio = null;
                 }
                 activeVoiceAudio = new Audio(src);
-                activeVoiceAudio.volume = Math.min(1.0, monitorVolume);
+                activeVoiceAudio.volume = 1.0; // Inson nutqi baland va tiniq eshitilishi uchun 100% ga belgilandi
                 const p = activeVoiceAudio.play();
                 if (p !== undefined) {
                     p.catch(err => {
