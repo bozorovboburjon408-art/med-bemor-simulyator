@@ -165,8 +165,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             </button>
 
             <a href="/" target="_blank" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 font-bold shadow-xs">
-                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor
+                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor (Veb)
             </a>
+
+            <button onclick="openPatientVoiceIntercomModal()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-md cursor-pointer transition active:scale-95 animate-pulse">
+                <i class="fa-solid fa-microphone"></i> 🎙️ AI Bemor Muloqot
+            </button>
 
             <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs">
                 <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> Pult
@@ -537,6 +541,71 @@ HTML_CONTENT = """<!DOCTYPE html>
             </button>
         </div>
     </footer>
+
+    <!-- ==================== AI BEMOR VOICEMAIL / INTERCOM MODAL ==================== -->
+    <div id="ai-patient-voice-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 select-none">
+        <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden max-h-[90vh] animate-in fade-in zoom-in-95 duration-150">
+            
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-700 px-4 py-3 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-xl shadow-inner shrink-0">
+                        🗣️
+                    </div>
+                    <div>
+                        <h3 class="font-black text-sm tracking-wide">ICU AI BEMOR BILAN OVOZLI MULOQOT</h3>
+                        <p class="text-[11px] text-emerald-100 font-bold" id="ai-patient-status-subtitle">Bemor: Anvar Karimov (40 yosh) • Ssenariy: Normal</p>
+                    </div>
+                </div>
+                <button onclick="closePatientVoiceIntercomModal()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-base font-bold cursor-pointer transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Conversation Dialogue Area -->
+            <div id="ai-patient-chat-box" class="p-3 overflow-y-auto flex-1 space-y-3 bg-slate-50 min-h-[220px] max-h-[360px] text-xs">
+                <div class="flex items-start gap-2">
+                    <div class="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">AI</div>
+                    <div class="bg-white border border-slate-200 p-2.5 rounded-2xl rounded-tl-none shadow-xs text-slate-800 font-bold max-w-[85%]">
+                        Assalomu alaykum, doktor. Men Anvar Karimovman. Menga biror savolingiz bormi? Ovozli tugmani bosib gapirishingiz yoki tezkor savollarni tanlashingiz mumkin.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Preset Question Chips -->
+            <div class="px-3 py-2 bg-slate-100 border-t border-slate-200 flex flex-wrap gap-1 text-[11px] shrink-0">
+                <span class="text-slate-500 font-bold text-[10px] w-full mb-0.5"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Tezkor savollar:</span>
+                <button onclick="sendQuickPatientQuestion('O\'zingizni qanday his qilyapsiz?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                    💬 "Ahvolingiz qanday?"
+                </button>
+                <button onclick="sendQuickPatientQuestion('Qayeringiz og\'riyapti?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                    💬 "Qayeringiz og'riyapti?"
+                </button>
+                <button onclick="sendQuickPatientQuestion('Nafas olishingiz qanday?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                    💬 "Nafasingiz qanday?"
+                </button>
+                <button onclick="sendQuickPatientQuestion('Boshingiz aylanyaptimi?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                    💬 "Boshingiz aylanyaptimi?"
+                </button>
+            </div>
+
+            <!-- Recording and Controls Footer -->
+            <div class="p-3 bg-white border-t border-slate-200 flex flex-col gap-2 shrink-0">
+                <button id="btn-ai-mic-record" onclick="togglePatientVoiceRecord()" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95">
+                    <i class="fa-solid fa-microphone text-sm"></i>
+                    <span id="btn-ai-mic-text">🎙️ OVOZLI SAVOL BERISH (Bosing va gapiring)</span>
+                </button>
+                
+                <div class="flex items-center gap-2">
+                    <input type="text" id="input-ai-patient-text" placeholder="Yoki savolingizni matn ko'rinishida yazing..." onkeydown="if(event.key==='Enter') sendTextPatientQuestion()" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-emerald-500">
+                    <button onclick="sendTextPatientQuestion()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs cursor-pointer active:scale-95">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     <!-- ==================== DORI JAVONI VA SHTRIX-KODLAR MODALI ==================== -->
     <div id="med-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden z-50 flex items-center justify-center p-3 select-none">
@@ -1160,6 +1229,185 @@ HTML_CONTENT = """<!DOCTYPE html>
                 flash.classList.add("inj-success");
                 setTimeout(() => flash.classList.remove("inj-success"), 1200);
             }
+        }
+
+        // ==================== ICU AI BEMOR OVOZLI INTERCOM DVIGATELI ====================
+        let isVoiceRecording = false;
+        let speechRecognitionInstance = null;
+
+        function openPatientVoiceIntercomModal() {
+            const modal = document.getElementById("ai-patient-voice-modal");
+            if (modal) modal.classList.remove("hidden");
+            updateAIPatientSubtitle();
+        }
+
+        function closePatientVoiceIntercomModal() {
+            const modal = document.getElementById("ai-patient-voice-modal");
+            if (modal) modal.classList.add("hidden");
+            if (speechRecognitionInstance) {
+                try { speechRecognitionInstance.stop(); } catch(e) {}
+            }
+        }
+
+        function updateAIPatientSubtitle() {
+            const el = document.getElementById("ai-patient-status-subtitle");
+            if (!el) return;
+            const scMap = {
+                "normal": "🟢 Barqaror Normal (75 BPM)",
+                "dying": "🚨 Asistoliya (Yurak To'xtagan)",
+                "vfib": "⚡ Qorinchalar Fibrillyatsiyasi (VFib)",
+                "attack": "⚡ O'tkir Taxikardiya (185 BPM)",
+                "brady": "🫀 Bradikardiya & AV-Blokada (28 BPM)",
+                "hyper": "🔴 Gipertonik Kriz (220/130 mmHg)",
+                "hypoxia": "🫁 Gipoksiya & Bronxospazm (SpO2 74%)",
+                "opioid": "💉 Opioid Koma (RR 4/min)",
+                "shock": "🩸 Gipovolemik Shok (65/35 mmHg)"
+            };
+            const scName = scMap[current.mode] || current.mode;
+            el.innerText = `Bemor: Anvar Karimov (40 yosh) • Ssenariy: ${scName}`;
+        }
+
+        function togglePatientVoiceRecord() {
+            const btn = document.getElementById("btn-ai-mic-record");
+            const textEl = document.getElementById("btn-ai-mic-text");
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Brauzeringizda ovozli tanib olish qo'llab-quvvatlanmaydi. Matnli savol yoki tezkor tugmalardan foydalaning!");
+                return;
+            }
+
+            if (isVoiceRecording) {
+                if (speechRecognitionInstance) {
+                    try { speechRecognitionInstance.stop(); } catch(e) {}
+                }
+                isVoiceRecording = false;
+                btn.className = "w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
+                textEl.innerText = "🎙️ OVOZLI SAVOL BERISH (Bosing va gapiring)";
+                return;
+            }
+
+            speechRecognitionInstance = new SpeechRecognition();
+            speechRecognitionInstance.lang = "uz-UZ";
+            speechRecognitionInstance.interimResults = false;
+            speechRecognitionInstance.maxAlternatives = 1;
+
+            speechRecognitionInstance.onstart = () => {
+                isVoiceRecording = true;
+                btn.className = "w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 alarm-blink";
+                textEl.innerText = "🔴 ESHITILMOQDA... GAPIRING";
+            };
+
+            speechRecognitionInstance.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                processAIPatientVoiceQuestion(text);
+            };
+
+            speechRecognitionInstance.onerror = (err) => {
+                console.warn("Speech error:", err);
+            };
+
+            speechRecognitionInstance.onend = () => {
+                isVoiceRecording = false;
+                btn.className = "w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
+                textEl.innerText = "🎙️ OVOZLI SAVOL BERISH (Bosing va gapiring)";
+            };
+
+            speechRecognitionInstance.start();
+        }
+
+        function sendQuickPatientQuestion(text) {
+            processAIPatientVoiceQuestion(text);
+        }
+
+        function sendTextPatientQuestion() {
+            const input = document.getElementById("input-ai-patient-text");
+            if (!input || !input.value.trim()) return;
+            const text = input.value.trim();
+            input.value = "";
+            processAIPatientVoiceQuestion(text);
+        }
+
+        function processAIPatientVoiceQuestion(docQuestion) {
+            appendChatBubble("doc", docQuestion);
+            updateAIPatientSubtitle();
+
+            const qLower = docQuestion.toLowerCase();
+            let patientResponse = "";
+
+            const mode = current.mode || "normal";
+            const hr = Math.round(current.hr);
+            const sys = Math.round(current.sys);
+            const spo2 = Math.round(current.spo2);
+            const rr = Math.round(current.rr);
+
+            if (mode === "dying" || mode === "vfib" || hr <= 5) {
+                patientResponse = "🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Bemor savollarga javob bera olmaydi, darhol CPR massaji va Defibrillyator qo'llang!";
+            } else if (mode === "opioid" || rr <= 6) {
+                patientResponse = "(Bemor chuqur komada, javob bermaydi)... Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Og'riqli ta'sirga zaif javob bor. Nalokson (0.4mg) talab qilinadi!";
+            } else if (mode === "hyper" || sys >= 190) {
+                if (qLower.includes("bosh") || qLower.includes("his") || qLower.includes("ahvol") || qLower.includes("og'riy")) {
+                    patientResponse = "Doktor, ensamda juda o'tkir og'riq bor! Ko'zlarim tindib, ko'nglim ayniyapti... Qon bosimim oshib ketgandek!";
+                } else if (qLower.includes("nafas")) {
+                    patientResponse = "Bosimim balandligidan ko'kragim siqilib, nafas olishim og'irlashyapti...";
+                } else {
+                    patientResponse = "Boshim tars yorilib ketay deyapti, doktor! Iltimos, bosimimni tushiradigan dori bering...";
+                }
+            } else if (mode === "attack" || hr >= 160) {
+                patientResponse = "Doktor... Yuragim ko'kragimdan chiqib ketayotganday tez urib ketdi! Qaltirayapman, nafasim qisib, ko'zim qorong'ulashyapti!";
+            } else if (mode === "brady" || hr <= 35) {
+                patientResponse = "(Zaif ovozda)... Doktor... Boshim juda qorong'ulashib ketdi... Holsizman, yuragim to'xtab qolayotgandek sekin uryapti...";
+            } else if (mode === "hypoxia" || spo2 <= 80) {
+                patientResponse = "(Hansiqlab va qisqa nafas bilan)... Dok-tor... Havoo... yetmayapti... Bo'g'ilyapman... Yordam bering...";
+            } else if (mode === "shock" || sys <= 75) {
+                patientResponse = "(Qaltirab va kuchsiz ovozda)... Quruq ter bosyapti... Og'zim qurib ketdi... Bosimim tushib, hushimdan ketyapman...";
+            } else {
+                if (qLower.includes("og'riy")) {
+                    patientResponse = "Hozir hech qayerim og'rimayapti, doktor. Bosimim ham, yuragim urishi ham me'yorida.";
+                } else if (qLower.includes("nafas")) {
+                    patientResponse = "Nafas olishim bir maromda va yengil, kislorod yetarli.";
+                } else {
+                    patientResponse = "Rahmat doktor, o'zimni juda yaxshi his qilyapman! Ko'kragimdagi og'riqlar yo'qoldi, yuragim me'yorida uryapti.";
+                }
+            }
+
+            setTimeout(() => {
+                appendChatBubble("patient", patientResponse);
+                speakAIPatientResponse(patientResponse);
+            }, 400);
+        }
+
+        function appendChatBubble(sender, text) {
+            const box = document.getElementById("ai-patient-chat-box");
+            if (!box) return;
+
+            const div = document.createElement("div");
+            if (sender === "doc") {
+                div.className = "flex items-start gap-2 justify-end animate-in fade-in slide-in-from-bottom-2 duration-150";
+                div.innerHTML = `
+                    <div class="bg-emerald-600 text-white p-2.5 rounded-2xl rounded-tr-none shadow-xs font-bold max-w-[85%]">
+                        🩺 <span class="opacity-90">Doktor:</span> "${text}"
+                    </div>
+                    <div class="w-7 h-7 rounded-full bg-slate-800 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">Dr</div>
+                `;
+            } else {
+                div.className = "flex items-start gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150";
+                div.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">AI</div>
+                    <div class="bg-white border border-slate-200 p-2.5 rounded-2xl rounded-tl-none shadow-xs text-slate-800 font-bold max-w-[85%]">
+                        🗣️ <span class="text-emerald-700">Anvar Karimov:</span> "${text}"
+                    </div>
+                `;
+            }
+
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function speakAIPatientResponse(text) {
+            if (!soundEnabled) return;
+            initAudio();
+            speakWithFallback(text);
         }
 
         // ==================== CPR 30:2 SIKLI VA BOSQICHLI JONLANISH MANTIQI ====================
