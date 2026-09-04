@@ -591,13 +591,37 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             <!-- Recording and Controls Footer -->
             <div class="p-3 bg-white border-t border-slate-200 flex flex-col gap-2 shrink-0">
-                <button id="btn-ai-mic-record" onclick="togglePatientVoiceRecord()" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95">
-                    <i class="fa-solid fa-microphone text-sm"></i>
-                    <span id="btn-ai-mic-text">🎙️ OVOZLI SAVOL BERISH (Bosing va gapiring)</span>
-                </button>
+                
+                <!-- Hands-Free VAD Toggle Card -->
+                <div class="flex items-center justify-between p-2 rounded-xl bg-emerald-50/80 border border-emerald-200 shadow-2xs">
+                    <div class="flex items-center gap-2">
+                        <span id="vad-status-dot" class="w-3 h-3 rounded-full bg-slate-400"></span>
+                        <div>
+                            <div class="font-black text-slate-800 text-[11px] flex items-center gap-1.5">
+                                <span>🎙️ Hands-Free Avto-Eshitish (VAD)</span>
+                                <span class="px-1.5 py-0.2 text-[9px] font-extrabold bg-emerald-100 text-emerald-800 rounded">OSCE 0-TOUCH</span>
+                            </div>
+                            <div id="vad-status-text" class="text-[10px] text-slate-500 font-semibold">Uzluksiz mikrofon (Imtihonda ekranga tegmasdan gapiring)</div>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                        <input type="checkbox" id="chk-auto-listen" onchange="toggleAutoListening(this.checked)" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="btn-ai-mic-record" onclick="togglePatientVoiceRecord()" class="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95">
+                        <i class="fa-solid fa-microphone text-sm"></i>
+                        <span id="btn-ai-mic-text">🎙️ BIR MARTALIK GAPIRISH (Bosing va gapiring)</span>
+                    </button>
+                    <div class="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-2 rounded-xl text-center shrink-0 cursor-help" title="Masofaviy pult (Bluetooth presenter) yoki Spacebar bosilsa mikrofon yoqiladi">
+                        ⌨️ <span class="text-slate-800 font-black">Space</span>
+                    </div>
+                </div>
                 
                 <div class="flex items-center gap-2">
-                    <input type="text" id="input-ai-patient-text" placeholder="Yoki savolingizni matn ko'rinishida yazing..." onkeydown="if(event.key==='Enter') sendTextPatientQuestion()" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="input-ai-patient-text" placeholder="Yoki savolingizni matn ko'rinishida yozing..." onkeydown="if(event.key==='Enter') sendTextPatientQuestion()" class="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-emerald-500">
                     <button onclick="sendTextPatientQuestion()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs cursor-pointer active:scale-95">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
@@ -1071,6 +1095,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         function playVoiceAudio(src, fallbackText) {
             if (!soundEnabled) return;
             initAudio();
+            onPatientSpeechStart();
             try {
                 if (activeVoiceAudio) {
                     try { activeVoiceAudio.pause(); } catch(e) {}
@@ -1094,16 +1119,21 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                             activeVoiceSource.connect(gainNode);
                             gainNode.connect(audioCtx.destination);
+                            activeVoiceSource.onended = () => { onPatientSpeechEnd(); };
                             activeVoiceSource.start(0);
                         })
                         .catch(err => {
                             activeVoiceAudio = new Audio(src);
                             activeVoiceAudio.volume = 1.0;
+                            activeVoiceAudio.onended = () => { onPatientSpeechEnd(); };
+                            activeVoiceAudio.onerror = () => { onPatientSpeechEnd(); };
                             activeVoiceAudio.play().catch(() => speakWithFallback(fallbackText));
                         });
                 } else {
                     activeVoiceAudio = new Audio(src);
                     activeVoiceAudio.volume = 1.0;
+                    activeVoiceAudio.onended = () => { onPatientSpeechEnd(); };
+                    activeVoiceAudio.onerror = () => { onPatientSpeechEnd(); };
                     activeVoiceAudio.play().catch(() => speakWithFallback(fallbackText));
                 }
             } catch(e) {
@@ -1112,16 +1142,24 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function speakWithFallback(text) {
-            if (!text || !('speechSynthesis' in window)) return;
+            if (!text || !('speechSynthesis' in window)) {
+                onPatientSpeechEnd();
+                return;
+            }
             try {
                 window.speechSynthesis.cancel();
+                onPatientSpeechStart();
                 const utter = new SpeechSynthesisUtterance(text);
                 utter.lang = "uz-UZ";
                 utter.rate = 0.95;
                 utter.pitch = 1.0;
                 utter.volume = 1.0;
+                utter.onend = () => { onPatientSpeechEnd(); };
+                utter.onerror = () => { onPatientSpeechEnd(); };
                 window.speechSynthesis.speak(utter);
-            } catch(e) {}
+            } catch(e) {
+                onPatientSpeechEnd();
+            }
         }
 
         function playRevivalChime() {
@@ -1231,9 +1269,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // ==================== ICU AI BEMOR OVOZLI INTERCOM DVIGATELI ====================
+        // ==================== ICU AI BEMOR OVOZLI INTERCOM DVIGATELI & VAD ====================
         let isVoiceRecording = false;
+        let isAutoListeningEnabled = false;
+        let isAISpeaking = false;
         let speechRecognitionInstance = null;
+        let autoListenRecognition = null;
 
         function openPatientVoiceIntercomModal() {
             const modal = document.getElementById("ai-patient-voice-modal");
@@ -1267,6 +1308,126 @@ HTML_CONTENT = """<!DOCTYPE html>
             el.innerText = `Bemor: Anvar Karimov (40 yosh) • Ssenariy: ${scName}`;
         }
 
+        function updateVADStatusUI(state) {
+            const dot = document.getElementById("vad-status-dot");
+            const text = document.getElementById("vad-status-text");
+            if (!dot || !text) return;
+
+            if (state === "off") {
+                dot.className = "w-3 h-3 rounded-full bg-slate-400";
+                text.innerText = "Hands-Free VAD o'chirilgan (Manual tugma rejimi)";
+            } else if (state === "listening") {
+                dot.className = "w-3 h-3 rounded-full bg-emerald-500 alarm-blink shadow-xs";
+                text.innerText = "🟢 Uzluksiz tinglanmoqda... (Mikrofon faol)";
+            } else if (state === "speaking") {
+                dot.className = "w-3 h-3 rounded-full bg-amber-500 shadow-xs";
+                text.innerText = "🗣️ Bemor javob bermoqda... (Mikrofon vaqtincha pauzada)";
+            } else if (state === "processing") {
+                dot.className = "w-3 h-3 rounded-full bg-sky-500 animate-pulse";
+                text.innerText = "⏳ Savol tahlil qilinmoqda...";
+            }
+        }
+
+        function toggleAutoListening(enabled) {
+            isAutoListeningEnabled = enabled;
+            const chk = document.getElementById("chk-auto-listen");
+            if (chk) chk.checked = enabled;
+
+            if (enabled) {
+                startAutoListeningVAD();
+            } else {
+                stopAutoListeningVAD();
+                updateVADStatusUI("off");
+            }
+        }
+
+        function startAutoListeningVAD() {
+            if (!isAutoListeningEnabled || isAISpeaking) return;
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Brauzeringizda avto-eshitish (Speech Recognition) qo'llab-quvvatlanmaydi.");
+                toggleAutoListening(false);
+                return;
+            }
+
+            if (autoListenRecognition) {
+                try { autoListenRecognition.stop(); } catch(e) {}
+            }
+
+            autoListenRecognition = new SpeechRecognition();
+            autoListenRecognition.lang = "uz-UZ";
+            autoListenRecognition.interimResults = false;
+            autoListenRecognition.maxAlternatives = 1;
+            autoListenRecognition.continuous = true;
+
+            autoListenRecognition.onstart = () => {
+                updateVADStatusUI("listening");
+            };
+
+            autoListenRecognition.onresult = (event) => {
+                if (isAISpeaking) return;
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        const recognizedText = event.results[i][0].transcript.trim();
+                        if (recognizedText.length >= 2) {
+                            updateVADStatusUI("processing");
+                            processAIPatientVoiceQuestion(recognizedText);
+                        }
+                    }
+                }
+            };
+
+            autoListenRecognition.onerror = (err) => {
+                console.warn("Auto VAD speech error:", err);
+            };
+
+            autoListenRecognition.onend = () => {
+                if (isAutoListeningEnabled && !isAISpeaking) {
+                    setTimeout(() => {
+                        if (isAutoListeningEnabled && !isAISpeaking) {
+                            try { autoListenRecognition.start(); } catch(e) {}
+                        }
+                    }, 300);
+                }
+            };
+
+            try {
+                autoListenRecognition.start();
+            } catch(e) {
+                console.warn("Could not start autoListenRecognition:", e);
+            }
+        }
+
+        function stopAutoListeningVAD() {
+            if (autoListenRecognition) {
+                try { autoListenRecognition.stop(); } catch(e) {}
+                autoListenRecognition = null;
+            }
+        }
+
+        function onPatientSpeechStart() {
+            isAISpeaking = true;
+            if (autoListenRecognition) {
+                try { autoListenRecognition.stop(); } catch(e) {}
+            }
+            updateVADStatusUI("speaking");
+        }
+
+        function onPatientSpeechEnd() {
+            isAISpeaking = false;
+            if (isAutoListeningEnabled) {
+                updateVADStatusUI("listening");
+                setTimeout(() => {
+                    if (isAutoListeningEnabled && !isAISpeaking) {
+                        startAutoListeningVAD();
+                    }
+                }, 400);
+            } else {
+                updateVADStatusUI("off");
+            }
+        }
+
         function togglePatientVoiceRecord() {
             const btn = document.getElementById("btn-ai-mic-record");
             const textEl = document.getElementById("btn-ai-mic-text");
@@ -1282,8 +1443,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                     try { speechRecognitionInstance.stop(); } catch(e) {}
                 }
                 isVoiceRecording = false;
-                btn.className = "w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
-                textEl.innerText = "🎙️ OVOZLI SAVOL BERISH (Bosing va gapiring)";
+                if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
+                if (textEl) textEl.innerText = "🎙️ BIR MARTALIK GAPIRISH (Bosing va gapiring)";
                 return;
             }
 
@@ -1294,8 +1455,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             speechRecognitionInstance.onstart = () => {
                 isVoiceRecording = true;
-                btn.className = "w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 alarm-blink";
-                textEl.innerText = "🔴 ESHITILMOQDA... GAPIRING";
+                if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 alarm-blink";
+                if (textEl) textEl.innerText = "🔴 ESHITILMOQDA... GAPIRING";
             };
 
             speechRecognitionInstance.onresult = (event) => {
@@ -1309,12 +1470,28 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             speechRecognitionInstance.onend = () => {
                 isVoiceRecording = false;
-                btn.className = "w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
-                textEl.innerText = "🎙️ OVOZLI SAVOL BERISH (Bosing va gapiring)";
+                if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
+                if (textEl) textEl.innerText = "🎙️ BIR MARTALIK GAPIRISH (Bosing va gapiring)";
             };
 
             speechRecognitionInstance.start();
         }
+
+        // Global hotkey listener for Bluetooth presenter clicker and Spacebar key
+        document.addEventListener('keydown', (e) => {
+            const activeTag = document.activeElement ? document.activeElement.tagName : '';
+            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+
+            if (e.code === 'Space' || e.key === ' ' || e.key === 'PageDown' || e.key === 'PageUp') {
+                if (e.code === 'Space' || e.key === ' ') e.preventDefault();
+
+                const modal = document.getElementById("ai-patient-voice-modal");
+                if (modal && modal.classList.contains("hidden")) {
+                    openPatientVoiceIntercomModal();
+                }
+                togglePatientVoiceRecord();
+            }
+        });
 
         function sendQuickPatientQuestion(text) {
             processAIPatientVoiceQuestion(text);
