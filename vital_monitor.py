@@ -1119,10 +1119,19 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (toast) toast.classList.add("hidden");
         }
 
+        const REVIVED_VOICES = [
+            { src: '/static/audio/patient_revived_1.mp3', text: "Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!" },
+            { src: '/static/audio/patient_revived_2.mp3', text: "Xudoga shukur... Doktor, rahmat sizga! O'zimga keldim, nafas olishim yengillashdi!" },
+            { src: '/static/audio/patient_revived_3.mp3', text: "Doktor, katta rahmat! Og'riq qoldi, yuragim me'yorida ura boshladi!" }
+        ];
+
         function triggerPatientRevivedExperience(customSpeech) {
             const toast = document.getElementById("patient-revived-toast");
             const speechEl = document.getElementById("patient-revived-speech");
-            const speechText = customSpeech || "Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!";
+            
+            const choice = REVIVED_VOICES[Math.floor(Math.random() * REVIVED_VOICES.length)];
+            const voiceSrc = choice.src;
+            const speechText = customSpeech || choice.text;
             
             if (speechEl) speechEl.innerText = `"${speechText}"`;
             if (toast) {
@@ -1132,7 +1141,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }, 9000);
             }
 
-            // 1. Chuqur nafas olish tovushi (Gasping / Inhalation effect)
+            // 1. Chuqur nafas olish tovushi
             playDeepBreathSound();
 
             // 2. Musiqiy garmonik qo'ng'iroq (Chime)
@@ -1140,16 +1149,16 @@ HTML_CONTENT = """<!DOCTYPE html>
                 playRevivalChime();
             }, 450);
 
-            // 3. Bemorning o'zbekcha minnatdorchilik ovozi
+            // 3. Bemorning o'zbekcha minnatdorchilik ovozi (3 xil variatsiya)
             setTimeout(() => {
-                playVoiceAudio('/static/audio/patient_revived.mp3', speechText);
+                playVoiceAudio(voiceSrc, speechText);
             }, 950);
 
             // Yashil bayram chaqnashi
             const flash = document.getElementById("flash-overlay");
             if (flash) {
                 flash.classList.add("inj-success");
-                setTimeout(() => flash.classList.remove("inj-success"), 1500);
+                setTimeout(() => flash.classList.remove("inj-success"), 1200);
             }
         }
 
@@ -1953,6 +1962,23 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             const flash = document.getElementById("flash-overlay");
 
+            const MED_VOICES = {
+                "adrenalin": "/static/audio/adrenalin_injected.mp3",
+                "amiodaron": "/static/audio/amiodaron_injected.mp3",
+                "atropin": "/static/audio/atropin_injected.mp3",
+                "nitro": "/static/audio/nitro_injected.mp3",
+                "metoprolol": "/static/audio/metoprolol_injected.mp3",
+                "saline": "/static/audio/saline_injected.mp3",
+                "dexa": "/static/audio/dexa_injected.mp3",
+                "naloxone": "/static/audio/naloxone_injected.mp3",
+                "furosemide": "/static/audio/furosemide_injected.mp3",
+                "kcl": "/static/audio/kcl_danger.mp3"
+            };
+
+            if (MED_VOICES[medId] && medId !== "adrenalin") {
+                playVoiceAudio(MED_VOICES[medId], `${medName} yuborildi.`);
+            }
+
             // Baholash: joriy holat nima?
             const isAsystoleOrCPR = (current.hr <= 5 || current.mode === "dying" || cprRevivalStage === 1);
             const isTachycardia = (current.mode === "attack" || current.hr >= 160);
@@ -2445,6 +2471,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-rose-100 text-rose-900 border border-rose-400 flex items-center gap-1.5 shadow-sm";
                 }
                 startAsystoleTone();
+                playVoiceAudio('/static/audio/scenario_asystole.mp3', "Diqqat! Asistoliya! Yurak to'xtadi!");
                 return;
             }
 
@@ -2462,6 +2489,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-red-200 text-red-950 border border-red-400 flex items-center gap-1.5 shadow-sm";
                 }
                 startAsystoleTone();
+                playVoiceAudio('/static/audio/scenario_vfib.mp3', "Kritik holat! Qorinchalar fibrillyatsiyasi!");
                 return;
             }
 
@@ -2484,11 +2512,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                 current.mode = "brady";
                 updateBanner("🫀 BRADIKARDIYA & AV-BLOKADA (28 BPM)! ATROPIN YOKI ADRENALIN TALAB QILINADI!", "bg-orange-100 text-orange-900 border-orange-400 alarm-blink font-black");
                 stopAsystoleTone();
+                playVoiceAudio('/static/audio/scenario_brady.mp3', "Diqqat! Og'ir bradikardiya va AV-blokada!");
             } else if (type === "hyper") {
                 target = { hr: 115, spo2: 95, sys: 220, dia: 130, rr: 24, temp: 36.8, mode: "hyper", rhythm: "sinus" };
                 current.mode = "hyper";
                 updateBanner("🔴 GIPERTONIK KRIZ: AYoTB KESKIN OSHDI (220/130 mmHg)! NITROGLITSERIN YOKI FUROSEMID KERAK!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
                 stopAsystoleTone();
+                playVoiceAudio('/static/audio/scenario_hyper.mp3', "Xavfli gipertonik kriz!");
             } else if (type === "hypoxia") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
                 current.mode = "hypoxia";
@@ -2499,6 +2529,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 current.mode = "opioid";
                 updateBanner("💉 OPIOID KOMA: NAFAS TORMOZLANISHI (RR 4/min, SpO2 62%)! NALOKSON (0.4mg) VA SUN'IY NAFAS KERAK!", "bg-teal-100 text-teal-900 border-teal-400 alarm-blink font-black");
                 stopAsystoleTone();
+                playVoiceAudio('/static/audio/scenario_opioid.mp3', "Favqulodda holat! Opioid komasi!");
             } else if (type === "shock") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
                 current.mode = "shock";
@@ -2509,6 +2540,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function defibrillateShock() {
             initAudio();
+            playVoiceAudio('/static/audio/defibrillator_shocked.mp3', "Defibrillyatsiya shoki berildi!");
             const flash = document.getElementById("flash-overlay");
             flash.classList.add("shock-active");
             setTimeout(() => flash.classList.remove("shock-active"), 600);
