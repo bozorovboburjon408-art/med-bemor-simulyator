@@ -2747,6 +2747,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         // ==================== AQLLI FARMAKOLOGIK REAKSIYA VA DAVOLASH DVIGATELI ====================
+        // ==================== AQLLI FARMAKOLOGIK REAKSIYA VA DAVOLASH DVIGATELI ====================
         function processSmartMedicationAdministration() {
             if (injectionInProgress) return;
 
@@ -2765,23 +2766,6 @@ HTML_CONTENT = """<!DOCTYPE html>
             const flash = document.getElementById("flash-overlay");
             const mode = current.mode || "normal";
             const hr = Math.round(current.hr);
-
-            const MED_VOICES = {
-                "adrenalin": "/static/audio/adrenalin_injected.mp3",
-                "amiodaron": "/static/audio/amiodaron_injected.mp3",
-                "atropin": "/static/audio/atropin_injected.mp3",
-                "nitro": "/static/audio/nitro_injected.mp3",
-                "metoprolol": "/static/audio/metoprolol_injected.mp3",
-                "saline": "/static/audio/saline_injected.mp3",
-                "dexa": "/static/audio/dexa_injected.mp3",
-                "naloxone": "/static/audio/naloxone_injected.mp3",
-                "furosemide": "/static/audio/furosemide_injected.mp3",
-                "kcl": "/static/audio/kcl_danger.mp3"
-            };
-
-            if (MED_VOICES[medId] && medId !== "adrenalin") {
-                playVoiceAudio(MED_VOICES[medId], `${medName} yuborildi.`);
-            }
 
             // ==================== 1. ASISTOLIYA / CPR BOSQICHI (mode === 'dying' / 'asystole' yoki HR <= 5) ====================
             if (mode === "dying" || mode === "asystole" || (mode === "normal" && hr <= 5)) {
@@ -2804,7 +2788,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         const msg = `✅ TO'G'RI DORI: Adrenalin (1mg) yuborildi! Dori yurakka yetib bormoqda (${delaySec}s)...`;
                         if (injText) injText.innerText = msg;
                         updateBanner(msg, "bg-purple-100 text-purple-900 border-purple-400 font-black");
-                        playVoiceAudio('/static/audio/adrenalin_injected.mp3', "Adrenalin yuborildi. Dori qon orqali yurakka yetib bormoqda.");
+                        speakWithFallback("Adrenalin yuborildi. Dori qon orqali yurakka yetib bormoqda, ritm tiklanmoqda.");
 
                         if (injectionCountdownTimer) clearInterval(injectionCountdownTimer);
                         injectionCountdownTimer = setInterval(() => {
@@ -2848,12 +2832,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                         const err = `🚨 O'LIMGA OLIB KELUVCHI XATO: Asistoliyada ${medName} qilindi! Toksik kardioplegiya, miokard butunlay falajlandi!`;
                         if (injText) injText.innerText = err;
                         updateBanner(err, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                        speakWithFallback("Katastrofik xato! Asistoliyada kaliy xlorid berildi, miokard butunlay falajlandi.");
                     } else {
                         // Boshqa har qanday dori (Amiodaron, Atropin, Nitro, Metoprolol, Saline, Dexa, Naloxone, Furosemid)
                         flash.classList.add("inj-danger");
                         setTimeout(() => flash.classList.remove("inj-danger"), 1200);
                         playAlarmErrorTone();
-                        // 1-bosqichdagi zaif puls ham yo'qoladi, yana to'liq 0 BPM asistoliyaga qaytadi!
                         target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 35.5, mode: "dying", rhythm: "asystole" };
                         current = { ...target };
                         transitionSteps = 0;
@@ -2864,6 +2848,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         const warn = `❌ XATO DORI: 1-bosqichda faqat Adrenalin (1mg) yuborilishi shart! ${medName} samarasiz — puls to'xtadi (0 BPM)!`;
                         if (injText) injText.innerText = warn;
                         updateBanner(warn, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                        speakWithFallback(`Xato dori! Birinchi bosqichda faqat Adrenalin yuborilishi shart. ${medName} samarasiz, puls to'xtadi.`);
                     }
                 } else {
                     // 0-bosqich: CPR qilinmagan, yurak to'xtab yotibdi (0 BPM)
@@ -2874,6 +2859,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         const warn = `⚠️ AVVAL CPR (30:2) TALAB QILINADI! Qon aylanishi bo'lmasa, Adrenalin yurakka yetib bormaydi! 30 ta ko'krak massaji va 2 ta nafas bering!`;
                         if (injText) injText.innerText = warn;
                         updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-black alarm-blink");
+                        speakWithFallback("Avval CPR massaji va sun'iy nafas talab qilinadi! Qon aylanishi bo'lmasa Adrenalin yetib bormaydi.");
                     } else if (medId === "kcl") {
                         flash.classList.add("inj-danger");
                         setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -2881,6 +2867,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         const err = `🚨 TOKSIK ASISTOLIYA: Kaliy Xlorid miokardni butunlay o'ldirdi!`;
                         if (injText) injText.innerText = err;
                         updateBanner(err, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                        speakWithFallback("Toksik xato! Kaliy xlorid miokardni butunlay o'ldirdi.");
                     } else {
                         flash.classList.add("inj-danger");
                         setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -2888,8 +2875,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                         const warn = `❌ SAMARASIZ DORI: Bemor o'lik holatda (0 BPM)! ${medName} hech qanday ta'sir qilmadi. Darhol CPR (30:2) massaj bajaring!`;
                         if (injText) injText.innerText = warn;
                         updateBanner(warn, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                        speakWithFallback(`Samarasiz dori! Bemor o'lik holatda, ${medName} ta'sir qilmaydi. Darhol CPR massaj bajaring.`);
                     }
-                    // Yurak to'xtagan holda qoladi
                     target = { hr: 0, spo2: 0, sys: 0, dia: 0, rr: 0, temp: 35.5, mode: "dying", rhythm: "asystole" };
                     current = { ...target };
                     transitionSteps = 0;
@@ -2912,13 +2899,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const err = `🚨 TOKSIK O'LIM: VFib da Kaliy Xlorid berildi! Asistoliya (0 BPM)!`;
                     if (injText) injText.innerText = err;
                     updateBanner(err, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik xato! Qorinchalar fibrillyatsiyasida kaliy xlorid berildi, asistoliya yuz berdi.");
                 } else if (medId === "amiodaron" || medId === "adrenalin") {
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
                     const msg = `⚠️ QO'SHIMCHA DORI: ${medName} yuborildi. DIQQAT: VFib holatida zudlik bilan DEFIBRILLYATOR (SHOK) tugmasini bosing!`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-amber-100 text-amber-900 border-amber-400 font-black alarm-blink");
-                    // VFib saqlanadi — faqat defibrillyator uni to'xtata oladi!
+                    speakWithFallback(`${medName} yuborildi. Diqqat, qorinchalar fibrillyatsiyasida zudlik bilan defibrillyator orqali shok bering!`);
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -2926,13 +2914,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ SAMARASIZ: VFib holatida ${medName} qorinchalar titrashini to'xtatmaydi! Zudlik bilan DEFIBRILLYATOR (SHOK) bering!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback(`Samarasiz dori! Qorinchalar fibrillyatsiyasida ${medName} ta'sir qilmaydi, zudlik bilan defibrillyator qo'llang.`);
                 }
             }
 
             // ==================== 3. O'TKIR TAXIKARDIYA (VTach / SVT 185 BPM) ====================
             else if (mode === "attack" || mode === "tachycardia" || mode === "taxikardiya") {
                 if (medId === "amiodaron" || medId === "metoprolol") {
-                    // TO'G'RI DORI!
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
                     injectionInProgress = true;
@@ -2941,6 +2929,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const msg = `✅ TO'G'RI DORI: ${medName} yuborildi! Antiaritmik ta'sir boshlanmoqda (${delaySec}s)...`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-sky-100 text-sky-900 border-sky-400 font-black");
+                    speakWithFallback(`To'g'ri dori. ${medName} yuborildi, antiaritmik ta'sir boshlanmoqda, taxikardiya to'xtatilib sinus ritmi tiklanmoqda.`);
 
                     if (injectionCountdownTimer) clearInterval(injectionCountdownTimer);
                     injectionCountdownTimer = setInterval(() => {
@@ -2977,6 +2966,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
                     startAsystoleTone();
+                    speakWithFallback(`Og'ir xato! Taxikardiyada ${medName} berilishi oqibatida qorinchalar titrashi va yurak to'xtashi yuz berdi.`);
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -2989,18 +2979,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 TOKSIK O'LIM: ${medName} ta'sirida asistoliya!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
-                } else if (medId === "nitro") {
-                    target.sys = 120; target.dia = 75; target.hr = 155;
+                    speakWithFallback("Toksik xato! Kaliy xlorid ta'sirida asistoliya yuz berdi.");
+                } else if (medId === "nitro" || medId === "furosemide") {
+                    target.sys = 125; target.dia = 80; target.hr = 155;
                     totalSteps = 60; transitionSteps = 60;
-                    const warn = `⚠️ QISMAN TA'SIR: Nitroglitserin bosimni tushirdi (120/75 mmHg), lekin taxikardiya (155 BPM) saqlanmoqda! Amiodaron yoki Metoprolol bering!`;
+                    const warn = `⚠️ QISMAN TA'SIR: ${medName} bosimni tushirdi, lekin taxikardiya (155 BPM) saqlanmoqda! Amiodaron yoki Metoprolol bering!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
-                } else if (medId === "furosemide") {
-                    target.sys = 135; target.dia = 85; target.hr = 160;
-                    totalSteps = 60; transitionSteps = 60;
-                    const warn = `⚠️ QISMAN TA'SIR: Furosemid bosimni biroz pasaytirdi, lekin taxikardiya to'xtamadi (160 BPM)!`;
-                    if (injText) injText.innerText = warn;
-                    updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`${medName} qon bosimini pasaytirdi, lekin taxikardiya saqlanmoqda. Amiodaron yoki Metoprolol bering.`);
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -3008,13 +2994,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ MOS EMAS: Taxikardiyada ${medName} samarasiz! Puls yuqori (185 BPM) qolmoqda. Amiodaron yoki Metoprolol bering!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`Mos kelmaydigan dori. Taxikardiyada ${medName} samarasiz. Amiodaron yoki Metoprolol talab qilinadi.`);
                 }
             }
 
             // ==================== 4. BRADIKARDIYA (HR 28 BPM, BP 85/50) ====================
             else if (mode === "brady" || mode === "bradicardia" || mode === "bradikardiya") {
                 if (medId === "atropin" || medId === "adrenalin") {
-                    // TO'G'RI DORI!
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
 
@@ -3025,6 +3011,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI DAVO: ${medName} ta'sirida bradikardiya bartaraf etildi, puls 75 BPM ga chiqdi!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback(`To'g'ri dori. ${medName} ta'sirida bradikardiya bartaraf etildi, puls 75 ga ko'tarildi.`);
                 } else if (medId === "metoprolol" || medId === "amiodaron") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3039,6 +3026,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 QO'POL XATO: Bradikardiyada ${medName} berildi! To'liq AV-blokada va yurak to'xtadi (0 BPM)!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback(`Qo'pol xato! Bradikardiyada ${medName} berilishi oqibatida to'liq AV-blokada va yurak to'xtashi yuz berdi.`);
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3051,6 +3039,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 TOKSIK O'LIM: ${medName} ta'sirida asistoliya!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik xato! Kaliy xlorid ta'sirida asistoliya yuz berdi.");
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -3058,6 +3047,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ SAMARASIZ: Bradikardiyada ${medName} ritmni oshirmaydi! Puls xavfli darajada past (28 BPM). Atropin yoki Adrenalin bering!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`Samarasiz dori. Bradikardiyada ${medName} ritmni oshirmaydi. Atropin yoki Adrenalin bering.`);
                 }
             }
 
@@ -3071,6 +3061,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI DAVO: Nitroglitserin ta'sirida periferik vazodilatatsiya bo'ldi, qon bosimi 130/85 mmHg ga tushdi!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback("To'g'ri dori. Nitroglitserin ta'sirida tomirlar kengayib, qon bosimi me'yorlashdi.");
                 } else if (medId === "furosemide") {
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
@@ -3079,6 +3070,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI DAVO: Furosemid (20mg) diurezni faollashtirdi, qon bosimi 135/85 mmHg ga tushdi!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback("To'g'ri dori. Furosemid ta'sirida diurez faollashdi, qon bosimi pasaytirildi.");
                 } else if (medId === "metoprolol") {
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
@@ -3087,6 +3079,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI DAVO: Metoprolol (5mg) ta'sirida taxikardiya va arterial bosim me'yorlashdi (130/80 mmHg, 70 BPM)!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback("To'g'ri dori. Metoprolol ta'sirida taxikardiya va arterial bosim me'yorlashdi.");
                 } else if (medId === "adrenalin") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3097,6 +3090,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 KATASTROFA: Gipertonik krizda Adrenalin berildi! Bosim keskin oshdi (260/150 mmHg)! Miya qon quyilishi xavfi!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Katastrofik xato! Gipertonik krizda Adrenalin berilishi natijasida bosim keskin oshdi, miyaga qon quyilish xavfi!");
                 } else if (medId === "saline") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3107,6 +3101,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 XATO: Gipertoniyada Fizrastvor infuziyasi bosimni yanada oshirdi (240/140 mmHg)! O'pka shishi xavfi!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Xato dori! Gipertoniyada suyuqlik quyilishi oqibatida bosim yanada oshdi, o'pka shishi xavfi!");
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3119,6 +3114,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 TOKSIK O'LIM: ${medName} ta'sirida asistoliya!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik xato! Kaliy xlorid ta'sirida asistoliya yuz berdi.");
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -3126,13 +3122,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ SAMARASIZ: Gipertonik krizda ${medName} bosimni tushirmaydi (220/130 mmHg)! Nitroglitserin yoki Furosemid bering!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`Samarasiz dori. Gipertonik krizda ${medName} bosimni tushirmaydi. Nitroglitserin yoki Furosemid bering.`);
                 }
             }
 
             // ==================== 6. O'TKIR GIPOKSIYA / NAFAS YETISHMOVCHILIGI (SpO2 74%, RR 38) ====================
             else if (mode === "hypoxia" || mode === "gipoksiya") {
                 if (medId === "dexa" || medId === "adrenalin") {
-                    // TO'G'RI DORI!
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
 
@@ -3143,6 +3139,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI DAVO: ${medName} ta'sirida bronxospazm yechildi, kislorod saturatsiyasi 98% ga tiklandi!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback(`To'g'ri dori. ${medName} ta'sirida bronxospazm yechildi, kislorod saturatsiyasi 98 foizga tiklandi.`);
                 } else if (medId === "metoprolol") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3155,6 +3152,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 OG'IR ASORAT: Gipoksiyada Beta-blokator berildi! Bronxospazm keskin kuchaydi (SpO2 55%)!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Og'ir xato! Gipoksiyada beta-blokator berilishi bronxospazmni keskin kuchaytirdi.");
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3167,6 +3165,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 TOKSIK O'LIM: ${medName} ta'sirida asistoliya!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik xato! Kaliy xlorid ta'sirida asistoliya yuz berdi.");
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -3174,13 +3173,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ MOS EMAS: Gipoksiyada ${medName} bronxlarni kengaytirmaydi! Saturatsiya past (74%). Deksametazon yoki Adrenalin bering!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`Mos kelmaydigan dori. Gipoksiyada ${medName} bronxlarni kengaytirmaydi. Deksametazon yoki Adrenalin bering.`);
                 }
             }
 
             // ==================== 7. OPIOID KOMA / TOKSIK BRADIPNOE (RR 4/min, SpO2 62%) ====================
             else if (mode === "opioid") {
                 if (medId === "naloxone") {
-                    // YAGONA VA TO'G'RI ANTIDOT!
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
 
@@ -3191,12 +3190,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI ANTIDOT: Nalokson (0.4mg) ta'sirida nafas markazi blokdan chiqdi! Spontan nafas tiklandi (RR 16/min, SpO2 98%)!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback("To'g'ri antidot. Nalokson ta'sirida nafas markazi blokdan chiqdi, spontan nafas tiklandi.");
                 } else if (medId === "dexa") {
                     target.rr = 6; target.spo2 = 72;
                     totalSteps = 60; transitionSteps = 60;
                     const warn = `⚠️ QO'SHIMCHA: Deksametazon berildi, lekin opioid komasida ASOSIY ANTIDOT NALOKSON (NAL-08) shart!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback("Deksametazon berildi, lekin opioid komasida asosiy antidot Nalokson talab qilinadi.");
                 } else if (medId === "metoprolol" || medId === "nitro") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3209,6 +3210,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 KATASTROFA: Opioid komasida vazodepressor (${medName}) berildi! Asistoliya (0 BPM)!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback(`Katastrofa! Opioid komasida ${medName} berilishi oqibatida asistoliya yuz berdi.`);
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3221,6 +3223,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 TOKSIK O'LIM: ${medName} ta'sirida asistoliya!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik xato! Kaliy xlorid ta'sirida asistoliya yuz berdi.");
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -3228,13 +3231,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ NOMAQBUL DORI: Opioid komasida ${medName} nafas markazini uyg'otmaydi (RR 4/min)! Zudlik bilan NALOKSON (NAL-08) bering!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`Nomaqbul dori. Opioid komasida ${medName} nafas markazini uyg'otmaydi. Nalokson talab qilinadi.`);
                 }
             }
 
             // ==================== 8. GIPOVOLEMIK SHOK (BP 65/35 mmHg, HR 145) ====================
             else if (mode === "shock" || mode === "shok") {
                 if (medId === "saline") {
-                    // TO'G'RI DORI!
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
 
@@ -3245,6 +3248,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI DAVO: Fizrastvor (0.9% NaCl 500ml) infuziyasi aylanuvchi qon hajmini to'ldirdi (120/80 mmHg)!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback("To'g'ri davo. Fizrastvor infuziyasi aylanuvchi qon hajmini to'ldirdi, qon bosimi tiklandi.");
                 } else if (medId === "adrenalin") {
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
@@ -3253,6 +3257,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ TO'G'RI DAVO: Adrenalin vazopressor ta'sirida qon bosimini ko'tardi (115/75 mmHg)!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
+                    speakWithFallback("To'g'ri davo. Adrenalin vazopressor ta'sirida arterial qon bosimini ko'tardi.");
                 } else if (medId === "nitro" || medId === "furosemide") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3267,6 +3272,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 GIPOVOLEMIK KOLLAPS: Shokda vazodilatator (${medName}) berildi! Bosim 20 mmHg ga quladi va yurak to'xtadi!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback(`Og'ir xato! Shok holatida ${medName} berilishi oqibatida gipovolemik kollaps va yurak to'xtashi yuz berdi.`);
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3279,6 +3285,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 TOKSIK O'LIM: ${medName} ta'sirida asistoliya!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik xato! Kaliy xlorid ta'sirida asistoliya yuz berdi.");
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -3286,13 +3293,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ SAMARASIZ: Shokda aylanuvchi qon hajmi yetishmaydi! ${medName} bosimni oshirmaydi (65/35 mmHg). FIZRASTVOR (SAL-06) quying!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`Samarasiz dori. Shokda aylanuvchi qon hajmi yetishmaydi, zudlik bilan Fizrastvor infuziyasi talab qilinadi.`);
                 }
             }
 
             // ==================== 9. ANAFILAKTIK SHOK (BP 70/40 mmHg, Stridor, SpO2 78%) ====================
             else if (mode === "anaphylaxis") {
                 if (medId === "adrenalin") {
-                    // BIRINCHI VA ENG ASOSIY TANLOV!
                     flash.classList.add("inj-success");
                     setTimeout(() => flash.classList.remove("inj-success"), 1200);
 
@@ -3303,19 +3310,21 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const okMsg = `✅ BIRINCHI TANLOV DAVO: IM Adrenalin (0.5mg) ta'sirida stridor va angioedema qaytdi, gemodinamika tiklandi (120/80 mmHg, SpO2 98%)!`;
                     if (injText) injText.innerText = okMsg;
                     updateBanner(okMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
-                    playVoiceAudio('/static/audio/adrenalin_injected.mp3', "Adrenalin yuborildi. Anafilaktik shok bartaraf etildi.");
+                    speakWithFallback("Birinchi tanlov davo. Adrenalin ta'sirida stridor va angioedema qaytdi, gemodinamika tiklandi.");
                 } else if (medId === "dexa") {
                     target.sys = 90; target.dia = 55; target.spo2 = 85;
                     totalSteps = 60; transitionSteps = 60;
                     const warn = `⚠️ QO'SHIMCHA DAVO: Deksametazon berildi (BP 90/55), lekin anafilaksiyada BIRINCHI TANLOV IM ADRENALIN 0.5mg shart!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback("Deksametazon yallig'lanishni kamaytirdi, lekin anafilaksiyada birinchi tanlov Adrenalin bo'lishi shart.");
                 } else if (medId === "saline") {
                     target.sys = 85; target.dia = 50;
                     totalSteps = 60; transitionSteps = 60;
                     const warn = `⚠️ Gidratatsiya yaxshilandi (BP 85/50), lekin laringospazm va shok uchun IM ADRENALIN zarur!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback("Gidratatsiya yaxshilandi, lekin anafilaktik shok va laringospazm uchun Adrenalin zarur.");
                 } else if (medId === "metoprolol") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3328,6 +3337,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 KATASTROFIK XATO: Anafilaksiyada Beta-blokator (Metoprolol) berildi! Kompensatsiyalangan taxikardiya qulab asistoliya yuz berdi!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Katastrofik xato! Anafilaksiyada beta-blokator berilishi oqibatida kompensatsiya qulab asistoliya yuz berdi.");
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3340,6 +3350,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const errMsg = `🚨 TOKSIK O'LIM: ${medName} ta'sirida asistoliya!`;
                     if (injText) injText.innerText = errMsg;
                     updateBanner(errMsg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik xato! Kaliy xlorid ta'sirida asistoliya yuz berdi.");
                 } else {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1200);
@@ -3347,6 +3358,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const warn = `❌ MOS EMAS: Anafilaktik shokda ${medName} foydasiz! Zudlik bilan IM Adrenalin 0.5mg yuborilishi shart!`;
                     if (injText) injText.innerText = warn;
                     updateBanner(warn, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback(`Mos kelmaydigan dori. Anafilaktik shokda ${medName} foydasiz, zudlik bilan Adrenalin talab qilinadi.`);
                 }
             }
 
@@ -3358,42 +3370,49 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const msg = `⚠️ SOG'LOMGA ADRENALIN BERILDI: Taxikardiya (160 BPM) va gipertoniya boshlandi!`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-amber-100 text-amber-900 border-amber-400 font-black");
+                    speakWithFallback("Sog'lom odamga Adrenalin berildi, taxikardiya va gipertoniya boshlandi.");
                 } else if (medId === "atropin") {
                     target = { hr: 105, spo2: 98, sys: 130, dia: 85, rr: 20, temp: 36.6, mode: "normal", rhythm: "sinus" };
                     totalSteps = 60; transitionSteps = 60;
                     const msg = `⚠️ ATROPIN TA'SIRI: Puls 105 BPM ga oshdi (M-Xolinoblokada).`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback("Atropin ta'sirida puls 105 ga oshdi.");
                 } else if (medId === "metoprolol") {
                     target = { hr: 52, spo2: 97, sys: 105, dia: 65, rr: 14, temp: 36.5, mode: "normal", rhythm: "sinus" };
                     totalSteps = 60; transitionSteps = 60;
                     const msg = `⚠️ METOPROLOL TA'SIRI: Puls 52 BPM ga va bosim 105/65 mmHg ga pasaytirildi (Beta-blokada).`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-sky-100 text-sky-900 border-sky-400 font-bold");
+                    speakWithFallback("Metoprolol ta'sirida puls va qon bosimi pasaytirildi.");
                 } else if (medId === "amiodaron") {
                     target = { hr: 60, spo2: 98, sys: 110, dia: 70, rr: 15, temp: 36.6, mode: "normal", rhythm: "sinus" };
                     totalSteps = 60; transitionSteps = 60;
                     const msg = `⚠️ AMIODARON TA'SIRI: Puls 60 BPM ga va bosim 110/70 mmHg ga pasaytirildi.`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-sky-100 text-sky-900 border-sky-400 font-bold");
+                    speakWithFallback("Amiodaron ta'sirida puls va bosim pasaytirildi.");
                 } else if (medId === "nitro") {
                     target = { hr: 82, spo2: 98, sys: 95, dia: 60, rr: 18, temp: 36.6, mode: "normal", rhythm: "sinus" };
                     totalSteps = 60; transitionSteps = 60;
                     const msg = `⚠️ NITROGLITSERIN TA'SIRI: Arterial bosim 95/60 mmHg ga tushdi (Vazodilatatsiya).`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-amber-100 text-amber-900 border-amber-400 font-bold");
+                    speakWithFallback("Nitroglitserin ta'sirida arterial bosim tushdi.");
                 } else if (medId === "furosemide") {
                     target = { hr: 76, spo2: 98, sys: 105, dia: 70, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                     totalSteps = 60; transitionSteps = 60;
                     const msg = `⚠️ FUROSEMID TA'SIRI: Diurez faollashdi, arterial bosim 105/70 mmHg ga tushdi.`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-cyan-100 text-cyan-900 border-cyan-400 font-bold");
+                    speakWithFallback("Furosemid ta'sirida diurez faollashdi, bosim pasaytirildi.");
                 } else if (medId === "saline") {
                     target = { hr: 75, spo2: 99, sys: 125, dia: 82, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                     totalSteps = 60; transitionSteps = 60;
                     const msg = `💧 FIZRASTVOR INFUZIYASI: Tomir ichi hajmi to'ldirildi (125/82 mmHg).`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-blue-100 text-blue-900 border-blue-400 font-bold");
+                    speakWithFallback("Fizrastvor infuziyasi tomir ichi hajmini to'ldirdi.");
                 } else if (medId === "kcl") {
                     flash.classList.add("inj-danger");
                     setTimeout(() => flash.classList.remove("inj-danger"), 1500);
@@ -3406,12 +3425,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const msg = `🚨 TOKSIK O'LIM: Sog'lom bemorga konsentrlangan Kaliy Xlorid qilindi! Kardioplegiya va asistoliya!`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
+                    speakWithFallback("Toksik o'lim! Sog'lom bemorga konsentrlangan kaliy xlorid qilindi, kardioplegiya va asistoliya yuz berdi.");
                 } else {
                     target = { hr: 75, spo2: 99, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                     totalSteps = 40; transitionSteps = 40;
                     const msg = `ℹ️ ${medName} yuborildi. Parametrlar barqaror saqlandi.`;
                     if (injText) injText.innerText = msg;
                     updateBanner(msg, "bg-slate-100 text-slate-800 border-slate-300 font-bold");
+                    speakWithFallback(`${medName} yuborildi. Parametrlar barqaror saqlandi.`);
                 }
             }
 
