@@ -1,7 +1,7 @@
-﻿{
-  "name": "MedLife — Maniken Boshqaruv Pulti & CPR",
+{
+  "name": "RO'TFMXMO va UIM Navoiy filiali — Maniken Boshqaruv Pulti & CPR",
   "short_name": "Maniken Pulti",
-  "description": "GD/H126 Tibbiy maniken datchiklari monitoringi, ko'krak massaji va imtihon baholash tizimi",
+  "description": "RO'TFMXMO va UIM Navoiy filiali — GD/H126 Tibbiy maniken datchiklari monitoringi, ko'krak massaji va imtihon baholash tizimi",
   "start_url": "/console?source=pwa",
   "display": "standalone",
   "background_color": "#f8fafc",
@@ -9,14 +9,8 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/static/icons/console_192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/static/icons/console_512.png",
-      "sizes": "512x512",
+      "src": "/static/logo.png",
+      "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }

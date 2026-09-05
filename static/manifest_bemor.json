@@ -1,7 +1,7 @@
-﻿{
-  "name": "MedLife — AI Bemor Simulyatori",
+{
+  "name": "RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori",
   "short_name": "Bemor AI",
-  "description": "Tibbiy bemor bilan ovozli va matnli jonli muloqot hamda ko'rik simulyatori",
+  "description": "RO'TFMXMO va UIM Navoiy filiali — Tibbiy bemor bilan ovozli va matnli jonli muloqot hamda ko'rik simulyatori",
   "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -9,14 +9,8 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "/static/icons/bemor_192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/static/icons/bemor_512.png",
-      "sizes": "512x512",
+      "src": "/static/logo.png",
+      "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }

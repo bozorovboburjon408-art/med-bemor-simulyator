@@ -36,13 +36,13 @@ HTML_CONTENT = """<!DOCTYPE html>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>MedLife — Yurak-O'pka Reanimatsiyasi (CPR) Simulyatori</title>
+    <title>RO'TFMXMO va UIM Navoiy filiali — CPR Simulyatori Pulti</title>
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Maniken Pulti">
     <link rel="manifest" href="/manifest_console.json">
-    <link rel="icon" href="/static/icons/console_192.png">
+    <link rel="icon" href="/static/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -98,35 +98,43 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         /* Chest Center (PIN 13) Solid Neon Green Glow */
-        .pos-led-on {
-            opacity: 0.95 !important;
-            background-color: #22c55e !important;
-            box-shadow: 0 0 25px #22c55e, 0 0 50px #22c55e, inset 0 0 8px #ffffff !important;
-            border: 3px solid #ffffff !important;
+        #photo-led-pos-green {
+            background-color: #22c55e;
+            box-shadow: 0 0 18px 6px #22c55e, inset 0 0 4px #ffffff;
+            width: 28px;
+            height: 28px;
         }
 
-        /* Injection Arm (PIN 4) Solid Neon Purple Glow */
-        .inj-led-on {
-            opacity: 0.95 !important;
-            background-color: #a855f7 !important;
-            box-shadow: 0 0 25px #a855f7, 0 0 50px #c084fc, inset 0 0 8px #ffffff !important;
-            border: 3px solid #ffffff !important;
+        /* Wrong Chest Positions (PIN 12, 14, 27, 26) Solid Red Glow */
+        .photo-led-wrong-pos {
+            background-color: #ef4444;
+            box-shadow: 0 0 16px 5px #ef4444, inset 0 0 4px #ffffff;
+            width: 22px;
+            height: 22px;
         }
 
-        /* Airway Throat Solid Neon Cyan Glow */
-        .airway-led-on {
-            opacity: 0.95 !important;
-            background-color: #06b6d4 !important;
-            box-shadow: 0 0 20px #06b6d4, 0 0 40px #06b6d4, inset 0 0 6px #ffffff !important;
-            border: 2px solid #ffffff !important;
+        /* Breath Lung Normal Green Glow (PIN 25) */
+        #photo-led-lung-green {
+            background-color: #10b981;
+            box-shadow: 0 0 22px 8px #10b981, inset 0 0 5px #ffffff;
+            width: 32px;
+            height: 32px;
         }
 
-        /* Stomach Warning Solid Neon Red Glow */
-        .stomach-led-on {
-            opacity: 0.95 !important;
-            background-color: #ef4444 !important;
-            box-shadow: 0 0 25px #ef4444, 0 0 50px #ef4444, inset 0 0 8px #ffffff !important;
-            border: 2px solid #ffffff !important;
+        /* Breath Lung Too Fast / Too Hard Yellow Glow (PIN 33) */
+        #photo-led-lung-yellow {
+            background-color: #eab308;
+            box-shadow: 0 0 22px 8px #eab308, inset 0 0 5px #ffffff;
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Stomach Inflation Red Glow (PIN 32) */
+        #photo-led-stomach-red {
+            background-color: #ef4444;
+            box-shadow: 0 0 24px 9px #ef4444, inset 0 0 5px #ffffff;
+            width: 34px;
+            height: 34px;
         }
 
         /* Countdown Pulse Animation */
@@ -139,8 +147,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         .animate-countdown {
             animation: countPulse 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-
-
 
         /* ==================== PROFESSIONAL PRINT SHEET STYLING ==================== */
         @media print {
@@ -166,18 +172,15 @@ HTML_CONTENT = """<!DOCTYPE html>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-start p-3 sm:p-5">
 
-
     <!-- Top Medical Navigation & Device Header (Clean White Medical Styling) -->
-    <header class="no-print w-full max-w-7xl bg-white border border-slate-200 rounded-2xl px-4 py-3 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+    <header class="no-print w-full max-w-7xl bg-white border border-slate-200 rounded-2xl px-4 py-2.5 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
         
         <!-- Left: Logo & Hospital Badge -->
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-sm">
-                <i class="fa-solid fa-hand-holding-heart"></i>
-            </div>
+            <img src="/static/logo.png" alt="Logo" class="w-11 h-11 rounded-xl object-contain bg-slate-50 p-1 border border-slate-200 shrink-0 shadow-sm">
             <div>
-                <h1 class="font-extrabold text-slate-900 text-base leading-tight">YURAK-O'PKA REANIMATSIYASI (CPR) SIMULYATORI</h1>
-                <p class="text-xs text-slate-500 font-medium">MedLife: Tibbiy Ko'nikmalarni Baholash va Trening Markazi</p>
+                <h1 class="font-extrabold text-slate-900 text-sm md:text-base leading-tight">RO'TFMXMO va UIM Navoiy filiali</h1>
+                <p class="text-xs text-slate-500 font-medium">Yurak-o'pka reanimatsiyasi (CPR) & GD/H126 maniken datchiklari pulti</p>
             </div>
         </div>
 

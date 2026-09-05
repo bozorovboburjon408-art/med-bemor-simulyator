@@ -11,7 +11,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dori Shtrix va QR Kodlari — A4 Chop Etish (Print)</title>
+    <title>RO'TFMXMO va UIM Navoiy filiali — Dori Shtrix va QR Kodlari (A4)</title>
+    <link rel="icon" href="/static/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Local & CDN Fallback Barcode & QR Libraries -->
@@ -117,14 +118,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
 
     <!-- FLOATING TOP CONTROLS (NO-PRINT) -->
-    <div class="no-print sticky top-0 z-50 bg-slate-900 text-white px-4 py-3 shadow-lg flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-            <span class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold">
-                <i class="fa-solid fa-barcode"></i>
-            </span>
+    <div class="no-print sticky top-0 z-50 bg-slate-900 text-white px-4 py-2.5 shadow-lg flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+            <img src="/static/logo.png" alt="Logo" class="w-9 h-9 rounded-lg object-contain bg-white p-0.5 shrink-0">
             <div>
-                <h1 class="font-black text-sm text-white">IMTIHON DORILARI SHTRIX & QR KODLAR STIKERLARI</h1>
-                <p class="text-[11px] text-slate-300">Jami <span id="label-count-text">10</span> ta dori stikeri. Chop etib, qirqib oling.</p>
+                <h1 class="font-black text-sm text-white">RO'TFMXMO va UIM Navoiy filiali — Imtihon Dorilari Stikerlari</h1>
+                <p class="text-[11px] text-slate-300">Jami <span id="label-count-text">10</span> ta dori stikeri (A4). Chop etib, qirqib oling.</p>
             </div>
         </div>
 
@@ -144,13 +143,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         
         <!-- Sheet Header Info -->
         <div class="border-b-2 border-slate-800 pb-1.5 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="w-6 h-6 rounded-md bg-slate-900 text-white flex items-center justify-center text-xs font-black">
-                    <i class="fa-solid fa-hospital"></i>
-                </span>
+            <div class="flex items-center gap-2.5">
+                <img src="/static/logo.png" alt="Logo" class="w-9 h-9 object-contain shrink-0">
                 <div>
-                    <span class="font-black text-xs text-slate-900 uppercase tracking-wide">TIBBIY SIMULYATSIYA MARKAZI — IMTIHON DORILARI SHTRIX & QR KODLARI</span>
-                    <span class="text-[9px] text-slate-600 font-semibold ml-2">Standart A4 | Ampula & Flakon Stikerlari</span>
+                    <div class="font-black text-xs text-slate-900 uppercase tracking-wide">RO'TFMXMO va UIM Navoiy filiali</div>
+                    <div class="text-[9px] text-slate-600 font-bold">Simulyatsion Imtihon va Amaliyot Dorilari Shtrix & QR Kodlari (A4)</div>
                 </div>
             </div>
             <div class="text-[9px] font-bold text-slate-700 mono bg-slate-100 px-2 py-0.5 rounded border border-slate-300">

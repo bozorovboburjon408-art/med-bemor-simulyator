@@ -1,7 +1,7 @@
-﻿{
-  "name": "MedLife — ICU Vital Monitor & Kompressor",
+{
+  "name": "RO'TFMXMO va UIM Navoiy filiali — ICU Vital Monitor",
   "short_name": "Vital Monitor",
-  "description": "Reanimatsiya bo'limi kardiomonitori, EKG ritmlari va pnevmatik puls kompressori boshqaruvi",
+  "description": "RO'TFMXMO va UIM Navoiy filiali — Reanimatsiya bo'limi kardiomonitori, EKG ritmlari va pnevmatik puls kompressori boshqaruvi",
   "start_url": "/vital?source=pwa",
   "display": "standalone",
   "background_color": "#020617",
@@ -9,14 +9,8 @@
   "orientation": "landscape",
   "icons": [
     {
-      "src": "/static/icons/vital_192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/static/icons/vital_512.png",
-      "sizes": "512x512",
+      "src": "/static/logo.png",
+      "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }

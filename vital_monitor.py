@@ -58,13 +58,13 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ICU Imtihon Xonasi: Vital Monitor & Dori Skaneri Simulyatori</title>
+    <title>RO'TFMXMO va UIM Navoiy filiali — ICU Vital Monitor & Dori Skaneri</title>
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Vital Monitor">
     <link rel="manifest" href="/manifest_vital.json">
-    <link rel="icon" href="/static/icons/vital_192.png">
+    <link rel="icon" href="/static/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -125,12 +125,17 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     <!-- 1. TOP HEADER (COMPACT ~38px) -->
     <header class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-xs shrink-0">
-        <div class="flex items-center space-x-3">
-            <div class="flex items-center space-x-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 alarm-blink"></span>
-                <span class="font-black text-sm tracking-wider text-slate-900">ICU IMTIHON XONASI & CPR MONITOR</span>
+        <div class="flex items-center space-x-2.5">
+            <img src="/static/logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
+            <div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink"></span>
+                    <span class="font-black text-xs md:text-sm tracking-wide text-slate-900">RO'TFMXMO va UIM Navoiy filiali</span>
+                    <span class="text-[10px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU IMTIHON XONASI</span>
+                </div>
+                <div class="text-[10px] text-slate-500 font-medium leading-none hidden sm:block">Amaliy reanimatsiya & kardiomonitoring simulyatori</div>
             </div>
-            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5">
+            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5 hidden md:block">
                 KOYKA: <span class="text-slate-900 font-bold">#04</span>
             </div>
             <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5">

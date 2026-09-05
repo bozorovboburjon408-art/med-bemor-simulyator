@@ -9,8 +9,9 @@ INTUBATION_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MedLife — Intubatsiya Simulyatori</title>
+    <title>RO'TFMXMO va UIM Navoiy filiali — Intubatsiya Simulyatori</title>
     <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="/static/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -44,16 +45,17 @@ INTUBATION_HTML = """<!DOCTYPE html>
 <body class="min-h-screen flex flex-col justify-between p-3 md:p-6 bg-slate-50">
 
     <!-- HEADER (Medical White) -->
-    <header class="flex flex-wrap items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl px-5 py-3.5 shadow-sm">
+    <header class="flex flex-wrap items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl px-5 py-3 shadow-sm">
         <div class="flex items-center gap-3">
             <a href="/hub" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-700 transition">
                 <i class="fa-solid fa-house"></i>
             </a>
+            <img src="/static/logo.png" alt="Logo" class="w-11 h-11 rounded-xl object-contain bg-slate-50 p-1 border border-slate-200 shrink-0 shadow-sm">
             <div>
-                <h1 class="text-lg md:text-xl font-black text-slate-900 flex items-center gap-2">
-                    INTUBATSIYA MODULI <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-mono font-bold">Simulyatsiya & Amaliyot</span>
+                <h1 class="text-base md:text-lg font-black text-slate-900 flex items-center gap-2">
+                    RO'TFMXMO va UIM Navoiy filiali <span class="text-xs bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 rounded-full font-bold">Intubatsiya Moduli</span>
                 </h1>
-                <p class="text-xs text-slate-500 font-medium">Traxeya trubkasi va sensorlar real-vaqt monitoringi</p>
+                <p class="text-xs text-slate-500 font-medium">Traxeya trubkasi va datchiklar real-vaqt amaliyot monitoringi</p>
             </div>
         </div>
 

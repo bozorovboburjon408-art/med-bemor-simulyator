@@ -273,7 +273,7 @@ QAT'IY QOIDALAR:
 7. Tibbiy tashxis nomini (masalan: 'menda anafilaktik shok') to'g'ridan-to'g'ri aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
 8. TALAFFUZ: O'zbek tilidagi eng ravon, talaffuzi oson va xalqona so'zlardan foydalan, nutqing ravon va tushunarli bo'lsin."""
 
-app = FastAPI(title="MedLife: AI Bemor Simulyatori")
+app = FastAPI(title="RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori")
 
 # HTML Content (Single Page Responsive App)
 HTML_CONTENT = """<!DOCTYPE html>
@@ -281,13 +281,13 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MedLife — AI Bemor Simulyatori</title>
+    <title>RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori</title>
     <meta name="theme-color" content="#4338ca">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bemor AI">
     <link rel="manifest" href="/manifest_bemor.json">
-    <link rel="icon" href="/static/icons/bemor_192.png">
+    <link rel="icon" href="/static/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -301,14 +301,14 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     <!-- Header -->
     <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+        <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-hospital-user"></i>
-                </div>
+                <img src="/static/logo.png" alt="Logo" class="w-11 h-11 rounded-xl object-contain bg-white/20 p-1 border border-white/30 shrink-0 shadow-sm">
                 <div>
-                    <h1 class="font-bold text-lg leading-tight">MedLife: AI Bemor Simulyatori</h1>
-                    <p class="text-xs text-indigo-200">Gemini Live AI — Jonli muloqot va klinik holatlar</p>
+                    <h1 class="font-extrabold text-base md:text-lg leading-tight text-white flex items-center gap-2">
+                        RO'TFMXMO va UIM Navoiy filiali
+                    </h1>
+                    <p class="text-xs text-indigo-200">AI Bemor Simulyatori — Jonli muloqot va klinik ko'rik (Gemini Live)</p>
                 </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
