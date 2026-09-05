@@ -1800,14 +1800,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             const rr = Math.round(current.rr);
 
             const respond = (text, audioBase64 = null) => {
-                setTimeout(() => {
-                    appendChatBubble("patient", text);
-                    // Ovozli ijro uchun qavs ichidagi sahna izohlarini (masalan: "(Zaif va sekin ovozda)", "(shoshmasdan gapirib)") olib tashlaymiz
-                    const spokenText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝|💬/g, "").trim();
-                    if (spokenText) {
-                        speakAIPatientResponse(spokenText, audioBase64);
-                    }
-                }, 200);
+                appendChatBubble("patient", text);
+                const spokenText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝|💬/g, "").trim();
+                if (spokenText) {
+                    speakAIPatientResponse(spokenText, audioBase64);
+                }
             };
 
             // 1. BARCODE VA DORI KODLARI TEKSHIRUVI (Shtrixkodlar, ADR-01, ATR-03, AMI-02...)

@@ -7,6 +7,7 @@ import asyncio
 import socket
 import json
 import re
+import hashlib
 from typing import Optional
 from pydantic import BaseModel
 import edge_tts
@@ -1399,6 +1400,60 @@ MAP_VITAL_TO_KASALLIK = {
     "asystole": "normal"
 }
 
+TTS_IN_MEMORY_CACHE = {}
+TTS_DISK_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "audio", "tts_cache")
+os.makedirs(TTS_DISK_CACHE_DIR, exist_ok=True)
+
+async def get_cached_tts_audio_base64(text: str, voice: str = "uz-UZ-SardorNeural", rate: str = "+10%") -> str:
+    clean_text = re.sub(r'\(.*?\)', '', text).replace('🚨', '').replace('🟢', '').replace('⚡', '').replace('🫀', '').replace('🔴', '').replace('🫁', '').replace('💉', '').replace('🩸', '').replace('🐝', '').replace('💬', '').strip()
+    if not clean_text:
+        return ""
+    
+    clean_key = "".join(c.lower() for c in clean_text if c.isalnum())
+    h = hashlib.md5(f"{voice}_{rate}_{clean_key}".encode('utf-8')).hexdigest()
+    h_simple = hashlib.md5(clean_key.encode('utf-8')).hexdigest()
+    
+    # 1. In-memory check (0.0 ms)
+    if h in TTS_IN_MEMORY_CACHE:
+        return TTS_IN_MEMORY_CACHE[h]
+    if h_simple in TTS_IN_MEMORY_CACHE:
+        return TTS_IN_MEMORY_CACHE[h_simple]
+    
+    # 2. Disk cache check (< 0.5 ms)
+    for check_h in [h, h_simple]:
+        disk_path = os.path.join(TTS_DISK_CACHE_DIR, f"{check_h}.mp3")
+        if os.path.exists(disk_path) and os.path.getsize(disk_path) > 500:
+            try:
+                with open(disk_path, "rb") as f:
+                    audio_b64 = base64.b64encode(f.read()).decode('utf-8')
+                    TTS_IN_MEMORY_CACHE[h] = audio_b64
+                    return audio_b64
+            except Exception:
+                pass
+
+    # 3. Dynamic synthesis with Edge-TTS and cache to memory & disk
+    try:
+        mp3_io = io.BytesIO()
+        comm = edge_tts.Communicate(clean_text, voice=voice, rate=rate)
+        async for chunk in comm.stream():
+            if chunk["type"] == "audio":
+                mp3_io.write(chunk["data"])
+        raw_bytes = mp3_io.getvalue()
+        if raw_bytes:
+            audio_b64 = base64.b64encode(raw_bytes).decode('utf-8')
+            TTS_IN_MEMORY_CACHE[h] = audio_b64
+            disk_path = os.path.join(TTS_DISK_CACHE_DIR, f"{h}.mp3")
+            try:
+                with open(disk_path, "wb") as f:
+                    f.write(raw_bytes)
+            except Exception:
+                pass
+            return audio_b64
+    except Exception as e:
+        print(f"Edge-TTS synthesis error: {e}")
+
+    return ""
+
 @app.post("/api/chat")
 async def api_chat(req: ChatRequest):
     k_id = MAP_VITAL_TO_KASALLIK.get(req.kasallik_id, req.kasallik_id)
@@ -1441,20 +1496,7 @@ QAT'IY QOIDALAR:
     if not reply_text:
         reply_text = "Doktor, o'zimni biroz noqulay his qilyapman... yordam bering."
         
-    rate = "+0%"
-
-    mp3_base64 = ""
-    try:
-        clean_text_for_tts = re.sub(r'\(.*?\)', '', reply_text).replace('🚨', '').replace('🟢', '').replace('⚡', '').replace('🫀', '').replace('🔴', '').replace('🫁', '').replace('💉', '').replace('🩸', '').replace('🐝', '').strip()
-        if clean_text_for_tts:
-            mp3_io = io.BytesIO()
-            comm = edge_tts.Communicate(clean_text_for_tts, voice="uz-UZ-SardorNeural", rate=rate)
-            async for chunk in comm.stream():
-                if chunk["type"] == "audio":
-                    mp3_io.write(chunk["data"])
-            mp3_base64 = base64.b64encode(mp3_io.getvalue()).decode('utf-8')
-    except Exception as e:
-        print(f"Edge-TTS synthesis error: {e}")
+    mp3_base64 = await get_cached_tts_audio_base64(reply_text, voice="uz-UZ-SardorNeural", rate="+10%")
 
     return JSONResponse(content={
         "text": reply_text,
@@ -1464,23 +1506,9 @@ QAT'IY QOIDALAR:
 
 @app.post("/api/tts")
 async def api_tts(req: TTSRequest):
-    clean_text = re.sub(r'\(.*?\)', '', req.text).strip()
-    clean_text = re.sub(r'[🚨🟢⚡🫀🔴🫁💉🩸🐝💬]', '', clean_text).strip()
-    if not clean_text:
-        return JSONResponse(content={"audio": "", "format": "mp3"})
-    
-    try:
-        mp3_io = io.BytesIO()
-        voice_to_use = req.voice or "uz-UZ-SardorNeural"
-        comm = edge_tts.Communicate(clean_text, voice=voice_to_use, rate="+0%")
-        async for chunk in comm.stream():
-            if chunk["type"] == "audio":
-                mp3_io.write(chunk["data"])
-        mp3_base64 = base64.b64encode(mp3_io.getvalue()).decode('utf-8')
-        return JSONResponse(content={"audio": mp3_base64, "format": "mp3"})
-    except Exception as e:
-        print(f"TTS endpoint error: {e}")
-        return JSONResponse(content={"audio": "", "error": str(e)}, status_code=500)
+    voice_to_use = req.voice or "uz-UZ-SardorNeural"
+    audio_b64 = await get_cached_tts_audio_base64(req.text, voice=voice_to_use, rate="+10%")
+    return JSONResponse(content={"audio": audio_b64, "format": "mp3"})
 
 @app.post("/api/stt")
 async def api_stt(req: STTRequest):
