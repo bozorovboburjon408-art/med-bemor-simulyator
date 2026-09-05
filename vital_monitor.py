@@ -578,18 +578,27 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             <!-- Quick Preset Question Chips -->
             <div class="px-3 py-2 bg-slate-100 border-t border-slate-200 flex flex-wrap gap-1 text-[11px] shrink-0">
-                <span class="text-slate-500 font-bold text-[10px] w-full mb-0.5"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Tezkor savollar:</span>
-                <button onclick="sendQuickPatientQuestion('O\'zingizni qanday his qilyapsiz?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                <span class="text-slate-500 font-bold text-[10px] w-full mb-0.5"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Tezkor klinik savollar (Bosing va so'rang):</span>
+                <button type="button" onclick="sendQuickPatientQuestion(this.dataset.q)" data-q="Ahvolingiz qanday?" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
                     💬 "Ahvolingiz qanday?"
                 </button>
-                <button onclick="sendQuickPatientQuestion('Qayeringiz og\'riyapti?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                <button type="button" onclick="sendQuickPatientQuestion(this.dataset.q)" data-q="Qayeringiz og'riyapti?" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
                     💬 "Qayeringiz og'riyapti?"
                 </button>
-                <button onclick="sendQuickPatientQuestion('Nafas olishingiz qanday?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                <button type="button" onclick="sendQuickPatientQuestion(this.dataset.q)" data-q="Nafas olishingiz qanday?" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
                     💬 "Nafasingiz qanday?"
                 </button>
-                <button onclick="sendQuickPatientQuestion('Boshingiz aylanyaptimi?')" class="px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                <button type="button" onclick="sendQuickPatientQuestion(this.dataset.q)" data-q="Boshingiz aylanyaptimi?" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
                     💬 "Boshingiz aylanyaptimi?"
+                </button>
+                <button type="button" onclick="sendQuickPatientQuestion(this.dataset.q)" data-q="Dori ichganmidingiz?" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                    💬 "Dori ichganmisiz?"
+                </button>
+                <button type="button" onclick="sendQuickPatientQuestion(this.dataset.q)" data-q="Yuragingiz qanday uryapti?" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                    💬 "Yurak urishi qanday?"
+                </button>
+                <button type="button" onclick="sendQuickPatientQuestion(this.dataset.q)" data-q="Qachondan beri og'riyapti?" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:border-emerald-400 text-slate-700 font-bold cursor-pointer transition active:scale-95 shadow-2xs">
+                    💬 "Qachon boshlandi?"
                 </button>
             </div>
 
@@ -612,6 +621,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <input type="checkbox" id="chk-auto-listen" onchange="toggleAutoListening(this.checked)" class="sr-only peer">
                         <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
                     </label>
+                </div>
+
+                <!-- Mic Live Audio Visualizer Bar -->
+                <div id="mic-audio-level-container" class="hidden flex items-center gap-2 px-3 py-1.5 bg-slate-900 rounded-xl text-white text-[11px] font-bold">
+                    <span class="text-rose-400 animate-pulse">🔴 OVOZ YOZILMOQDA:</span>
+                    <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden flex items-center">
+                        <div id="mic-level-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-75" style="width: 10%;"></div>
+                    </div>
+                    <span id="mic-timer-text" class="text-xs font-mono text-emerald-300">0:00</span>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -1146,20 +1164,43 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function speakWithFallback(text) {
-            if (!text || !('speechSynthesis' in window)) {
+            if (!text) {
+                onPatientSpeechEnd();
+                return;
+            }
+            const cleanText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝|💬/g, "").trim();
+            if (!cleanText) {
+                onPatientSpeechEnd();
+                return;
+            }
+
+            // Serverdagi Edge-TTS uz-UZ-SardorNeural o'zbek erkak ovozi orqali ijro etish
+            fetch("/api/tts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: cleanText, voice: "uz-UZ-SardorNeural" })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.audio) {
+                    playPatientMP3Base64(data.audio);
+                } else {
+                    speakBrowserSynthesis(cleanText);
+                }
+            })
+            .catch(() => {
+                speakBrowserSynthesis(cleanText);
+            });
+        }
+
+        function speakBrowserSynthesis(cleanText) {
+            if (!('speechSynthesis' in window)) {
                 onPatientSpeechEnd();
                 return;
             }
             try {
                 window.speechSynthesis.cancel();
                 onPatientSpeechStart();
-
-                // Qavs ichidagi sahna izohlarini (masalan: "(shoshmasdan gapirib)", "(Zaif ovozda)") va emojilarni olib tashlaymiz
-                const cleanText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝/g, "").trim();
-                if (!cleanText) {
-                    onPatientSpeechEnd();
-                    return;
-                }
 
                 const utter = new SpeechSynthesisUtterance(cleanText);
                 utter.lang = "uz-UZ";
@@ -1169,8 +1210,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
                 const voices = window.speechSynthesis.getVoices();
                 if (voices && voices.length > 0) {
-                    const maleUzVoice = voices.find(v => v.lang.includes("uz") && (v.name.includes("Sardor") || v.name.includes("Male")));
-                    const uzVoice = voices.find(v => v.lang.includes("uz"));
+                    const maleUzVoice = voices.find(v => (v.lang.includes("uz") || v.lang.includes("tr")) && (v.name.includes("Sardor") || v.name.includes("Male") || v.name.includes("Ahmet")));
+                    const uzVoice = voices.find(v => v.lang.includes("uz") || v.lang.includes("tr"));
                     if (maleUzVoice) {
                         utter.voice = maleUzVoice;
                     } else if (uzVoice) {
@@ -1299,6 +1340,16 @@ HTML_CONTENT = """<!DOCTYPE html>
         let isAISpeaking = false;
         let speechRecognitionInstance = null;
         let autoListenRecognition = null;
+        let mediaRecorderInstance = null;
+        let audioChunks = [];
+        let micStream = null;
+        let micAudioCtx = null;
+        let micAnalyser = null;
+        let micAnimFrame = null;
+        let recordStartTime = 0;
+        let recordTimerInterval = null;
+        let activePatientAudio = null;
+        let sttInProgress = false;
 
         function openPatientVoiceIntercomModal() {
             const modal = document.getElementById("ai-patient-voice-modal");
@@ -1309,8 +1360,15 @@ HTML_CONTENT = """<!DOCTYPE html>
         function closePatientVoiceIntercomModal() {
             const modal = document.getElementById("ai-patient-voice-modal");
             if (modal) modal.classList.add("hidden");
+            if (isVoiceRecording) {
+                togglePatientVoiceRecord();
+            }
             if (speechRecognitionInstance) {
                 try { speechRecognitionInstance.stop(); } catch(e) {}
+            }
+            if (activePatientAudio) {
+                try { activePatientAudio.pause(); } catch(e) {}
+                activePatientAudio = null;
             }
         }
 
@@ -1330,7 +1388,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 "anaphylaxis": "🐝 Anafilaktik Shok (70/40 mmHg)"
             };
             const scName = scMap[current.mode] || current.mode;
-            el.innerText = `Bemor: Anvar Karimov (40 yosh) • Ssenariy: ${scName}`;
+            el.innerText = "Bemor: Anvar Karimov (40 yosh) • Ssenariy: " + scName;
         }
 
         function updateVADStatusUI(state) {
@@ -1343,13 +1401,203 @@ HTML_CONTENT = """<!DOCTYPE html>
                 text.innerText = "Hands-Free VAD o'chirilgan (Manual tugma rejimi)";
             } else if (state === "listening") {
                 dot.className = "w-3 h-3 rounded-full bg-emerald-500 alarm-blink shadow-xs";
-                text.innerText = "🟢 Uzluksiz tinglanmoqda... (Mikrofon faol)";
+                text.innerText = "🟢 Uzluksiz tinglanmoqda... (Mikrofon faol, gapiravering)";
             } else if (state === "speaking") {
                 dot.className = "w-3 h-3 rounded-full bg-amber-500 shadow-xs";
                 text.innerText = "🗣️ Bemor javob bermoqda... (Mikrofon vaqtincha pauzada)";
             } else if (state === "processing") {
                 dot.className = "w-3 h-3 rounded-full bg-sky-500 animate-pulse";
-                text.innerText = "⏳ Savol tahlil qilinmoqda...";
+                text.innerText = "⏳ Savol tahlil qilinmoqda (AI Bemor o'ylamoqda)...";
+            }
+        }
+
+        function playPatientMP3Base64(base64Data) {
+            if (!base64Data || !soundEnabled) return;
+            initAudio();
+            try {
+                if (activePatientAudio) {
+                    try { activePatientAudio.pause(); } catch(e) {}
+                    activePatientAudio = null;
+                }
+                onPatientSpeechStart();
+                activePatientAudio = new Audio("data:audio/mp3;base64," + base64Data);
+                activePatientAudio.volume = 1.0;
+                activePatientAudio.onended = () => { onPatientSpeechEnd(); activePatientAudio = null; };
+                activePatientAudio.onerror = () => { onPatientSpeechEnd(); activePatientAudio = null; };
+                activePatientAudio.play().catch(e => {
+                    console.warn("Audio play error:", e);
+                    onPatientSpeechEnd();
+                });
+            } catch(e) {
+                console.error("playPatientMP3Base64 error:", e);
+                onPatientSpeechEnd();
+            }
+        }
+
+        function speakAIPatientResponse(text, base64Audio) {
+            if (!soundEnabled) return;
+            initAudio();
+
+            // 1. Agar serverdan to'g'ridan-to'g'ri Edge-TTS (Sardor erkak ovozi) MP3 audio kelgan bo'lsa, uni ijro etamiz
+            if (base64Audio && base64Audio.length > 50) {
+                playPatientMP3Base64(base64Audio);
+                return;
+            }
+
+            // 2. Agar audio bo'lmasa, /api/tts orqali o'zbek erkak ovozini olamiz
+            fetch("/api/tts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: text, voice: "uz-UZ-SardorNeural" })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.audio) {
+                    playPatientMP3Base64(data.audio);
+                } else {
+                    speakWithFallback(text);
+                }
+            })
+            .catch(() => {
+                speakWithFallback(text);
+            });
+        }
+
+        async function startMicrophoneCapture() {
+            const levelContainer = document.getElementById("mic-audio-level-container");
+            const levelBar = document.getElementById("mic-level-bar");
+            if (levelContainer) levelContainer.classList.remove("hidden");
+            if (levelBar) levelBar.style.width = "20%";
+
+            try {
+                audioChunks = [];
+                micStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+
+                // Audio level visualizer
+                try {
+                    micAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const source = micAudioCtx.createMediaStreamSource(micStream);
+                    micAnalyser = micAudioCtx.createAnalyser();
+                    micAnalyser.fftSize = 64;
+                    source.connect(micAnalyser);
+
+                    const dataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+                    const updateMeter = () => {
+                        if (!isVoiceRecording && !isAutoListeningEnabled) return;
+                        if (micAnalyser) {
+                            micAnalyser.getByteFrequencyData(dataArray);
+                            let sum = 0;
+                            for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                            const avg = sum / dataArray.length;
+                            const pct = Math.min(100, Math.max(5, Math.round((avg / 128) * 100)));
+                            if (levelBar) levelBar.style.width = pct + "%";
+                        }
+                        micAnimFrame = requestAnimationFrame(updateMeter);
+                    };
+                    updateMeter();
+                } catch(e) {}
+
+                // MediaRecorder initialization
+                let mimeType = 'audio/webm';
+                if (window.MediaRecorder) {
+                    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) mimeType = 'audio/webm;codecs=opus';
+                    else if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
+                    else if (MediaRecorder.isTypeSupported('audio/webm')) mimeType = 'audio/webm';
+                    
+                    mediaRecorderInstance = new MediaRecorder(micStream, { mimeType: mimeType });
+                    mediaRecorderInstance.ondataavailable = (e) => {
+                        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    mediaRecorderInstance.start(250);
+                }
+
+                // Recording timer
+                recordStartTime = Date.now();
+                const timerText = document.getElementById("mic-timer-text");
+                if (timerText) timerText.innerText = "0:00";
+                if (recordTimerInterval) clearInterval(recordTimerInterval);
+                recordTimerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+                    const m = Math.floor(elapsed / 60);
+                    const s = elapsed % 60;
+                    if (timerText) timerText.innerText = m + ":" + (s < 10 ? "0" : "") + s;
+                }, 500);
+
+            } catch(err) {
+                console.warn("Microphone access error:", err);
+            }
+        }
+
+        async function stopMicrophoneCapture() {
+            if (recordTimerInterval) {
+                clearInterval(recordTimerInterval);
+                recordTimerInterval = null;
+            }
+            if (micAnimFrame) {
+                cancelAnimationFrame(micAnimFrame);
+                micAnimFrame = null;
+            }
+            const levelContainer = document.getElementById("mic-audio-level-container");
+            if (levelContainer) levelContainer.classList.add("hidden");
+
+            if (micAudioCtx) {
+                try { micAudioCtx.close(); } catch(e) {}
+                micAudioCtx = null;
+            }
+
+            if (mediaRecorderInstance && mediaRecorderInstance.state !== 'inactive') {
+                return new Promise((resolve) => {
+                    mediaRecorderInstance.onstop = async () => {
+                        if (micStream) {
+                            micStream.getTracks().forEach(t => t.stop());
+                            micStream = null;
+                        }
+                        const blob = new Blob(audioChunks, { type: mediaRecorderInstance.mimeType || 'audio/webm' });
+                        audioChunks = [];
+                        
+                        // Faqatgina SpeechRecognition matn qaytarmagan bo'lsa STT ga yuboramiz
+                        if (blob.size > 800 && !sttInProgress) {
+                            sttInProgress = true;
+                            updateVADStatusUI("processing");
+                            const reader = new FileReader();
+                            reader.onloadend = async () => {
+                                const base64data = reader.result.split(',')[1];
+                                if (base64data) {
+                                    try {
+                                        const res = await fetch("/api/stt", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ audio_base64: base64data, mime_type: blob.type })
+                                        });
+                                        const data = await res.json();
+                                        if (data && data.text && data.text.trim().length >= 2) {
+                                            processAIPatientVoiceQuestion(data.text.trim());
+                                        }
+                                    } catch(e) {
+                                        console.warn("STT error:", e);
+                                    }
+                                }
+                                sttInProgress = false;
+                                resolve();
+                            };
+                            reader.readAsDataURL(blob);
+                        } else {
+                            resolve();
+                        }
+                    };
+                    try { mediaRecorderInstance.stop(); } catch(e) { resolve(); }
+                });
+            } else {
+                if (micStream) {
+                    micStream.getTracks().forEach(t => t.stop());
+                    micStream = null;
+                }
             }
         }
 
@@ -1371,8 +1619,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert("Brauzeringizda avto-eshitish (Speech Recognition) qo'llab-quvvatlanmaydi.");
-                toggleAutoListening(false);
+                // Agar Web Speech API bo'lmasa, manual ovoz yozish rejimiga o'tamiz
+                updateVADStatusUI("off");
                 return;
             }
 
@@ -1453,53 +1701,61 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        function togglePatientVoiceRecord() {
+        async function togglePatientVoiceRecord() {
             const btn = document.getElementById("btn-ai-mic-record");
             const textEl = document.getElementById("btn-ai-mic-text");
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("Brauzeringizda ovozli tanib olish qo'llab-quvvatlanmaydi. Matnli savol yoki tezkor tugmalardan foydalaning!");
-                return;
-            }
-
             if (isVoiceRecording) {
+                isVoiceRecording = false;
+                if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
+                if (textEl) textEl.innerText = "🎙️ BIR MARTALIK GAPIRISH (Bosing va gapiring)";
+
                 if (speechRecognitionInstance) {
                     try { speechRecognitionInstance.stop(); } catch(e) {}
                 }
-                isVoiceRecording = false;
-                if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
-                if (textEl) textEl.innerText = "🎙️ BIR MARTALIK GAPIRISH (Bosing va gapiring)";
+                await stopMicrophoneCapture();
                 return;
             }
 
-            speechRecognitionInstance = new SpeechRecognition();
-            speechRecognitionInstance.lang = "uz-UZ";
-            speechRecognitionInstance.interimResults = false;
-            speechRecognitionInstance.maxAlternatives = 1;
+            isVoiceRecording = true;
+            sttInProgress = false;
+            if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 alarm-blink";
+            if (textEl) textEl.innerText = "🔴 ESHITILMOQDA... GAPIRING (Tugatish uchun bosing)";
 
-            speechRecognitionInstance.onstart = () => {
-                isVoiceRecording = true;
-                if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 alarm-blink";
-                if (textEl) textEl.innerText = "🔴 ESHITILMOQDA... GAPIRING";
-            };
+            await startMicrophoneCapture();
 
-            speechRecognitionInstance.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                processAIPatientVoiceQuestion(text);
-            };
+            // Web Speech API parallel tanib olish
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                try {
+                    speechRecognitionInstance = new SpeechRecognition();
+                    speechRecognitionInstance.lang = "uz-UZ";
+                    speechRecognitionInstance.interimResults = false;
+                    speechRecognitionInstance.maxAlternatives = 1;
 
-            speechRecognitionInstance.onerror = (err) => {
-                console.warn("Speech error:", err);
-            };
+                    speechRecognitionInstance.onstart = () => {};
 
-            speechRecognitionInstance.onend = () => {
-                isVoiceRecording = false;
-                if (btn) btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition active:scale-95";
-                if (textEl) textEl.innerText = "🎙️ BIR MARTALIK GAPIRISH (Bosing va gapiring)";
-            };
+                    speechRecognitionInstance.onresult = (event) => {
+                        if (event.results && event.results[0] && event.results[0][0]) {
+                            const text = event.results[0][0].transcript.trim();
+                            if (text.length >= 2) {
+                                sttInProgress = true;
+                                processAIPatientVoiceQuestion(text);
+                            }
+                        }
+                    };
 
-            speechRecognitionInstance.start();
+                    speechRecognitionInstance.onerror = (err) => {
+                        console.warn("Speech recognition error:", err);
+                    };
+
+                    speechRecognitionInstance.onend = () => {};
+
+                    speechRecognitionInstance.start();
+                } catch(e) {
+                    console.warn("SpeechRecognition start error:", e);
+                }
+            }
         }
 
         // Global hotkey listener for Bluetooth presenter clicker and Spacebar key
@@ -1519,7 +1775,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         });
 
         function sendQuickPatientQuestion(text) {
-            processAIPatientVoiceQuestion(text);
+            if (!text || !text.trim()) return;
+            processAIPatientVoiceQuestion(text.trim());
         }
 
         function sendTextPatientQuestion() {
@@ -1538,22 +1795,22 @@ HTML_CONTENT = """<!DOCTYPE html>
             const mode = current.mode || "normal";
             const hr = Math.round(current.hr);
             const sys = Math.round(current.sys);
+            const dia = Math.round(current.dia || 80);
             const spo2 = Math.round(current.spo2);
             const rr = Math.round(current.rr);
 
-            const respond = (text) => {
+            const respond = (text, audioBase64 = null) => {
                 setTimeout(() => {
                     appendChatBubble("patient", text);
                     // Ovozli ijro uchun qavs ichidagi sahna izohlarini (masalan: "(Zaif va sekin ovozda)", "(shoshmasdan gapirib)") olib tashlaymiz
-                    const spokenText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝/g, "").trim();
+                    const spokenText = text.replace(/\(.*?\)/g, "").replace(/🚨|🟢|⚡|🫀|🔴|🫁|💉|🩸|🐝|💬/g, "").trim();
                     if (spokenText) {
-                        speakAIPatientResponse(spokenText);
+                        speakAIPatientResponse(spokenText, audioBase64);
                     }
                 }, 200);
             };
 
             // 1. BARCODE VA DORI KODLARI TEKSHIRUVI (Shtrixkodlar, ADR-01, ATR-03, AMI-02...)
-            // Faqat raqamli barkodlar yoki KICHIK HARF + TIRE + RAQAM formatidagi dori kodlari
             const isBarcodeNum = /^\d{6,16}$/.test(qLower);
             const isDrugCode = /^(adr|atr|ami|fur|met|nit|nal|dex|sal|kcl)[-_\d]/.test(qLower);
             if (isBarcodeNum || isDrugCode) {
@@ -1561,7 +1818,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 return;
             }
 
-            // 2. CHUQUR KOMA YOKI HUSHSIZLIK (ASYSTOLE, VFIB)
+            // 2. CHUQUR KOMA YOKI HUSHSIZLIK (ASYSTOLE, VFIB, OPIOID KOMA)
             if (mode === "dying" || mode === "asystole" || mode === "vfib") {
                 respond("🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Bemor savollarga javob bera olmaydi, darhol CPR massaji va Defibrillyator qo'llang!");
                 return;
@@ -1571,12 +1828,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                 return;
             }
 
-            // 3. TELEMETRIYA / TASHXIS SAVOLLARI ("puls", "bosim", "satratsiya", "harorat", "ritm")
+            // 3. TELEMETRIYA / TASHXIS SAVOLLARI ("puls", "bosim", "saturatsiya", "spo2", "harorat", "ritm")
             if (qLower.includes("puls") || qLower.includes("yurak urishi") || qLower.includes("bosim") || qLower.includes("saturatsiya") || qLower.includes("spo2")) {
                 if (qLower.includes("puls") || qLower.includes("urishi")) {
                     respond("Doktor, hozir yurak urishim daqiqasiga " + hr + " marta. " + (hr > 120 ? "Juda tez urib ketyapti!" : hr < 50 ? "Sekin urib holsizlantiryapti..." : "Me'yorida urmoqda."));
                 } else if (qLower.includes("bosim")) {
-                    respond("Doktor, qon bosimim " + sys + " mm simob ustuniga teng. " + (sys > 160 ? "Juda baland, ensam og'riyapti!" : sys < 90 ? "Juda tushib ketgan, boshim aylanmoqda..." : "Barqaror."));
+                    respond("Doktor, qon bosimim " + sys + "/" + dia + " mm simob ustuniga teng. " + (sys > 160 ? "Juda baland, ensam qattiq og'riyapti!" : sys < 90 ? "Juda tushib ketgan, boshim aylanmoqda..." : "Barqaror."));
                 } else {
                     respond("Kislorod saturatsiyam " + spo2 + "%. " + (spo2 < 90 ? "Nafasim qisib bo'g'ilyapman!" : "Nafas olishim me'yorida."));
                 }
@@ -1587,44 +1844,68 @@ HTML_CONTENT = """<!DOCTYPE html>
             fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ kasallik_id: mode, text: docQuestion })
+                body: JSON.stringify({ 
+                    kasallik_id: mode, 
+                    text: docQuestion,
+                    vital_info: "Puls: " + hr + " bpm, Bosim: " + sys + "/" + dia + " mmHg, SpO2: " + spo2 + "%, Nafas: " + rr + "/min"
+                })
             })
             .then(res => res.json())
             .then(data => {
                 if (data && data.text) {
-                    respond(data.text);
+                    respond(data.text, data.audio || null);
                 } else {
                     fallbackLocalNLP(qLower, mode, respond);
                 }
             })
             .catch(err => {
+                console.warn("API chat error, using local fallback:", err);
                 fallbackLocalNLP(qLower, mode, respond);
             });
         }
 
         function fallbackLocalNLP(qLower, mode, respond) {
             let patientResponse = "";
-            if (qLower.includes("salom") || qLower.includes("alaykum") || qLower.includes("xayrli") || qLower.includes("qalaysiz") || qLower.includes("yaxshimisiz")) {
-                if (mode === "hyper") patientResponse = "Vaalaykum assalom, doktor! Boshim juda o'tkir og'riyapti, ensam tars yorilib ketay deyapti... Yordam bering!";
-                else if (mode === "attack") patientResponse = "Assalomu alaykum, doktor... Yuragim ko'kragimdan chiqib ketayotganday o'ta tez urib ketdi!";
-                else if (mode === "brady") patientResponse = "(Zaif ovozda)... Vaalaykum assalom, doktor... Boshim qorong'ulashib, holsizlanayapman...";
-                else patientResponse = "Vaalaykum assalom, doktor! Ahvolim yaxshi, rahmat.";
-            } else if (qLower.includes("ism") || qLower.includes("kimsiz") || qLower.includes("yosh")) {
+            const isGreeting = qLower.includes("salom") || qLower.includes("alaykum") || qLower.includes("xayrli") || qLower.includes("qalaysiz") || qLower.includes("yaxshimisiz") || qLower.includes("ahvol") || qLower.includes("tuzuk");
+            const isName = qLower.includes("ism") || qLower.includes("kimsiz") || qLower.includes("yosh") || qLower.includes("familiya");
+            const isPain = qLower.includes("og'ri") || qLower.includes("ogri") || qLower.includes("qayer") || qLower.includes("joyingiz") || qLower.includes("sanchiq");
+            const isBreath = qLower.includes("nafas") || qLower.includes("bog'il") || qLower.includes("bogil") || qLower.includes("hansir") || qLower.includes("havo");
+            const isHead = qLower.includes("bosh") || qLower.includes("aylan") || qLower.includes("ko'z") || qLower.includes("koz") || qLower.includes("holsiz");
+            const isDrug = qLower.includes("dori") || qLower.includes("tabletka") || qLower.includes("ichgan") || qLower.includes("ichdingiz");
+            const isHeart = qLower.includes("yurak") || qLower.includes("puls") || qLower.includes("urish") || qLower.includes("gupill");
+
+            if (isName) {
                 patientResponse = "Ismim Anvar Karimov, yoshim 40 da, doktor.";
             } else if (mode === "hyper") {
-                patientResponse = "Boshim tars yorilib ketay deyapti, doktor! Ensamda kuchli lo'qqillash bor...";
+                if (isPain || isHead) patientResponse = "Ensam va peshonam tars yorilib ketay deyapti, doktor! Ko'zlarim oldida qora dog'lar uchmoqda...";
+                else if (isDrug) patientResponse = "Aslida Lozartan ichardim, bugun asabiylashib ertalab ichishni unutibman, doktor...";
+                else if (isGreeting) patientResponse = "Vaalaykum assalom, doktor! Boshim juda o'tkir og'riyapti, ensam qattiq lo'qqillayapti... Yordam bering!";
+                else patientResponse = "Boshim qattiq og'riyapti, ensamda kuchli lo'qqillash bor, doktor.";
             } else if (mode === "attack") {
-                patientResponse = "Yuragim ko'kragimdan chiqib ketayotganday tez urib ketdi, doktor!";
+                if (isHeart || isGreeting) patientResponse = "Assalomu alaykum, doktor... Yuragim ko'kragimdan chiqib ketayotganday o'ta tez urib ketdi, qattiq gupillayapti!";
+                else if (isBreath) patientResponse = "Nafasim yetmayapti, to'liq nafas ololmayapman, ichimda kuchli xavotir bor...";
+                else if (isDrug) patientResponse = "Doimiy dori ichmayman, lekin bugun ishda 4 finjon achchiq kofe ichgan edim...";
+                else patientResponse = "Yuragim juda tez urib, ko'kragim gupillab to'xtamayapti, doktor!";
             } else if (mode === "brady") {
-                patientResponse = "Doktor... Boshim qorong'ulashib ketdi, holsizman...";
+                if (isGreeting || isHead) patientResponse = "(Zaif ovozda)... Vaalaykum assalom, doktor... Boshim aylanib, ko'zim qorong'ulashyapti, butun tanamda mador yo'q...";
+                else if (isDrug) patientResponse = "Bosimimga Atenolol ichardim, bugun adashib 2 ta ichib qo'ygan edim...";
+                else if (isPain) patientResponse = "O'tkir og'riq yo'q, lekin juda holsizman, oyoq-qo'llarim muzdek bo'lib boryapti...";
+                else patientResponse = "Doktor... Boshim qorong'ulashib ketdi, juda sekin urib holsizlantiryapti...";
             } else if (mode === "hypoxia") {
-                patientResponse = "(Hansiqlab)... Dok-tor... Havoo... yetmayapti... Bo'g'ilyapman...";
+                if (isBreath || isGreeting) patientResponse = "(Hansiqlab)... Dok-tor... Havoo... yetmayapti... Bo'g'ilyapman... Kislorod bering...";
+                else patientResponse = "(Hansiqlab)... Nafas... qisyapti... gapirishga holim yo'q...";
             } else if (mode === "shock") {
-                patientResponse = "Bosimim tushib, hushimdan ketyapman, doktor...";
+                if (isGreeting || isHead) patientResponse = "Bosimim tushib, hushimdan ketyapman, doktor... Ko'zim oldi qorong'i...";
+                else patientResponse = "Badanimni sovuq ter bosdi, holsizman, doktor...";
             } else if (mode === "anaphylaxis") {
-                patientResponse = "Doktor, badanim toshma va shish, nafasim qisib bo'g'ilyapman!";
+                if (isBreath || isGreeting) patientResponse = "Doktor, badanim toshma va shish, tomog'im qisilib bo'g'ilyapman!";
+                else patientResponse = "Lab-yuzim shishib ketdi, nafasim qisyapti, yordam bering!";
             } else {
-                patientResponse = "O'zimni yaxshi his qilyapman, rahmat doktor.";
+                if (isGreeting) patientResponse = "Vaalaykum assalom, doktor! O'zimni juda yaxshi his qilyapman, profilaktik ko'rikka kelgandim.";
+                else if (isPain) patientResponse = "Yo'q, doktor, hech qayerim og'rimayapti, o'zimni sog'lom his qilyapman.";
+                else if (isBreath) patientResponse = "Nafas olishim bir maromda va erkin, hech qanday qiyinchilik yo'q.";
+                else if (isDrug) patientResponse = "Doimiy hech qanday dori ichmayman, sog'lig'im joyida.";
+                else patientResponse = "O'zimni juda yaxshi his qilyapman, rahmat doktor.";
             }
             respond(patientResponse);
         }

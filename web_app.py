@@ -6,6 +6,8 @@ import base64
 import asyncio
 import socket
 import json
+import re
+from typing import Optional
 from pydantic import BaseModel
 import edge_tts
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
@@ -1374,6 +1376,15 @@ async def get_audio_file(filename: str):
 class ChatRequest(BaseModel):
     kasallik_id: str
     text: str
+    vital_info: Optional[str] = None
+
+class TTSRequest(BaseModel):
+    text: str
+    voice: Optional[str] = "uz-UZ-SardorNeural"
+
+class STTRequest(BaseModel):
+    audio_base64: str
+    mime_type: Optional[str] = "audio/webm"
 
 MAP_VITAL_TO_KASALLIK = {
     "brady": "bradikardiya",
@@ -1393,10 +1404,14 @@ async def api_chat(req: ChatRequest):
     k_id = MAP_VITAL_TO_KASALLIK.get(req.kasallik_id, req.kasallik_id)
     kasallik = KASALLIKLAR.get(k_id, KASALLIKLAR.get("normal"))
     
+    vital_context = ""
+    if req.vital_info:
+        vital_context = f"\nHOZIRGI MONITOR KO'RSATKICHLARINGIZ: {req.vital_info}\n"
+
     system_prompt = f"""Sen tibbiy ta'lim manikeni va bemorsan. Isming Anvar Karimov (40 yosh).
 KASALLIK VA SHIKOYATING:
 {kasallik['prompt']}
-
+{vital_context}
 QAT'IY QOIDALAR:
 1. FAQAT TABIIY VA RAVON O'ZBEK TILIDA GAPIR. O'zingni oddiy, haqiqiy odamdek tut.
 2. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff'), soxta yo'tal yoki ingrash kabi sun'iy effektlarni aslo ishlatma va yozma!
@@ -1407,7 +1422,7 @@ QAT'IY QOIDALAR:
     client = genai.Client(api_key=API_KEY)
     
     reply_text = ""
-    for model_name in ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-3-flash-preview"]:
+    for model_name in ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-3-flash-preview"]:
         try:
             resp = await client.aio.models.generate_content(
                 model=model_name,
@@ -1424,18 +1439,20 @@ QAT'IY QOIDALAR:
             print(f"API chat model error ({model_name}): {e}")
             
     if not reply_text:
-        reply_text = "Eslolmayapman, doktor... ahvolim og'ir..."
+        reply_text = "Doktor, o'zimni biroz noqulay his qilyapman... yordam bering."
         
-    rate = "0%"
+    rate = "+0%"
 
     mp3_base64 = ""
     try:
-        mp3_io = io.BytesIO()
-        comm = edge_tts.Communicate(reply_text, voice="uz-UZ-SardorNeural", rate=rate)
-        async for chunk in comm.stream():
-            if chunk["type"] == "audio":
-                mp3_io.write(chunk["data"])
-        mp3_base64 = base64.b64encode(mp3_io.getvalue()).decode('utf-8')
+        clean_text_for_tts = re.sub(r'\(.*?\)', '', reply_text).replace('🚨', '').replace('🟢', '').replace('⚡', '').replace('🫀', '').replace('🔴', '').replace('🫁', '').replace('💉', '').replace('🩸', '').replace('🐝', '').strip()
+        if clean_text_for_tts:
+            mp3_io = io.BytesIO()
+            comm = edge_tts.Communicate(clean_text_for_tts, voice="uz-UZ-SardorNeural", rate=rate)
+            async for chunk in comm.stream():
+                if chunk["type"] == "audio":
+                    mp3_io.write(chunk["data"])
+            mp3_base64 = base64.b64encode(mp3_io.getvalue()).decode('utf-8')
     except Exception as e:
         print(f"Edge-TTS synthesis error: {e}")
 
@@ -1444,6 +1461,69 @@ QAT'IY QOIDALAR:
         "audio": mp3_base64,
         "format": "mp3"
     })
+
+@app.post("/api/tts")
+async def api_tts(req: TTSRequest):
+    clean_text = re.sub(r'\(.*?\)', '', req.text).strip()
+    clean_text = re.sub(r'[🚨🟢⚡🫀🔴🫁💉🩸🐝💬]', '', clean_text).strip()
+    if not clean_text:
+        return JSONResponse(content={"audio": "", "format": "mp3"})
+    
+    try:
+        mp3_io = io.BytesIO()
+        voice_to_use = req.voice or "uz-UZ-SardorNeural"
+        comm = edge_tts.Communicate(clean_text, voice=voice_to_use, rate="+0%")
+        async for chunk in comm.stream():
+            if chunk["type"] == "audio":
+                mp3_io.write(chunk["data"])
+        mp3_base64 = base64.b64encode(mp3_io.getvalue()).decode('utf-8')
+        return JSONResponse(content={"audio": mp3_base64, "format": "mp3"})
+    except Exception as e:
+        print(f"TTS endpoint error: {e}")
+        return JSONResponse(content={"audio": "", "error": str(e)}, status_code=500)
+
+@app.post("/api/stt")
+async def api_stt(req: STTRequest):
+    try:
+        raw_audio = base64.b64decode(req.audio_base64)
+        if len(raw_audio) < 200:
+            return JSONResponse(content={"text": ""})
+            
+        client = genai.Client(api_key=API_KEY)
+        prompt = "Ushbu audiodagi inson nutqini aniq o'zbek tilida transkripsiya qil. Faqat eshitilgan matnni qaytar, boshqa hech qanday izoh yozma."
+        
+        mime = req.mime_type or "audio/webm"
+        if "webm" in mime:
+            mime = "audio/webm"
+        elif "wav" in mime:
+            mime = "audio/wav"
+        elif "mp4" in mime or "m4a" in mime:
+            mime = "audio/mp4"
+        elif "ogg" in mime:
+            mime = "audio/ogg"
+        
+        for m in ["gemini-flash-lite-latest", "gemini-flash-latest", "gemini-3-flash-preview"]:
+            try:
+                resp = await client.aio.models.generate_content(
+                    model=m,
+                    contents=[
+                        types.Part.from_bytes(data=raw_audio, mime_type=mime),
+                        prompt
+                    ]
+                )
+                if resp and resp.text:
+                    recognized = resp.text.strip()
+                    # Qo'shimcha qavslar yoki tirnoqlarni tozalash
+                    recognized = re.sub(r'^["\']|["\']$', '', recognized).strip()
+                    return JSONResponse(content={"text": recognized})
+            except Exception as e:
+                print(f"STT model error ({m}): {e}")
+                
+        return JSONResponse(content={"text": "", "error": "Could not transcribe audio"}, status_code=500)
+    except Exception as e:
+        print(f"STT endpoint error: {e}")
+        return JSONResponse(content={"text": "", "error": str(e)}, status_code=500)
+
 
 @app.websocket("/ws/chat/{kasallik_id}")
 async def websocket_chat(websocket: WebSocket, kasallik_id: str):
