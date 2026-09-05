@@ -255,10 +255,61 @@ XULQ-ATVOR: Qaltirab: "Doktor, butun tanam titrab ketyapti, ko'nglimga shirinlik
         "prompt": """Sen dori ukolidan keyin o'tkir allergik reaksiyaga uchragan 33 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Do'kon sotuvchisi. Uylangansan.
 BOSHLANISHI: 15 daqiqa oldin stomatolog tishingga Novokain/Lidokain ukol qilgandi. 5 minutda reaksiya boshlandi.
-SHIKOYATING: Tomog'ing ichi va tiling shishib ketdi, havo kirmay bo'g'ilyapsan (Kvinke shishi). Yuzing, lablaring shishgan. Butun badaningga qichimaydigan qizil toshmalar toshgan.
-QON BOSIMING: 70/40 mmHg ga tushib ketgan, ko'zlaring qorayib hushdan ketay deyapsan.
 ALLERGIYA: Yoshligingda Novokainga allergiyang bo'lgan, lekin do'xtirga aytish esingdan chiqqandi!
 XULQ-ATVOR: Xavotir bilan: "Doktor, ukoldan keyin tomog'im shishib, nafas olishim qiyinlashib ketyapti, yordam bering" deb gapir."""
+    },
+    "gipoksiya": {
+        "nomi": "15. O'tkir Gipoksiya & Bronxospazm",
+        "kategoriya": "Nafas yo'llari",
+        "tavsif": "38 yoshli bemor. O'tkir bronxospazm, kislorod yetishmovchiligi (SpO2 74%), nafas qisishi va bo'g'ilish.",
+        "rang": "#0284C7",
+        "bpm": 135,
+        "prompt": """Sen o'tkir gipoksiya va bronxospazm holatidagi 38 yoshli erkak bemorsan. Isming Anvar Karimov.
+BOSHLANISHI: 20 daqiqa oldin chang va o'tkir hid ta'sirida to'satdan ko'krak qisilib, nafas olish og'irlashgan.
+SHIKOYATING: Havoo yetmayapti, bo'g'ilyapsan! Kislorod saturatsiyang 74% ga tushib ketgan. Har bir nafas olishing qiyin, ko'kragingda og'irlik va xirillash bor.
+XULQ-ATVOR: Nafas qisib, qiynalgan ohangda: "Doktor, havo yetmayapti, bo'g'ilyapman... Kislorod bering, nafas olishim juda og'ir" deb gapir."""
+    },
+    "shok": {
+        "nomi": "16. Gipovolemik Shok / Qon yo'qotish",
+        "kategoriya": "Yurak va Qon-tomir",
+        "tavsif": "40 yoshli bemor. Qon bosimi keskin tushgan (65/35 mmHg), puls tezlashgan (145 bpm), sovuq ter, kuchli holsizlik.",
+        "rang": "#9333EA",
+        "bpm": 145,
+        "prompt": """Sen gipovolemik shok holatidagi 40 yoshli erkak bemorsan. Isming Anvar Karimov.
+BOSHLANISHI: Qon yo'qotish yoki kuchli suvsizlanishdan so'ng qon bosiming 65/35 mmHg ga qulagan.
+SHIKOYATING: Butun badaningni sovuq, yopishqoq ter bosgan. Ko'zlaring oldi qorong'ulashib, boshing qattiq aylanmoqda. O'rningdan turolmaysan, hushdan ketay deyapsan. Yuraging juda tez va zaif gupillab uryapti (145 BPM).
+XULQ-ATVOR: Zaif, holsiz ohangda: "Doktor, boshim qattiq aylanib, ko'zim qorong'ulashyapti... Badanim muzlab ketyapti, hushimdan ketay deyapman..." deb gapir."""
+    },
+    "opioid": {
+        "nomi": "17. Opioid Koma & Toksik Bradipnoe",
+        "kategoriya": "Toksikologiya",
+        "tavsif": "40 yoshli bemor. Chuqur komatoz holat, nafas daqiqasiga 4 marta, SpO2 62%, qorachiqlar toraygan.",
+        "rang": "#0D9488",
+        "bpm": 42,
+        "prompt": """Sen opioid moddalar yoki kuchli tinchlantiruvchi dori ta'sirida chuqur komada yotgan 40 yoshli bemorsan. Isming Anvar Karimov.
+HOLATING: Chuqur komada, og'zaki savollarga javob bera olmaysan. Nafasing daqiqasiga atigi 4 marta, SpO2 62%.
+XULQ-ATVOR: Savol berilganda: "(Bemor chuqur komada, javob bermaydi)... Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Zudlik bilan Nalokson talab qilinadi." deb xabar ber."""
+    },
+    "anafilaksiya": {
+        "nomi": "18. Anafilaktik Shok (O'tkir Allergiya)",
+        "kategoriya": "Allergik reaksiyalar",
+        "tavsif": "33 yoshli bemor. Dori inyeksiyasidan so'ng tomoq va til shishi, stridor, toshma, bosim 70/40 mmHg.",
+        "rang": "#DC2626",
+        "bpm": 140,
+        "prompt": """Sen dori ukolidan keyin o'tkir anafilaktik shokka uchragan 33 yoshli erkak bemorsan. Isming Anvar Karimov.
+BOSHLANISHI: 10 daqiqa oldin qilingan inyeksiyadan so'ng butun badaningga toshma toshib, tomog'ing va lablaring shishib ketgan.
+SHIKOYATING: Tomog'ing qisilib bo'g'ilyapsan (laringospazm, stridor). Nafas olishing xirillagan. Qon bosiming 70/40 mmHg ga tushib ketgan, boshing aylanmoqda.
+XULQ-ATVOR: Bo'g'iq ovozda: "Doktor, tomog'im va tilim shishib ketdi, havo kirmay bo'g'ilyapman! Badanim toshma bosdi, yordam bering!" deb gapir."""
+    },
+    "asystole": {
+        "nomi": "19. Asistoliya / Yurak to'xtashi",
+        "kategoriya": "Reanimatsiya",
+        "tavsif": "Bemor hushsiz, puls 0 BPM, qon bosimi 0/0 mmHg, nafas yo'q.",
+        "rang": "#E11D48",
+        "bpm": 0,
+        "prompt": """Sen yuragi to'xtagan (asistoliya, 0 BPM) va klinik o'lim holatidagi bemorsan.
+HOLATING: Bemor mutlaqo hushsiz, gapira olmaydi.
+XULQ-ATVOR: "🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya). Zudlik bilan CPR (30:2) massaj va Adrenalin qo'llang!" deb xabar ber."""
     }
 }
 
@@ -1388,16 +1439,27 @@ class STTRequest(BaseModel):
     mime_type: Optional[str] = "audio/webm"
 
 MAP_VITAL_TO_KASALLIK = {
+    "normal": "normal",
     "brady": "bradikardiya",
+    "bradicardia": "bradikardiya",
+    "bradikardiya": "bradikardiya",
     "hyper": "gipertoniya",
+    "gipertoniya": "gipertoniya",
     "attack": "taxikardiya",
+    "tachycardia": "taxikardiya",
+    "taxikardiya": "taxikardiya",
     "vfib": "aritmiya",
     "hypoxia": "gipoksiya",
+    "gipoksiya": "gipoksiya",
+    "astma": "astma",
     "shock": "shok",
+    "shok": "shok",
     "anaphylaxis": "anafilaksiya",
+    "anafilaksiya": "anafilaksiya",
+    "allergiya": "anafilaksiya",
     "opioid": "opioid",
-    "dying": "normal",
-    "asystole": "normal"
+    "dying": "asystole",
+    "asystole": "asystole"
 }
 
 TTS_IN_MEMORY_CACHE = {}
@@ -1468,11 +1530,12 @@ KASALLIK VA SHIKOYATING:
 {kasallik['prompt']}
 {vital_context}
 QAT'IY QOIDALAR:
-1. FAQAT TABIIY VA RAVON O'ZBEK TILIDA GAPIR. O'zingni oddiy, haqiqiy odamdek tut.
-2. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff'), soxta yo'tal yoki ingrash kabi sun'iy effektlarni aslo ishlatma va yozma!
+1. FAQAT TABIIY VA RAVON O'ZBEK TILIDA GAPIR. O'zingni oddiy, haqiqiy bemor insondek tut.
+2. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff'), soxta yo'tal yoki sun'iy fonetik effektlarni aslo yozma!
 3. Shifokor yoki talabaga hurmat bilan 'doktor' deb murojaat qil.
-4. Berilgan savolga aniq, lo'nda va tabiiy ravishda 1-2 ta jumlada javob ber.
-5. Tibbiy tashxis nomini aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir."""
+4. Berilgan savolga aniq, lo'nda, samimiy va tabiiy ravishda 1-2 ta jumlada javob ber.
+5. Tibbiy tashxis nomini aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
+6. Har doim 1-shaxs nomidan gapir (masalan: 'menda', 'ko'kragimda', 'og'riyapti', 'holsizman', 'yuragim tez uryapti')."""
 
     client = genai.Client(api_key=API_KEY)
     

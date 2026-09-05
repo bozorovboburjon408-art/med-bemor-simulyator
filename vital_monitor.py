@@ -1873,39 +1873,50 @@ HTML_CONTENT = """<!DOCTYPE html>
             const isPain = qLower.includes("og'ri") || qLower.includes("ogri") || qLower.includes("qayer") || qLower.includes("joyingiz") || qLower.includes("sanchiq");
             const isBreath = qLower.includes("nafas") || qLower.includes("bog'il") || qLower.includes("bogil") || qLower.includes("hansir") || qLower.includes("havo");
             const isHead = qLower.includes("bosh") || qLower.includes("aylan") || qLower.includes("ko'z") || qLower.includes("koz") || qLower.includes("holsiz");
-            const isDrug = qLower.includes("dori") || qLower.includes("tabletka") || qLower.includes("ichgan") || qLower.includes("ichdingiz");
+            const isDrug = qLower.includes("dori") || qLower.includes("tabletka") || qLower.includes("ichgan") || qLower.includes("ichdingiz") || qLower.includes("ukol");
             const isHeart = qLower.includes("yurak") || qLower.includes("puls") || qLower.includes("urish") || qLower.includes("gupill");
 
             if (isName) {
                 patientResponse = "Ismim Anvar Karimov, yoshim 40 da, doktor.";
+            } else if (mode === "dying" || mode === "asystole" || mode === "vfib") {
+                patientResponse = "🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Bemor savollarga javob bera olmaydi, darhol CPR massaji va Defibrillyator qo'llang!";
+            } else if (mode === "opioid") {
+                patientResponse = "(Bemor chuqur komada, savollarga javob bermaydi)... Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Zudlik bilan Nalokson (0.4mg) va sun'iy nafas talab qilinadi!";
             } else if (mode === "hyper") {
-                if (isPain || isHead) patientResponse = "Ensam va peshonam tars yorilib ketay deyapti, doktor! Ko'zlarim oldida qora dog'lar uchmoqda...";
-                else if (isDrug) patientResponse = "Aslida Lozartan ichardim, bugun asabiylashib ertalab ichishni unutibman, doktor...";
-                else if (isGreeting) patientResponse = "Vaalaykum assalom, doktor! Boshim juda o'tkir og'riyapti, ensam qattiq lo'qqillayapti... Yordam bering!";
-                else patientResponse = "Boshim qattiq og'riyapti, ensamda kuchli lo'qqillash bor, doktor.";
+                if (isGreeting) patientResponse = "Vaalaykum assalom, doktor! Boshim juda qattiq og'riyapti, ensam lo'qqillab ketmoqda... Qon bosimim 220 ga chiqib ketgan!";
+                else if (isPain || isHead) patientResponse = "Ensam va peshonam tars yorilib ketay deyapti, ko'zlarim oldida qora dog'lar uchmoqda, ko'nglim aynyapti, doktor...";
+                else if (isDrug) patientResponse = "Doimiy Lozartan ichardim, bugun asabiylashib ertalab ichishni unutibman, doktor...";
+                else if (isHeart) patientResponse = "Yuragim ham qattiq gupillab uryapti, ko'kragimda og'irlik bor, doktor.";
+                else patientResponse = "Boshim qattiq og'riyapti, ensamda kuchli lo'qqillash bor, qon bosimim juda baland, doktor.";
             } else if (mode === "attack") {
-                if (isHeart || isGreeting) patientResponse = "Assalomu alaykum, doktor... Yuragim ko'kragimdan chiqib ketayotganday o'ta tez urib ketdi, qattiq gupillayapti!";
-                else if (isBreath) patientResponse = "Nafasim yetmayapti, to'liq nafas ololmayapman, ichimda kuchli xavotir bor...";
-                else if (isDrug) patientResponse = "Doimiy dori ichmayman, lekin bugun ishda 4 finjon achchiq kofe ichgan edim...";
-                else patientResponse = "Yuragim juda tez urib, ko'kragim gupillab to'xtamayapti, doktor!";
+                if (isGreeting || isHeart) patientResponse = "Assalomu alaykum, doktor... Yuragim ko'kragimdan chiqib ketayotgandek daqiqasiga 185 marta o'ta tez urib ketyapti, qattiq gupillayapti!";
+                else if (isBreath) patientResponse = "Nafasim yetmayapti, chuqur nafas ololmayapman, ichimda kuchli xavotir va vahima bor, doktor...";
+                else if (isDrug) patientResponse = "Doimiy dori ichmayman, lekin bugun ishda 4 finjon achchiq kofe ichgan edim, shundan keyin boshlandi...";
+                else patientResponse = "Yuragim juda tez urib, ko'kragim gupillab to'xtamayapti, doktor, iltimos yordam bering!";
             } else if (mode === "brady") {
-                if (isGreeting || isHead) patientResponse = "(Zaif ovozda)... Vaalaykum assalom, doktor... Boshim aylanib, ko'zim qorong'ulashyapti, butun tanamda mador yo'q...";
-                else if (isDrug) patientResponse = "Bosimimga Atenolol ichardim, bugun adashib 2 ta ichib qo'ygan edim...";
-                else if (isPain) patientResponse = "O'tkir og'riq yo'q, lekin juda holsizman, oyoq-qo'llarim muzdek bo'lib boryapti...";
-                else patientResponse = "Doktor... Boshim qorong'ulashib ketdi, juda sekin urib holsizlantiryapti...";
+                if (isGreeting || isHead) patientResponse = "Vaalaykum assalom, doktor... Boshim aylanib, ko'zim qorong'ulashyapti, butun tanamda mador qolmadi, hushimdan ketyapman...";
+                else if (isDrug) patientResponse = "Qon bosimimga Atenolol ichardim, bugun adashib 2 ta ichib qo'ygan edim, shundan keyin sekinlashib ketdi...";
+                else if (isHeart) patientResponse = "Yuragim daqiqasiga atigi 28 marta juda sekin uryapti, butun vujudim muzlab holsizlanyapti...";
+                else if (isPain) patientResponse = "O'tkir og'riq yo'q, lekin juda holsizman, oyoq-qo'llarim muzdek bo'lib boryapti, doktor...";
+                else patientResponse = "Doktor... Boshim qorong'ulashib ketdi, yuragim juda sekin urib butunlay holsizlantiryapti...";
             } else if (mode === "hypoxia") {
-                if (isBreath || isGreeting) patientResponse = "(Hansiqlab)... Dok-tor... Havoo... yetmayapti... Bo'g'ilyapman... Kislorod bering...";
-                else patientResponse = "(Hansiqlab)... Nafas... qisyapti... gapirishga holim yo'q...";
+                if (isGreeting || isBreath) patientResponse = "Doktor... Havoo yetmayapti... Bo'g'ilyapman... Kislorod saturatsiyam 74 foizga tushib ketdi... Yordam bering!";
+                else if (isDrug) patientResponse = "Ustaxonada lak va chang hididan keyin to'satdan bronxlarim qisilib bo'g'ilish boshlandi, doktor...";
+                else patientResponse = "Nafas... qisyapti... tomog'im bo'g'ilyapti, gapirishga holim yetmayapti, doktor...";
             } else if (mode === "shock") {
-                if (isGreeting || isHead) patientResponse = "Bosimim tushib, hushimdan ketyapman, doktor... Ko'zim oldi qorong'i...";
-                else patientResponse = "Badanimni sovuq ter bosdi, holsizman, doktor...";
+                if (isGreeting || isHead) patientResponse = "Vaalaykum assalom, doktor... Qon bosimim 65 ga tushib ketdi, ko'zim oldi qorong'ilashib hushdan ketyapman...";
+                else if (isHeart) patientResponse = "Yuragim 145 marta tez uryapti, lekin tomir urishim juda zaif va bilinar-bilinmas, doktor...";
+                else if (isDrug) patientResponse = "Kuchli qon yo'qotish va suvsizlanishdan so'ng to'satdan ahvolim og'irlashdi, doktor...";
+                else patientResponse = "Badanimni sovuq yopishqoq ter bosdi, qattiq chanqayapman, quvvatim qolmadi, doktor...";
             } else if (mode === "anaphylaxis") {
-                if (isBreath || isGreeting) patientResponse = "Doktor, badanim toshma va shish, tomog'im qisilib bo'g'ilyapman!";
-                else patientResponse = "Lab-yuzim shishib ketdi, nafasim qisyapti, yordam bering!";
+                if (isGreeting || isBreath) patientResponse = "Doktor, badanim toshma bosdi, tomog'im va tilim shishib havo kirmay bo'g'ilyapman! Zudlik bilan Adrenalin bering!";
+                else if (isDrug) patientResponse = "Ukol qilinganidan 5 minut o'tib butun badanim qichishib toshma toshdi va tomog'im qisilib qoldi, doktor...";
+                else patientResponse = "Lab-yuzim shishib ketdi, stridor va bo'g'ilish boryapti, nafasim qisyapti, yordam bering!";
             } else {
                 if (isGreeting) patientResponse = "Vaalaykum assalom, doktor! O'zimni juda yaxshi his qilyapman, profilaktik ko'rikka kelgandim.";
                 else if (isPain) patientResponse = "Yo'q, doktor, hech qayerim og'rimayapti, o'zimni sog'lom his qilyapman.";
                 else if (isBreath) patientResponse = "Nafas olishim bir maromda va erkin, hech qanday qiyinchilik yo'q.";
+                else if (isHeart) patientResponse = "Yuragim daqiqasiga 75 marta bir maromda, me'yorida urmoqda.";
                 else if (isDrug) patientResponse = "Doimiy hech qanday dori ichmayman, sog'lig'im joyida.";
                 else patientResponse = "O'zimni juda yaxshi his qilyapman, rahmat doktor.";
             }
@@ -3953,6 +3964,36 @@ async def api_scan_medication(req: ScanMedicationRequest):
         except:
             pass
     return JSONResponse(content={"status": "ok", "scanned": data})
+
+@app.post("/api/chat")
+async def handle_api_chat(request: Request):
+    try:
+        from web_app import api_chat, ChatRequest
+        data = await request.json()
+        chat_req = ChatRequest(**data)
+        return await api_chat(chat_req)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.post("/api/tts")
+async def handle_api_tts(request: Request):
+    try:
+        from web_app import api_tts, TTSRequest
+        data = await request.json()
+        tts_req = TTSRequest(**data)
+        return await api_tts(tts_req)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.post("/api/stt")
+async def handle_api_stt(request: Request):
+    try:
+        from web_app import api_stt, STTRequest
+        data = await request.json()
+        stt_req = STTRequest(**data)
+        return await api_stt(stt_req)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 @app.post("/api/telemetry")
 async def post_telemetry(request: Request):
