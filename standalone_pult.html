@@ -822,7 +822,7 @@
                 <tr>
                     <td class="border border-black p-2 text-center font-bold">2</td>
                     <td class="border border-black p-2">To'g'ri chuqurlik va nuqtadagi zarbalar</td>
-                    <td class="border border-black p-2 text-center">&gt;86% (5), 74-86% (4), 56-73% (3)</td>
+                    <td class="border border-black p-2 text-center">38 - 55 kg (5 - 6 sm)</td>
                     <td class="border border-black p-2 text-center font-bold" id="print-val-correct-comps">0 ta (0%)</td>
                     <td class="border border-black p-2 text-center font-bold" id="print-res-correct-comps">-</td>
                 </tr>
@@ -856,25 +856,6 @@
                 </tr>
             </tbody>
         </table>
-
-        <!-- Rasmiy Baholash Mezonlari Shkalasi -->
-        <div class="border border-black p-2.5 mb-4 rounded text-[11px] bg-slate-50">
-            <div class="font-bold text-black mb-1">📋 Rasmiy Baholash Mezonlari (O'zbekiston Respublikasi Tibbiy Ta'lim Standarti):</div>
-            <div class="grid grid-cols-4 gap-1.5 text-center text-[10px]">
-                <div class="p-1 border border-emerald-400 bg-emerald-50 rounded font-bold text-emerald-900">
-                    5 Baho (A'lo): &gt; 86%
-                </div>
-                <div class="p-1 border border-blue-400 bg-blue-50 rounded font-bold text-blue-900">
-                    4 Baho (Yaxshi): 74% - 86%
-                </div>
-                <div class="p-1 border border-amber-400 bg-amber-50 rounded font-bold text-amber-900">
-                    3 Baho (Qoniqarli): 56% - 73%
-                </div>
-                <div class="p-1 border border-rose-400 bg-rose-50 rounded font-bold text-rose-900">
-                    2 Baho (Qoniqarsiz): &lt; 56%
-                </div>
-            </div>
-        </div>
 
         <!-- Error Summary -->
         <div class="border border-black p-3 mb-6 rounded text-xs">
@@ -1299,13 +1280,50 @@
             } catch(e) {}
         }
 
+        function calculateComprehensiveScore(stats, avgBpm) {
+            const totalComps = stats.totalComps || 0;
+            if (totalComps === 0) return 0;
+
+            const correctComps = stats.correctComps || 0;
+            const depthPct = Math.min(100, Math.round((correctComps / totalComps) * 100));
+
+            const recoilErrors = stats.recoilErrors || 0;
+            const recoilPct = Math.max(0, 100 - Math.round((recoilErrors / totalComps) * 100));
+
+            const posErrors = stats.posErrors || 0;
+            const posPct = Math.max(0, 100 - Math.round((posErrors / totalComps) * 100));
+
+            let bpmScore = 100;
+            if (avgBpm >= 100 && avgBpm <= 120) bpmScore = 100;
+            else if ((avgBpm >= 95 && avgBpm < 100) || (avgBpm > 120 && avgBpm <= 125)) bpmScore = 90;
+            else if ((avgBpm >= 90 && avgBpm < 95) || (avgBpm > 125 && avgBpm <= 130)) bpmScore = 80;
+            else if ((avgBpm >= 80 && avgBpm < 90) || (avgBpm > 130 && avgBpm <= 140)) bpmScore = 65;
+            else if ((avgBpm >= 70 && avgBpm < 80) || (avgBpm > 140 && avgBpm <= 150)) bpmScore = 45;
+            else bpmScore = 25;
+
+            const totalVents = stats.totalVents || 0;
+            const correctVents = stats.correctVents || 0;
+            const stomachErrors = stats.stomachErrors || 0;
+            const stomachPenalty = stomachErrors * 8;
+
+            let composite = 0;
+            if (totalVents > 0) {
+                const ventPct = Math.min(100, Math.round((correctVents / totalVents) * 100));
+                composite = (0.40 * depthPct) + (0.15 * recoilPct) + (0.15 * bpmScore) + (0.15 * posPct) + (0.15 * ventPct) - stomachPenalty;
+            } else {
+                composite = (0.50 * depthPct) + (0.20 * recoilPct) + (0.15 * bpmScore) + (0.15 * posPct) - stomachPenalty;
+            }
+
+            return Math.min(100, Math.max(0, Math.round(composite)));
+        }
+
         function finishExamManually() {
             if (examTimerInterval) clearInterval(examTimerInterval);
             isExamActive = false;
 
-            const total = liveStats.totalComps || 1;
-            const correct = liveStats.correctComps;
-            const correctPct = Math.round((correct / total) * 100);
+            const total = liveStats.totalComps || 0;
+            const correct = liveStats.correctComps || 0;
+            const correctPct = total > 0 ? Math.round((correct / total) * 100) : 0;
 
             let avgBpm = 110;
             if (liveStats.strokeTimes.length > 2) {
@@ -1320,10 +1338,7 @@
                 }
             }
 
-            let overallScore = correctPct;
-            if (liveStats.stomachErrors > 0) {
-                overallScore = Math.max(0, overallScore - (liveStats.stomachErrors * 5));
-            }
+            const overallScore = calculateComprehensiveScore(liveStats, avgBpm);
 
             const timeSpentSecs = 120 - examTimeLeft;
             const gradeInfo = calculateCprGrade(overallScore, liveStats.totalComps);
@@ -1453,7 +1468,7 @@
             document.getElementById("print-res-total-comps").innerText = record.totalComps >= 20 ? "Qoniqarli" : "Kam (<20)";
 
             document.getElementById("print-val-correct-comps").innerText = `${record.correctComps} ta (${record.correctPct}%)`;
-            document.getElementById("print-res-correct-comps").innerText = `${record.grade || gradeInfo.grade} Baho (${record.gradeText || gradeInfo.gradeText})`;
+            document.getElementById("print-res-correct-comps").innerText = record.correctPct >= 80 ? "A'lo darajada" : (record.correctPct >= 60 ? "Qoniqarli" : "Past ko'rsatkich");
 
             document.getElementById("print-val-recoil").innerText = `${record.recoilErrors} ta xato`;
             document.getElementById("print-res-recoil").innerText = record.recoilErrors === 0 ? "Mukammal" : "E'tibor bering";
@@ -1462,7 +1477,7 @@
             document.getElementById("print-res-bpm").innerText = (record.bpm >= 100 && record.bpm <= 120) ? "Me'yorda" : "Tuzatish lozim";
 
             document.getElementById("print-val-vents").innerText = `${record.correctVents} / ${record.totalVents} to'g'ri`;
-            document.getElementById("print-res-vents").innerText = record.correctVents > 0 ? "Muvaffaqiyatli" : "Nafas berilmadi";
+            document.getElementById("print-res-vents").innerText = record.totalVents > 0 ? (record.correctVents === record.totalVents ? "Me'yorda" : "Qisman to'g'ri") : "Bajarilmadi";
 
             document.getElementById("print-val-stomach").innerText = `${record.stomachErrors} ta`;
             document.getElementById("print-res-stomach").innerText = record.stomachErrors === 0 ? "Toza" : "XATO (Oshqozon)";
