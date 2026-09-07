@@ -180,9 +180,10 @@ def create_document():
     sw_points = [
         ("Erkin Mashq va Imtihon Rejimlari:", "Katta, qulay tugmalar orqali tanlanadi. Erkin mashqda talaba cheklovlarsiz mashq qiladi, barcha datchiklar real vaqtda ishlab turadi. Imtihon rejimida esa 2 daqiqalik rasmiy vaqt ishlaydi."),
         ("3 Soniyalik Ovozli Teskari Hisob:", "Imtihon boshlanganda 3... 2... 1... START ovozli signali chalinib, talabaga qo'llarini joylashtirib tayyor bo'lish imkonini beradi."),
-        ("Bemorning Tirilishi (ROSC Effekti):", "Imtihon muvaffaqiyatli topshirilganda (≥80% ball va to'g'ri CPR), maniken ko'kragi mustaqil 3.6 soniyalik ritmda nafas oladi, ko'zlari ochiladi, 75 BPM sinus puls tiklanadi, konfetti otiladi va bemor o'zbek tilida minnatdorchilik bildiradi."),
-        ("A4 Rasmiy Baholash Protokoli va Chop Etish:", "Imtihon yakunida rasmiy muhrlangan, talaba va o'qituvchi imzolari qo'yiladigan A4 protokoli printerga chiqariladi yoki PDF qilib saqlanadi."),
-        ("Doimiy Imtihon Jurnali (Xotira):", "Barcha talabalar natijalari brauzer xotirasida doimiy saqlanadi. Natijalarni qidirish, o'tgan/yiqilgan bo'yicha filtrlash va saralash funksiyalari mavjud.")
+        ("Bemorning Tirilishi (ROSC Effekti):", "Imtihon muvaffaqiyatli topshirilganda (3, 4 yoki 5 baho olganda), maniken ko'kragi mustaqil 3.6 soniyalik ritmda nafas oladi, ko'zlari ochiladi, 75 BPM sinus puls tiklanadi, konfetti otiladi va bemor o'zbek tilida minnatdorchilik bildiradi."),
+        ("4 Bosqichli Milliy Baholash Tizimi:", "Talabalar natijasi rasmiy mezon bo'yicha baholanadi: >86% — 5 Baho (A'lo), 74%–86% — 4 Baho (Yaxshi), 56%–73% — 3 Baho (Qoniqarli), <56% — 2 Baho (Qoniqarsiz/Yiqildi)."),
+        ("A4 Rasmiy Baholash Protokoli va Chop Etish:", "Imtihon yakunida rasmiy muhrlangan, bahosi (5/4/3/2), talaba va o'qituvchi imzolari qo'yiladigan A4 protokoli printerga chiqariladi yoki PDF qilib saqlanadi."),
+        ("Doimiy Imtihon Jurnali (Xotira):", "Barcha talabalar natijalari brauzer xotirasida doimiy saqlanadi. Natijalarni baho (5, 4, 3, 2), o'tgan/yiqilgan bo'yicha filtrlash va saralash funksiyalari mavjud.")
     ]
 
     for title, desc in sw_points:

@@ -463,12 +463,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                                    class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-600 font-medium placeholder:text-slate-400">
                         </div>
 
-                        <!-- Filter by Status Dropdown -->
+                        <!-- Filter by Status & Grade Dropdown -->
                         <select id="history-filter-status" onchange="onHistoryFilterChange()" 
                                 class="w-full sm:w-auto px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-bold focus:outline-none focus:border-blue-600 cursor-pointer">
                             <option value="all">Barcha natijalar</option>
-                            <option value="passed">🏆 Faqat O'tganlar</option>
-                            <option value="failed">❌ Faqat Yiqilganlar</option>
+                            <option value="passed">🏆 Barcha O'tganlar (3, 4, 5 baho)</option>
+                            <option value="grade_5">⭐️ Faqat 5 Baho (A'lo: &gt;86%)</option>
+                            <option value="grade_4">👍 Faqat 4 Baho (Yaxshi: 74-86%)</option>
+                            <option value="grade_3">👌 Faqat 3 Baho (Qoniqarli: 56-73%)</option>
+                            <option value="failed">❌ Faqat 2 Baho / Yiqilganlar (&lt;56%)</option>
                         </select>
 
                         <!-- Sort Dropdown -->
@@ -657,23 +660,41 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="bg-white border border-slate-300 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-slate-900 flex flex-col gap-4">
             
             <div class="text-center border-b border-slate-100 pb-3">
-                <span id="modal-status-badge" class="px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-300 inline-block mb-2">
-                    🏆 IMTIHONDAN O'TDI (PASSED)
+                <span id="modal-status-badge" class="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-300 inline-block mb-2 shadow-sm">
+                    🏆 5 BAHOLIK (A'LO) — IMTIHONDAN O'TDI
                 </span>
                 <h2 class="text-xl font-black text-slate-900">CPR IMTIHON VA BAHOLASH PROTOKOLI</h2>
                 <p id="modal-student-header" class="text-xs text-blue-700 font-semibold mt-0.5">Talaba: -</p>
             </div>
 
-            <!-- Total Score & Grade -->
+            <!-- Total Score & Grade Box -->
             <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <div>
-                    <div class="text-xs text-slate-500 font-semibold">Umumiy Sifat Bahosi:</div>
-                    <div id="modal-total-score" class="mono text-3xl font-black text-emerald-600">92%</div>
+                <div class="flex items-center gap-3">
+                    <div id="modal-grade-badge" class="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex flex-col items-center justify-center font-black shadow-md">
+                        <span class="text-[9px] leading-none uppercase tracking-tighter opacity-80">BAHO</span>
+                        <span id="modal-grade-num" class="text-2xl leading-none font-black">5</span>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-500 font-semibold">Umumiy Sifat Balli:</div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="modal-total-score" class="mono text-2xl font-black text-emerald-600">92%</span>
+                            <span id="modal-grade-text" class="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">A'lo Daraja</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="text-right">
                     <div class="text-xs text-slate-500 font-semibold">Sarflangan Vaqt:</div>
                     <div id="modal-time-spent" class="mono text-lg font-bold text-slate-800">01:52 soniya</div>
                 </div>
+            </div>
+
+            <!-- Grading Scale Bar -->
+            <div class="bg-blue-50/60 border border-blue-200/80 rounded-xl px-3 py-1.5 text-[11px] text-slate-700 flex flex-wrap items-center justify-between gap-1 font-semibold">
+                <span class="text-slate-500 font-bold">Mezon shkalasi:</span>
+                <span class="text-emerald-700 font-bold">&gt;86% = 5 (A'lo)</span>
+                <span class="text-blue-700 font-bold">74-86% = 4 (Yaxshi)</span>
+                <span class="text-amber-700 font-bold">56-73% = 3 (Qoniqarli)</span>
+                <span class="text-rose-700 font-bold">&lt;56% = 2 (Qoniqarsiz)</span>
             </div>
 
             <!-- Detailed Breakdown Metrics (Jami, To'g'ri, Xato, Xatolar sababi) -->
@@ -759,9 +780,15 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         <!-- Grade Banner -->
         <div class="flex items-center justify-between border-2 border-black p-4 mb-4 rounded bg-slate-50">
-            <div>
-                <div class="text-xs font-bold text-slate-600 uppercase">YAKUNIY BAHOLASH NATIJASI:</div>
-                <div id="print-status-text" class="text-2xl font-black mt-0.5">🏆 IMTIHONDAN O'TDI (PASSED)</div>
+            <div class="flex items-center gap-3">
+                <div id="print-grade-box" class="w-16 h-16 border-2 border-black rounded-lg flex flex-col items-center justify-center font-black bg-white">
+                    <span class="text-[9px] uppercase leading-none text-slate-700">BAHO</span>
+                    <span id="print-grade-val" class="text-3xl leading-tight font-black">5</span>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-slate-600 uppercase">YAKUNIY BAHOLASH NATIJASI:</div>
+                    <div id="print-status-text" class="text-xl font-black mt-0.5">🏆 BAHOSI: 5 (A'LO) — IMTIHONDAN O'TDI</div>
+                </div>
             </div>
             <div class="text-right">
                 <div class="text-xs font-bold text-slate-600 uppercase">UMUMIY SIFAT DARAJASI:</div>
@@ -791,14 +818,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <tr>
                     <td class="border border-black p-2 text-center font-bold">2</td>
                     <td class="border border-black p-2">To'g'ri chuqurlik va nuqtadagi zarbalar</td>
-                    <td class="border border-black p-2 text-center">≥ 80% (38 - 55 kg)</td>
+                    <td class="border border-black p-2 text-center">&gt;86% (5), 74-86% (4), 56-73% (3)</td>
                     <td class="border border-black p-2 text-center font-bold" id="print-val-correct-comps">0 ta (0%)</td>
-                    <td class="border border-black p-2 text-center" id="print-res-correct-comps">-</td>
+                    <td class="border border-black p-2 text-center font-bold" id="print-res-correct-comps">-</td>
                 </tr>
                 <tr>
                     <td class="border border-black p-2 text-center font-bold">3</td>
                     <td class="border border-black p-2">Ko'krak qafasining to'liq bo'shatilishi (Recoil)</td>
-                    <td class="border border-black p-2 text-center">To'liq (< 5 kg)</td>
+                    <td class="border border-black p-2 text-center">To'liq (&lt; 5 kg)</td>
                     <td class="border border-black p-2 text-center font-bold" id="print-val-recoil">0 ta xato</td>
                     <td class="border border-black p-2 text-center" id="print-res-recoil">-</td>
                 </tr>
@@ -825,6 +852,25 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </tr>
             </tbody>
         </table>
+
+        <!-- Rasmiy Baholash Mezonlari Shkalasi -->
+        <div class="border border-black p-2.5 mb-4 rounded text-[11px] bg-slate-50">
+            <div class="font-bold text-black mb-1">📋 Rasmiy Baholash Mezonlari (O'zbekiston Respublikasi Tibbiy Ta'lim Standarti):</div>
+            <div class="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                <div class="p-1 border border-emerald-400 bg-emerald-50 rounded font-bold text-emerald-900">
+                    5 Baho (A'lo): &gt; 86%
+                </div>
+                <div class="p-1 border border-blue-400 bg-blue-50 rounded font-bold text-blue-900">
+                    4 Baho (Yaxshi): 74% - 86%
+                </div>
+                <div class="p-1 border border-amber-400 bg-amber-50 rounded font-bold text-amber-900">
+                    3 Baho (Qoniqarli): 56% - 73%
+                </div>
+                <div class="p-1 border border-rose-400 bg-rose-50 rounded font-bold text-rose-900">
+                    2 Baho (Qoniqarsiz): &lt; 56%
+                </div>
+            </div>
+        </div>
 
         <!-- Error Summary -->
         <div class="border border-black p-3 mb-6 rounded text-xs">
@@ -1135,6 +1181,120 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (fb) fb.innerText = "Tayyor: 'Boshlash' tugmasini bosing!";
         }
 
+        // ==================== 4-TIER CPR GRADING SCALE SYSTEM ====================
+        // > 86% -> 5 Baho (A'lo)
+        // 74% - 86% -> 4 Baho (Yaxshi)
+        // 56% - 73% -> 3 Baho (Qoniqarli)
+        // < 56% -> 2 Baho (Qoniqarsiz)
+        function calculateCprGrade(overallScore, totalComps) {
+            if (totalComps < 20) {
+                return {
+                    grade: 2,
+                    gradeText: "Qoniqarsiz",
+                    levelText: "2 Baho (Qoniqarsiz)",
+                    passed: false,
+                    badgeClass: "bg-rose-100 text-rose-800 border-rose-300",
+                    badgeColor: "#e11d48",
+                    badgePrintColor: "#b91c1c",
+                    title: "❌ 2 BAHOLIK (QONIQARSIZ) — YIQILDI",
+                    printTitle: "❌ BAHOSI: 2 (QONIQARSIZ) — YIQILDI",
+                    voiceText: `Imtihon yakunlandi. Natijangiz ${overallScore} foiz, 2 baho. Kompressiyalar soni kam bo'lgani sababli imtihondan o'ta olmadingiz.`
+                };
+            }
+            if (overallScore > 86) {
+                return {
+                    grade: 5,
+                    gradeText: "A'lo",
+                    levelText: "5 Baho (A'lo)",
+                    passed: true,
+                    badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300",
+                    badgeColor: "#059669",
+                    badgePrintColor: "#15803d",
+                    title: "🏆 5 BAHOLIK (A'LO) — IMTIHONDAN O'TDI",
+                    printTitle: "🏆 BAHOSI: 5 (A'LO) — IMTIHONDAN O'TDI",
+                    voiceText: `Imtihon yakunlandi. Natijangiz ${overallScore} foiz, a'lo 5 baho! Tabriklaymiz, imtihondan a'lo darajada o'tdingiz!`
+                };
+            } else if (overallScore >= 74) {
+                return {
+                    grade: 4,
+                    gradeText: "Yaxshi",
+                    levelText: "4 Baho (Yaxshi)",
+                    passed: true,
+                    badgeClass: "bg-blue-100 text-blue-800 border-blue-300",
+                    badgeColor: "#2563eb",
+                    badgePrintColor: "#1d4ed8",
+                    title: "👍 4 BAHOLIK (YAXSHI) — IMTIHONDAN O'TDI",
+                    printTitle: "👍 BAHOSI: 4 (YAXSHI) — IMTIHONDAN O'TDI",
+                    voiceText: `Imtihon yakunlandi. Natijangiz ${overallScore} foiz, yaxshi 4 baho! Imtihondan muvaffaqiyatli o'tdingiz.`
+                };
+            } else if (overallScore >= 56) {
+                return {
+                    grade: 3,
+                    gradeText: "Qoniqarli",
+                    levelText: "3 Baho (Qoniqarli)",
+                    passed: true,
+                    badgeClass: "bg-amber-100 text-amber-800 border-amber-300",
+                    badgeColor: "#d97706",
+                    badgePrintColor: "#b45309",
+                    title: "👌 3 BAHOLIK (QONIQARLI) — IMTIHONDAN O'TDI",
+                    printTitle: "👌 BAHOSI: 3 (QONIQARLI) — IMTIHONDAN O'TDI",
+                    voiceText: `Imtihon yakunlandi. Natijangiz ${overallScore} foiz, qoniqarli 3 baho. Imtihondan o'tdingiz.`
+                };
+            } else {
+                return {
+                    grade: 2,
+                    gradeText: "Qoniqarsiz",
+                    levelText: "2 Baho (Qoniqarsiz)",
+                    passed: false,
+                    badgeClass: "bg-rose-100 text-rose-800 border-rose-300",
+                    badgeColor: "#e11d48",
+                    badgePrintColor: "#b91c1c",
+                    title: "❌ 2 BAHOLIK (QONIQARSIZ) — YIQILDI",
+                    printTitle: "❌ BAHOSI: 2 (QONIQARSIZ) — YIQILDI",
+                    voiceText: `Imtihon yakunlandi. Natijangiz ${overallScore} foiz, 2 baho, qoniqarsiz. Imtihondan o'ta olmadingiz.`
+                };
+            }
+        }
+
+        function speakExamResult(text) {
+            if (!text) return;
+            try {
+                fetch("/api/tts", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: text, voice: "uz-UZ-SardorNeural" })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.audio) {
+                        const audio = new Audio("data:audio/mp3;base64," + data.audio);
+                        audio.volume = 1.0;
+                        audio.play().catch(() => speakExamBrowserSynthesis(text));
+                    } else {
+                        speakExamBrowserSynthesis(text);
+                    }
+                })
+                .catch(() => {
+                    speakExamBrowserSynthesis(text);
+                });
+            } catch(e) {
+                speakExamBrowserSynthesis(text);
+            }
+        }
+
+        function speakExamBrowserSynthesis(text) {
+            if (!('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = "uz-UZ";
+                utter.rate = 0.9;
+                utter.pitch = 0.85;
+                utter.volume = 1.0;
+                window.speechSynthesis.speak(utter);
+            } catch(e) {}
+        }
+
         function finishExamManually() {
             if (examTimerInterval) clearInterval(examTimerInterval);
             isExamActive = false;
@@ -1162,7 +1322,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             const timeSpentSecs = 120 - examTimeLeft;
-            const isPassed = overallScore >= 80 && liveStats.totalComps >= 20;
+            const gradeInfo = calculateCprGrade(overallScore, liveStats.totalComps);
 
             const d = new Date();
             const dateStr = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth()+1).toString().padStart(2, '0')}.${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
@@ -1189,7 +1349,10 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stomachErrors: liveStats.stomachErrors,
                 bpm: avgBpm,
                 score: overallScore,
-                passed: isPassed
+                grade: gradeInfo.grade,
+                gradeText: gradeInfo.gradeText,
+                gradeTitle: gradeInfo.title,
+                passed: gradeInfo.passed
             };
 
             // Save to LocalStorage History
@@ -1198,12 +1361,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             // Populate Modal & Printable Sheet
             renderProtocolFromRecord(examRecord);
 
+            // Voice synthesis announcement
+            speakExamResult(gradeInfo.voiceText);
+
             if (currentAppMode === "exam") {
                 document.getElementById("exam-modal").classList.remove("hidden");
             }
         }
 
         function renderProtocolFromRecord(record) {
+            const gradeInfo = calculateCprGrade(record.score, record.totalComps);
+
             // 1. Populate Screen Modal
             document.getElementById("modal-student-header").innerText = `Talaba: ${record.name} (${record.group})`;
             document.getElementById("modal-total-score").innerText = `${record.score}%`;
@@ -1212,6 +1380,29 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById("modal-correct-comps").innerText = `${record.correctComps} ta (${record.correctPct}%)`;
             document.getElementById("modal-wrong-comps").innerText = `${record.wrongComps} ta`;
             document.getElementById("modal-bpm-avg").innerText = `${record.bpm} /min`;
+
+            const gradeNumEl = document.getElementById("modal-grade-num");
+            if (gradeNumEl) gradeNumEl.innerText = record.grade || gradeInfo.grade;
+
+            const gradeBadgeEl = document.getElementById("modal-grade-badge");
+            if (gradeBadgeEl) {
+                const g = record.grade || gradeInfo.grade;
+                if (g === 5) gradeBadgeEl.className = "w-14 h-14 rounded-2xl bg-emerald-600 text-white flex flex-col items-center justify-center font-black shadow-md";
+                else if (g === 4) gradeBadgeEl.className = "w-14 h-14 rounded-2xl bg-blue-600 text-white flex flex-col items-center justify-center font-black shadow-md";
+                else if (g === 3) gradeBadgeEl.className = "w-14 h-14 rounded-2xl bg-amber-500 text-white flex flex-col items-center justify-center font-black shadow-md";
+                else gradeBadgeEl.className = "w-14 h-14 rounded-2xl bg-rose-600 text-white flex flex-col items-center justify-center font-black shadow-md";
+            }
+
+            const gradeTextEl = document.getElementById("modal-grade-text");
+            if (gradeTextEl) {
+                const g = record.grade || gradeInfo.grade;
+                const gt = record.gradeText || gradeInfo.gradeText;
+                gradeTextEl.innerText = `${g} Baho (${gt})`;
+                if (g === 5) gradeTextEl.className = "text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200";
+                else if (g === 4) gradeTextEl.className = "text-xs font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200";
+                else if (g === 3) gradeTextEl.className = "text-xs font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200";
+                else gradeTextEl.className = "text-xs font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200";
+            }
 
             const errDiv = document.getElementById("modal-error-details");
             errDiv.innerHTML = `
@@ -1225,14 +1416,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 `Jami: ${record.totalVents} ta | To'g'ri (2.0-3.0 kPa): ${record.correctVents} ta | Oshqozon xatosi: ${record.stomachErrors} ta`;
 
             const badge = document.getElementById("modal-status-badge");
-
-            if (record.passed) {
-                badge.innerText = "🏆 IMTIHONDAN O'TDI (PASSED)";
-                badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-300 inline-block mb-2";
-            } else {
-                badge.innerText = "❌ YIQILDI (FAILED)";
-                badge.className = "px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-rose-50 text-rose-700 border border-rose-300 inline-block mb-2";
-            }
+            badge.innerText = gradeInfo.title;
+            badge.className = `px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${gradeInfo.badgeClass} inline-block mb-2 shadow-sm`;
 
             // 2. Populate Printable Sheet
             document.getElementById("print-protocol-no").innerText = record.id;
@@ -1243,15 +1428,18 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById("print-exam-duration").innerText = `${record.timeSpent} soniya`;
             document.getElementById("print-examiner").innerText = record.examiner;
 
-            document.getElementById("print-status-text").innerText = record.passed ? "🏆 IMTIHONDAN O'TDI (PASSED)" : "❌ YIQILDI (FAILED)";
-            document.getElementById("print-status-text").style.color = record.passed ? "#15803d" : "#b91c1c";
-            document.getElementById("print-total-pct").innerText = `${record.score}%`;
+            const printGradeVal = document.getElementById("print-grade-val");
+            if (printGradeVal) printGradeVal.innerText = record.grade || gradeInfo.grade;
+
+            document.getElementById("print-status-text").innerText = gradeInfo.printTitle;
+            document.getElementById("print-status-text").style.color = gradeInfo.badgePrintColor;
+            document.getElementById("print-total-pct").innerText = `${record.score}% (Baho: ${record.grade || gradeInfo.grade})`;
 
             document.getElementById("print-val-total-comps").innerText = `${record.totalComps} ta`;
-            document.getElementById("print-res-total-comps").innerText = record.totalComps >= 20 ? "Qoniqarli" : "Kam";
+            document.getElementById("print-res-total-comps").innerText = record.totalComps >= 20 ? "Qoniqarli" : "Kam (<20)";
 
             document.getElementById("print-val-correct-comps").innerText = `${record.correctComps} ta (${record.correctPct}%)`;
-            document.getElementById("print-res-correct-comps").innerText = record.correctPct >= 80 ? "A'lo" : "Yetarli emas";
+            document.getElementById("print-res-correct-comps").innerText = `${record.grade || gradeInfo.grade} Baho (${record.gradeText || gradeInfo.gradeText})`;
 
             document.getElementById("print-val-recoil").innerText = `${record.recoilErrors} ta xato`;
             document.getElementById("print-res-recoil").innerText = record.recoilErrors === 0 ? "Mukammal" : "E'tibor bering";
@@ -1375,11 +1563,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                 });
             }
 
-            // 2. Filter by Status (Passed / Failed)
+            // 2. Filter by Status & Grade (Passed / Failed / Grade 5,4,3,2)
             if (statusVal === "passed") {
                 list = list.filter(item => item.passed);
             } else if (statusVal === "failed") {
                 list = list.filter(item => !item.passed);
+            } else if (statusVal === "grade_5") {
+                list = list.filter(item => (item.grade === 5 || item.score > 86));
+            } else if (statusVal === "grade_4") {
+                list = list.filter(item => (item.grade === 4 || (item.score >= 74 && item.score <= 86)));
+            } else if (statusVal === "grade_3") {
+                list = list.filter(item => (item.grade === 3 || (item.score >= 56 && item.score < 74)));
+            } else if (statusVal === "grade_2") {
+                list = list.filter(item => (item.grade === 2 || item.score < 56 || !item.passed));
             }
 
             // 3. Sort
@@ -1407,8 +1603,30 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (emptyEl) emptyEl.classList.add("hidden");
             if (!container) return;
 
-            container.innerHTML = list.map(item => `
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border ${item.passed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'} text-xs gap-2 transition hover:shadow-sm">
+            container.innerHTML = list.map(item => {
+                const itemGrade = item.grade || (item.score > 86 ? 5 : (item.score >= 74 ? 4 : (item.score >= 56 ? 3 : 2)));
+                const itemGradeText = item.gradeText || (itemGrade === 5 ? "A'lo" : (itemGrade === 4 ? "Yaxshi" : (itemGrade === 3 ? "Qoniqarli" : "Qoniqarsiz")));
+                
+                let badgeStyle = "bg-rose-100 text-rose-800 border-rose-300";
+                let badgeIcon = "❌";
+                let cardBg = "bg-rose-50/40 border-rose-200";
+
+                if (itemGrade === 5) {
+                    badgeStyle = "bg-emerald-100 text-emerald-800 border-emerald-300";
+                    badgeIcon = "⭐️";
+                    cardBg = "bg-emerald-50/40 border-emerald-200";
+                } else if (itemGrade === 4) {
+                    badgeStyle = "bg-blue-100 text-blue-800 border-blue-300";
+                    badgeIcon = "👍";
+                    cardBg = "bg-blue-50/40 border-blue-200";
+                } else if (itemGrade === 3) {
+                    badgeStyle = "bg-amber-100 text-amber-800 border-amber-300";
+                    badgeIcon = "👌";
+                    cardBg = "bg-amber-50/40 border-amber-200";
+                }
+
+                return `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border ${cardBg} text-xs gap-2 transition hover:shadow-sm">
                     <div class="flex flex-col">
                         <div class="font-black text-slate-900 flex items-center gap-1.5">
                             <span>${item.name}</span>
@@ -1424,8 +1642,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </div>
 
                     <div class="flex items-center gap-2 self-end sm:self-center">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-black ${item.passed ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'}">
-                            ${item.score}% (${item.passed ? "O'TDI" : "YIQILDI"})
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-black ${badgeStyle} flex items-center gap-1">
+                            <span>${badgeIcon}</span>
+                            <span>${itemGrade} Baho (${itemGradeText}) — ${item.score}%</span>
                         </span>
                         
                         <button type="button" onclick="openHistoryRecord('${item.id}')" title="Protokolni ko'rish va chop etish" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm cursor-pointer flex items-center gap-1">
@@ -1437,7 +1656,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function printExamProtocol() {
