@@ -1292,7 +1292,10 @@ async def get_exam():
 
 @app.get("/intubation", response_class=HTMLResponse)
 async def get_intubation():
-    return HTMLResponse(content=INTUBATION_HTML)
+    import importlib
+    import intubation_simulator
+    importlib.reload(intubation_simulator)
+    return HTMLResponse(content=intubation_simulator.INTUBATION_HTML)
 
 @app.get("/intubation/assets/{filename}")
 async def get_intubation_asset(filename: str):
