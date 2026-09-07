@@ -450,7 +450,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
             }
         }
 
-        // AUDIO CONTROLS WITH DIRECT STATE DISPATCH & SPEECH FALLBACK
+        // AUDIO CONTROLS (Foydalanuvchi yuklagan original fayllar: success.mp3, failed.mp3, esophagus.mp3)
         let currentAudioLevel = "idle";
 
         function stopAllAudio() {
@@ -465,19 +465,7 @@ INTUBATION_HTML = """<!DOCTYPE html>
             });
         }
 
-        function speakFallback(text) {
-            try {
-                if ('speechSynthesis' in window && soundEnabled) {
-                    window.speechSynthesis.cancel();
-                    const ut = new SpeechSynthesisUtterance(text);
-                    ut.lang = 'uz-UZ';
-                    ut.rate = 1.0;
-                    window.speechSynthesis.speak(ut);
-                }
-            } catch(e) {}
-        }
-
-        function playSoundElement(id, fallbackText) {
+        function playOriginalAudio(id) {
             const el = document.getElementById(id);
             if (!el) return;
             try {
@@ -486,12 +474,10 @@ INTUBATION_HTML = """<!DOCTYPE html>
                 if (p && p.catch) {
                     p.catch((err) => {
                         console.warn("Audio play error:", id, err);
-                        if (fallbackText) speakFallback(fallbackText);
                     });
                 }
             } catch(err) {
-                console.warn("Audio exception:", err);
-                if (fallbackText) speakFallback(fallbackText);
+                console.warn("Audio exception:", id, err);
             }
         }
 
@@ -509,23 +495,25 @@ INTUBATION_HTML = """<!DOCTYPE html>
             stopAllAudio();
 
             if (level === "danger") {
-                playSoundElement('audio-esophagus', "Diqqat! Trubka qizilo'ngachga, ya'ni oshqozonga kirdi!");
+                playOriginalAudio('audio-esophagus');
             } else if (level === "warn") {
-                playSoundElement('audio-failed', "Xato! Tishga tegish qayd etildi!");
+                playOriginalAudio('audio-failed');
             } else if (level === "ok") {
-                playSoundElement('audio-success', "Barakalla! Trubka traxeyaga juda to'g'ri kirdi!");
+                playOriginalAudio('audio-success');
             }
         }
 
         // Brauzer avtomatik ovoz blokirovkasini ochish (foydalanuvchi sahifada birinchi marta bosganda)
-        document.addEventListener('click', () => {
+        function unlockAudioElements() {
             ['audio-esophagus', 'audio-failed', 'audio-success'].forEach(id => {
                 const a = document.getElementById(id);
                 if (a) {
                     try { a.load(); } catch(e) {}
                 }
             });
-        }, { once: true });
+        }
+        document.addEventListener('click', unlockAudioElements, { once: true });
+        document.addEventListener('touchstart', unlockAudioElements, { once: true });
 
         function toggleSound() {
             soundEnabled = !soundEnabled;
