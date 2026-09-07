@@ -1974,11 +1974,44 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         let injectionInProgress = false;
         let injectionCountdownTimer = null;
+        let lastEvaluatedStrokeTime = 0;
+        let lastStrokeVerdictPeak = 0;
+
+        function updateStrokeVerdict(peakVal) {
+            lastEvaluatedStrokeTime = Date.now();
+            lastStrokeVerdictPeak = peakVal;
+            const verd = document.getElementById("cpr-eval-verdict");
+            const forceValEl = document.getElementById("cpr-force-val");
+            const forceBar = document.getElementById("cpr-force-bar");
+
+            if (peakVal >= 38.0 && peakVal <= 55.0) {
+                if (verd) {
+                    verd.innerText = `✅ A'LO ZARBA (${peakVal.toFixed(1)} kg)`;
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-600 text-white shadow-sm";
+                }
+                if (forceValEl) forceValEl.className = "mono text-4xl lg:text-5xl font-black text-emerald-600 tracking-tight";
+                if (forceBar) forceBar.className = "bg-emerald-500 h-full rounded transition-all duration-75 shadow-[0_0_12px_#22c55e]";
+            } else if (peakVal > 55.0) {
+                if (verd) {
+                    verd.innerText = `🚨 JUDA QATTIQ (${peakVal.toFixed(1)} kg)`;
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-rose-600 text-white shadow-sm";
+                }
+                if (forceValEl) forceValEl.className = "mono text-4xl lg:text-5xl font-black text-rose-600 tracking-tight";
+                if (forceBar) forceBar.className = "bg-rose-500 h-full rounded transition-all duration-75 shadow-[0_0_12px_#ef4444]";
+            } else if (peakVal >= 8.0) {
+                if (verd) {
+                    verd.innerText = `⚠️ SAYOZ: QATTIQROQ (${peakVal.toFixed(1)} kg)`;
+                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-sm";
+                }
+                if (forceValEl) forceValEl.className = "mono text-4xl lg:text-5xl font-black text-amber-600 tracking-tight";
+                if (forceBar) forceBar.className = "bg-amber-500 h-full rounded transition-all duration-75";
+            }
+        }
 
         function processCPRStroke(forceKg) {
             const now = Date.now();
             if (cprState === "idle") {
-                if (forceKg > 4.0) {
+                if (forceKg > 5.0) {
                     cprState = "compressing";
                     peakForce = forceKg;
                 }
@@ -1986,7 +2019,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (forceKg > peakForce) {
                     peakForce = forceKg;
                 }
-                if (forceKg < peakForce - 3.0) {
+                if (forceKg < (peakForce - 3.5) && peakForce >= 8.0) {
                     cprState = "recoiling";
                     if (lastStrokeTime > 0) {
                         const delta = now - lastStrokeTime;
@@ -1998,6 +2031,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                     cprCount++;
                     lastDepthOk = (peakForce >= 38.0 && peakForce <= 55.0);
                     lastRateOk = (currentBpm >= 100 && currentBpm <= 120);
+
+                    // Faqat zarba yakunlanganda eng yuqori nuqtasiga (peak) qarab 1 marta baholanadi:
+                    updateStrokeVerdict(peakForce);
 
                     if (cprCycleComps < 30) {
                         cprCycleComps++;
@@ -2012,7 +2048,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (forceKg <= 5.0) {
                     lastRecoilOk = true;
                     cprState = "idle";
-                } else if (forceKg > peakForce - 1.0 && forceKg > 4.0) {
+                } else if (forceKg > (peakForce - 1.0) && forceKg > 5.0) {
                     lastRecoilOk = false;
                     cprState = "compressing";
                     peakForce = forceKg;
@@ -2591,40 +2627,33 @@ HTML_CONTENT = """<!DOCTYPE html>
             const bpmOk = data.bpm_ok !== undefined ? Boolean(data.bpm_ok) : lastRateOk;
             const posOk = posBtn;
 
-            // 1. Force Bar va Verdict
-            document.getElementById("cpr-force-val").innerText = `${fCurr.toFixed(1)} kg`;
+            // 1. Force Bar va Jonli ko'rsatkich (Verdict faqat 1 ta to'liq zarba tugaganda yangilanadi)
+            const forceValEl = document.getElementById("cpr-force-val");
+            if (forceValEl) forceValEl.innerText = `${fCurr.toFixed(1)} kg`;
             const forcePct = Math.min(100, (fCurr / 60.0) * 100);
             const forceBar = document.getElementById("cpr-force-bar");
-            forceBar.style.width = `${forcePct}%`;
+            if (forceBar) forceBar.style.width = `${forcePct}%`;
 
             const verd = document.getElementById("cpr-eval-verdict");
-            if (fCurr >= 38.0 && fCurr <= 55.0) {
-                forceBar.className = "bg-emerald-500 h-full rounded transition-all duration-75 shadow-[0_0_12px_#22c55e]";
-                document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-emerald-600 tracking-tight";
-                if (verd) {
-                    verd.innerText = "✅ A'LO ZARBA (38-55 kg)";
-                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-600 text-white shadow-sm";
-                }
-            } else if (fCurr > 55.0) {
-                forceBar.className = "bg-rose-500 h-full rounded transition-all duration-75 shadow-[0_0_12px_#ef4444]";
-                document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-rose-600 tracking-tight";
-                if (verd) {
-                    verd.innerText = "🚨 JUDA QATTIQ (>55 kg)";
-                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-rose-600 text-white shadow-sm";
-                }
-            } else if (fCurr > 8.0) {
-                forceBar.className = "bg-amber-500 h-full rounded transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-amber-600 tracking-tight";
-                if (verd) {
-                    verd.innerText = "⚠️ SAYOZ: QATTIQROQ";
-                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-white shadow-sm";
+            const nowTime = Date.now();
+
+            if (fCurr > 6.0) {
+                if (fCurr >= 38.0 && fCurr <= 55.0) {
+                    if (forceBar) forceBar.className = "bg-emerald-500 h-full rounded transition-all duration-75 shadow-[0_0_12px_#22c55e]";
+                } else if (fCurr > 55.0) {
+                    if (forceBar) forceBar.className = "bg-rose-500 h-full rounded transition-all duration-75 shadow-[0_0_12px_#ef4444]";
+                } else {
+                    if (forceBar) forceBar.className = "bg-amber-500 h-full rounded transition-all duration-75";
                 }
             } else {
-                forceBar.className = "bg-slate-300 h-full rounded transition-all duration-75";
-                document.getElementById("cpr-force-val").className = "mono text-4xl lg:text-5xl font-black text-slate-500 tracking-tight";
-                if (verd) {
-                    verd.innerText = "BOSISHGA TAYYOR";
-                    verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-slate-200 text-slate-700 shadow-xs";
+                // Agar 4 soniyadan ko'proq bosilmasa, holat dastlabki 'BOSISHGA TAYYOR' holatiga qaytadi
+                if (nowTime - lastEvaluatedStrokeTime > 4000) {
+                    if (forceBar) forceBar.className = "bg-slate-300 h-full rounded transition-all duration-75";
+                    if (forceValEl) forceValEl.className = "mono text-4xl lg:text-5xl font-black text-slate-500 tracking-tight";
+                    if (verd) {
+                        verd.innerText = "BOSISHGA TAYYOR";
+                        verd.className = "px-2.5 py-1 rounded-lg text-xs font-black bg-slate-200 text-slate-700 shadow-xs";
+                    }
                 }
             }
 

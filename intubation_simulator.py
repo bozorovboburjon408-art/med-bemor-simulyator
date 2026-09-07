@@ -253,8 +253,8 @@ INTUBATION_HTML = """<!DOCTYPE html>
     </div>
 
     <!-- AUDIO ELEMENTS -->
-    <audio id="audio-esophagus" loop src="/intubation/assets/esophagus.mp3" preload="auto"></audio>
-    <audio id="audio-failed" loop src="/intubation/assets/failed.mp3" preload="auto"></audio>
+    <audio id="audio-esophagus" src="/intubation/assets/esophagus.mp3" preload="auto"></audio>
+    <audio id="audio-failed" src="/intubation/assets/failed.mp3" preload="auto"></audio>
     <audio id="audio-success" src="/intubation/assets/success.mp3" preload="auto"></audio>
 
     <script>
@@ -450,29 +450,69 @@ INTUBATION_HTML = """<!DOCTYPE html>
             }
         }
 
-        // AUDIO CONTROLS
+        // AUDIO CONTROLS WITH DEBOUNCING & ANTI-COLLISION
+        let currentAudioLevel = "idle";
+        let audioDebounceTimer = null;
+        let lastAudioPlayTime = { danger: 0, warn: 0, ok: 0 };
+
         function stopAllAudio() {
             ['audio-esophagus', 'audio-failed', 'audio-success'].forEach(id => {
                 const a = document.getElementById(id);
-                a.pause();
-                a.currentTime = 0;
+                if (a) {
+                    a.pause();
+                    a.currentTime = 0;
+                }
             });
         }
 
-        let currentAudioLevel = "idle";
         function handleAudio(level) {
-            if (!soundEnabled) { stopAllAudio(); return; }
-            if (currentAudioLevel === level) return;
-            currentAudioLevel = level;
-
-            stopAllAudio();
-            if (level === "danger") {
-                document.getElementById('audio-esophagus').play().catch(()=>{});
-            } else if (level === "warn") {
-                document.getElementById('audio-failed').play().catch(()=>{});
-            } else if (level === "ok") {
-                document.getElementById('audio-success').play().catch(()=>{});
+            if (!soundEnabled) { 
+                if (audioDebounceTimer) { clearTimeout(audioDebounceTimer); audioDebounceTimer = null; }
+                stopAllAudio(); 
+                currentAudioLevel = "idle";
+                return; 
             }
+
+            if (level === currentAudioLevel && level !== "idle") return;
+
+            if (audioDebounceTimer) {
+                clearTimeout(audioDebounceTimer);
+                audioDebounceTimer = null;
+            }
+
+            if (level === "idle") {
+                audioDebounceTimer = setTimeout(() => {
+                    currentAudioLevel = "idle";
+                }, 300);
+                return;
+            }
+
+            // Agar to'g'ri (ok) bo'lsa tezroq va ustuvor, boshqa oraliq holatlar uchun 300ms barqarorlik tekshiruvi
+            const delay = (level === "ok") ? 180 : 300;
+
+            audioDebounceTimer = setTimeout(() => {
+                const now = Date.now();
+                // Xatolik xabarlarini ketma-ket har soniyada qaytarmaslik (cooldown 2.5s)
+                if ((level === "warn" || level === "danger") && (now - (lastAudioPlayTime[level] || 0) < 2500)) {
+                    currentAudioLevel = level;
+                    return;
+                }
+
+                currentAudioLevel = level;
+                lastAudioPlayTime[level] = now;
+                stopAllAudio();
+
+                if (level === "danger") {
+                    const a = document.getElementById('audio-esophagus');
+                    if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
+                } else if (level === "warn") {
+                    const a = document.getElementById('audio-failed');
+                    if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
+                } else if (level === "ok") {
+                    const a = document.getElementById('audio-success');
+                    if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
+                }
+            }, delay);
         }
 
         function toggleSound() {
