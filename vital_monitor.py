@@ -1976,8 +1976,9 @@ HTML_CONTENT = """<!DOCTYPE html>
         let injectionCountdownTimer = null;
         let lastEvaluatedStrokeTime = 0;
         let lastStrokeVerdictPeak = 0;
-        let lastInjPinState = false;
-        let lastInjectionTime = 0;
+        let needleLatched = false;
+        let needleReleaseTimeout = null;
+        let lastPhysicalInjectionTime = 0;
 
         function updateStrokeVerdict(peakVal) {
             lastEvaluatedStrokeTime = Date.now();
@@ -2769,30 +2770,48 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stomachAlert.innerHTML = "Oshqozon toza";
             }
 
-            // 6. Ukol / Inyeksiya (Touch Pin 4) - EDGE TRIGGERED (1 marta ulab-uzish = 1 marta inyeksiya)
-            if (injBtn && !lastInjPinState) {
-                // Rising edge: Igna tomirga birinchi marta kirdi -> 1 marta ukol hisoblanadi
-                lastInjPinState = true;
-                processSmartMedicationAdministration();
-            } else if (!injBtn && lastInjPinState) {
-                // Falling edge: Igna tomirdan chiqarib olindi -> keyingi inyeksiyaga tayyor
-                lastInjPinState = false;
-                if (!injectionInProgress) {
-                    const injBanner = document.getElementById("inj-banner");
-                    const injBtnEl = document.getElementById("inj-badge-small");
-                    if (injBanner) injBanner.classList.add("hidden");
-                    if (injBtnEl) {
-                        injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
+            // 6. Ukol / Inyeksiya (Touch Pin 4) - Hardware Anti-Bounce Debounced Latch
+            handleInjectionPin(injBtn);
+        }
+
+        function handleInjectionPin(isPinActive) {
+            const now = Date.now();
+            if (isPinActive) {
+                if (needleReleaseTimeout) {
+                    clearTimeout(needleReleaseTimeout);
+                    needleReleaseTimeout = null;
+                }
+
+                if (!needleLatched) {
+                    needleLatched = true;
+                    // Inyeksiyalar orasida kamida 3.5 soniya mutlaq oraliq bo'lishi shart
+                    if (now - lastPhysicalInjectionTime >= 3500) {
+                        lastPhysicalInjectionTime = now;
+                        processSmartMedicationAdministration();
                     }
+                }
+            } else {
+                // Pin 0 bo'lganda, igna rostdan ham tomirdan chiqarilganini tasdiqlash uchun 1.5s kutamiz
+                if (needleLatched && !needleReleaseTimeout) {
+                    needleReleaseTimeout = setTimeout(() => {
+                        needleLatched = false;
+                        needleReleaseTimeout = null;
+                        if (!injectionInProgress) {
+                            const injBanner = document.getElementById("inj-banner");
+                            const injBtnEl = document.getElementById("inj-badge-small");
+                            if (injBanner) injBanner.classList.add("hidden");
+                            if (injBtnEl) {
+                                injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
+                            }
+                        }
+                    }, 1500);
                 }
             }
         }
 
         // ==================== AQLLI FARMAKOLOGIK REAKSIYA VA DAVOLASH DVIGATELI ====================
         function processSmartMedicationAdministration() {
-            const now = Date.now();
-            if (injectionInProgress || (now - lastInjectionTime < 1500)) return;
-            lastInjectionTime = now;
+            if (injectionInProgress) return;
 
             const med = selectedMedication;
             const medId = med.id;
@@ -2894,6 +2913,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                         updateBanner(warn, "bg-rose-600 text-white border-rose-800 font-black alarm-blink");
                         speakWithFallback(`Xato dori! Birinchi bosqichda faqat Adrenalin yuborilishi shart. ${medName} samarasiz, puls to'xtadi.`);
                     }
+                } else if (cprRevivalStage === 2) {
+                    // 2-bosqich: Adrenalin allaqachon qilingan va bemor tiklanmoqda!
+                    const infoMsg = `✅ ADRENALIN QILINGAN: Bemor ritmi allaqachon tiklanmoqda (75 BPM). Qayta dori shart emas.`;
+                    if (injText) injText.innerText = infoMsg;
+                    updateBanner(infoMsg, "bg-emerald-100 text-emerald-900 border-emerald-400 font-bold");
                 } else {
                     // 0-bosqich: CPR qilinmagan, yurak to'xtab yotibdi (0 BPM)
                     if (medId === "adrenalin") {
