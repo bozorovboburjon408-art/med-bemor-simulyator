@@ -258,6 +258,9 @@ INTUBATION_HTML = """<!DOCTYPE html>
     <audio id="audio-success" src="/intubation/assets/success.mp3" preload="auto"></audio>
 
     <script>
+        // Barcha sun'iy nutq sintezlarini darhol to'xtatish (faqat asl audio fayllar ishlatiladi)
+        try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch(e) {}
+
         // SENSOR ALIASES & PARSING LOGIC
         const ALIASES = {
             t: "teeth", teeth: "teeth", tish: "teeth", tooth: "teeth",
