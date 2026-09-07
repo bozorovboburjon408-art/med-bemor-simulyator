@@ -450,70 +450,82 @@ INTUBATION_HTML = """<!DOCTYPE html>
             }
         }
 
-        // AUDIO CONTROLS WITH DEBOUNCING & ANTI-COLLISION
+        // AUDIO CONTROLS WITH DIRECT STATE DISPATCH & SPEECH FALLBACK
         let currentAudioLevel = "idle";
-        let audioDebounceTimer = null;
-        let lastAudioPlayTime = { danger: 0, warn: 0, ok: 0 };
 
         function stopAllAudio() {
             ['audio-esophagus', 'audio-failed', 'audio-success'].forEach(id => {
                 const a = document.getElementById(id);
                 if (a) {
-                    a.pause();
-                    a.currentTime = 0;
+                    try {
+                        a.pause();
+                        a.currentTime = 0;
+                    } catch(e) {}
                 }
             });
         }
 
+        function speakFallback(text) {
+            try {
+                if ('speechSynthesis' in window && soundEnabled) {
+                    window.speechSynthesis.cancel();
+                    const ut = new SpeechSynthesisUtterance(text);
+                    ut.lang = 'uz-UZ';
+                    ut.rate = 1.0;
+                    window.speechSynthesis.speak(ut);
+                }
+            } catch(e) {}
+        }
+
+        function playSoundElement(id, fallbackText) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            try {
+                el.currentTime = 0;
+                const p = el.play();
+                if (p && p.catch) {
+                    p.catch((err) => {
+                        console.warn("Audio play error:", id, err);
+                        if (fallbackText) speakFallback(fallbackText);
+                    });
+                }
+            } catch(err) {
+                console.warn("Audio exception:", err);
+                if (fallbackText) speakFallback(fallbackText);
+            }
+        }
+
         function handleAudio(level) {
             if (!soundEnabled) { 
-                if (audioDebounceTimer) { clearTimeout(audioDebounceTimer); audioDebounceTimer = null; }
                 stopAllAudio(); 
                 currentAudioLevel = "idle";
                 return; 
             }
 
-            if (level === currentAudioLevel && level !== "idle") return;
+            // Holat o'zgarmagan bo'lsa (masalan har 50ms da 'ok' kelayotgan bo'lsa), qayta chalinmaydi
+            if (level === currentAudioLevel) return;
+            currentAudioLevel = level;
 
-            if (audioDebounceTimer) {
-                clearTimeout(audioDebounceTimer);
-                audioDebounceTimer = null;
+            stopAllAudio();
+
+            if (level === "danger") {
+                playSoundElement('audio-esophagus', "Diqqat! Trubka qizilo'ngachga, ya'ni oshqozonga kirdi!");
+            } else if (level === "warn") {
+                playSoundElement('audio-failed', "Xato! Tishga tegish qayd etildi!");
+            } else if (level === "ok") {
+                playSoundElement('audio-success', "Barakalla! Trubka traxeyaga juda to'g'ri kirdi!");
             }
-
-            if (level === "idle") {
-                audioDebounceTimer = setTimeout(() => {
-                    currentAudioLevel = "idle";
-                }, 300);
-                return;
-            }
-
-            // Agar to'g'ri (ok) bo'lsa tezroq va ustuvor, boshqa oraliq holatlar uchun 300ms barqarorlik tekshiruvi
-            const delay = (level === "ok") ? 180 : 300;
-
-            audioDebounceTimer = setTimeout(() => {
-                const now = Date.now();
-                // Xatolik xabarlarini ketma-ket har soniyada qaytarmaslik (cooldown 2.5s)
-                if ((level === "warn" || level === "danger") && (now - (lastAudioPlayTime[level] || 0) < 2500)) {
-                    currentAudioLevel = level;
-                    return;
-                }
-
-                currentAudioLevel = level;
-                lastAudioPlayTime[level] = now;
-                stopAllAudio();
-
-                if (level === "danger") {
-                    const a = document.getElementById('audio-esophagus');
-                    if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
-                } else if (level === "warn") {
-                    const a = document.getElementById('audio-failed');
-                    if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
-                } else if (level === "ok") {
-                    const a = document.getElementById('audio-success');
-                    if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
-                }
-            }, delay);
         }
+
+        // Brauzer avtomatik ovoz blokirovkasini ochish (foydalanuvchi sahifada birinchi marta bosganda)
+        document.addEventListener('click', () => {
+            ['audio-esophagus', 'audio-failed', 'audio-success'].forEach(id => {
+                const a = document.getElementById(id);
+                if (a) {
+                    try { a.load(); } catch(e) {}
+                }
+            });
+        }, { once: true });
 
         function toggleSound() {
             soundEnabled = !soundEnabled;
