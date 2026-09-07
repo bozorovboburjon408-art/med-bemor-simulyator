@@ -2296,9 +2296,14 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         });
 
-        function processScannedMedication(rawCode) {
+        function processScannedMedication(rawCode, isRemote = false) {
             if (!rawCode || !rawCode.trim()) return;
             const clean = rawCode.trim();
+            if (!isRemote && telemetryWs && telemetryWs.readyState === WebSocket.OPEN) {
+                try {
+                    telemetryWs.send(JSON.stringify({ type: "inject", med_id: clean }));
+                } catch(e) {}
+            }
             const matched = matchMedication(clean);
             if (matched) {
                 selectedMedication = matched;
@@ -3465,36 +3470,56 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        let telemetryWs = null;
         function connectTelemetryWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/telemetry`;
-            const ws = new WebSocket(wsUrl);
+            try {
+                telemetryWs = new WebSocket(wsUrl);
 
-            ws.onopen = () => {
-                if (!isSerialConnected) {
-                    document.getElementById("hw-dot").className = "w-2 h-2 rounded-full bg-emerald-500";
-                    document.getElementById("hw-text").innerText = "ESP32 UART: Jonli";
-                }
-            };
+                telemetryWs.onopen = () => {
+                    if (!isSerialConnected) {
+                        document.getElementById("hw-dot").className = "w-2 h-2 rounded-full bg-emerald-500";
+                        document.getElementById("hw-text").innerText = "ESP32 UART: Jonli";
+                    }
+                };
 
-            ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    handleHardwareData(data);
-                } catch(e) {}
-            };
+                telemetryWs.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === "set_scenario" || (data.scenario && !data.force && !data.f_curr)) {
+                            setScenario(data.scenario || data.type_name, true);
+                        } else if (data.type === "defibrillate" || data.cmd === "shock") {
+                            defibrillateShock(true);
+                        } else if (data.type === "inject" || data.cmd === "inject") {
+                            if (data.med_id || data.barcode) {
+                                processScannedMedication(data.med_id || data.barcode, true);
+                            }
+                        } else {
+                            handleHardwareData(data);
+                        }
+                    } catch(e) {}
+                };
 
-            ws.onclose = () => {
-                if (!isSerialConnected) {
-                    document.getElementById("hw-dot").className = "w-2 h-2 rounded-full bg-amber-500";
-                    document.getElementById("hw-text").innerText = "ESP32: Qayta ulanmoqda";
-                }
-                setTimeout(connectTelemetryWebSocket, 1500);
-            };
+                telemetryWs.onclose = () => {
+                    if (!isSerialConnected) {
+                        document.getElementById("hw-dot").className = "w-2 h-2 rounded-full bg-amber-500";
+                        document.getElementById("hw-text").innerText = "ESP32: Qayta ulanmoqda";
+                    }
+                    setTimeout(connectTelemetryWebSocket, 1500);
+                };
+            } catch(e) {
+                setTimeout(connectTelemetryWebSocket, 2000);
+            }
         }
 
         // ==================== KLINIK SSENARIYLAR ====================
-        function setScenario(type) {
+        function setScenario(type, isRemote = false) {
+            if (!isRemote && telemetryWs && telemetryWs.readyState === WebSocket.OPEN) {
+                try {
+                    telemetryWs.send(JSON.stringify({ type: "set_scenario", scenario: type }));
+                } catch(e) {}
+            }
             initAudio();
             cprRevivalStage = 0;
             totalSteps = 120;
@@ -3608,7 +3633,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             updateAIPatientSubtitle();
         }
 
-        function defibrillateShock() {
+        function defibrillateShock(isRemote = false) {
+            if (!isRemote && telemetryWs && telemetryWs.readyState === WebSocket.OPEN) {
+                try {
+                    telemetryWs.send(JSON.stringify({ type: "defibrillate" }));
+                } catch(e) {}
+            }
             initAudio();
             playVoiceAudio('/static/audio/defibrillator_shocked.mp3', "Defibrillyatsiya shoki berildi!");
             const flash = document.getElementById("flash-overlay");
@@ -3630,7 +3660,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             } catch(e) {}
 
             setTimeout(() => {
-                setScenario("normal");
+                setScenario("normal", isRemote);
             }, 700);
         }
 

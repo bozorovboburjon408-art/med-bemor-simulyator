@@ -954,7 +954,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             strokeTimes: []
         };
 
-        function switchMode(mode) {
+        function switchMode(mode, isRemote = false) {
+            if (!isRemote && ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    ws.send(JSON.stringify({ type: "cpr_switch_mode", mode: mode }));
+                } catch(e) {}
+            }
             currentAppMode = mode;
             const tabPrac = document.getElementById("tab-practice");
             const tabExam = document.getElementById("tab-exam");
@@ -977,7 +982,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 bannerIcon.className = "fa-solid fa-graduation-cap text-amber-600 text-sm";
                 bannerText.innerText = studentInfo.name ? `Talaba: ${studentInfo.name} (${studentInfo.group})` : "Imtihon rejimi: Talaba ro'yxatdan o'tkazilmoqda...";
 
-                if (!studentInfo.name) {
+                if (!studentInfo.name && !isRemote) {
                     openStudentModal();
                 }
             } else {
@@ -996,7 +1001,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        function resetPracticeCounts() {
+        function resetPracticeCounts(isRemote = false) {
+            if (!isRemote && ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    ws.send(JSON.stringify({ type: "cpr_reset_practice" }));
+                } catch(e) {}
+            }
             liveStats = {
                 totalComps: 0,
                 correctComps: 0,
@@ -1062,7 +1072,12 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         // ==================== 3... 2... 1... TESKARI HISOB VA BOSHLASH ====================
-        function startExamWithCountdown() {
+        function startExamWithCountdown(isRemote = false) {
+            if (!isRemote && ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    ws.send(JSON.stringify({ type: "cpr_start_exam", studentInfo: studentInfo }));
+                } catch(e) {}
+            }
             if (isExamActive) {
                 resetExamState();
                 return;
@@ -1304,7 +1319,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             return Math.min(100, Math.max(0, Math.round(composite)));
         }
 
-        function finishExamManually() {
+        function finishExamManually(isRemote = false) {
+            if (!isRemote && ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    ws.send(JSON.stringify({ type: "cpr_finish_exam" }));
+                } catch(e) {}
+            }
             if (examTimerInterval) clearInterval(examTimerInterval);
             isExamActive = false;
 
@@ -2190,7 +2210,20 @@ HTML_CONTENT = """<!DOCTYPE html>
                 ws.onmessage = (event) => {
                     try {
                         const data = JSON.parse(event.data);
-                        handleIncomingTelemetryData(data);
+                        if (data.type === "cpr_switch_mode") {
+                            switchMode(data.mode, true);
+                        } else if (data.type === "cpr_start_exam") {
+                            if (data.studentInfo) studentInfo = data.studentInfo;
+                            const hudEl = document.getElementById("hud-student-display");
+                            if (hudEl) hudEl.innerText = `Talaba: ${studentInfo.name} (${studentInfo.group})`;
+                            startExamWithCountdown(true);
+                        } else if (data.type === "cpr_finish_exam") {
+                            finishExamManually(true);
+                        } else if (data.type === "cpr_reset_practice") {
+                            resetPracticeCounts(true);
+                        } else {
+                            handleIncomingTelemetryData(data);
+                        }
                     } catch(e) {}
                 };
 
