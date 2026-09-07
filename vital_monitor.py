@@ -1976,6 +1976,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         let injectionCountdownTimer = null;
         let lastEvaluatedStrokeTime = 0;
         let lastStrokeVerdictPeak = 0;
+        let lastInjPinState = false;
+        let lastInjectionTime = 0;
 
         function updateStrokeVerdict(peakVal) {
             lastEvaluatedStrokeTime = Date.now();
@@ -2767,23 +2769,30 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stomachAlert.innerHTML = "Oshqozon toza";
             }
 
-            // 6. Ukol / Inyeksiya (Touch Pin 4)
-            if (injBtn) {
+            // 6. Ukol / Inyeksiya (Touch Pin 4) - EDGE TRIGGERED (1 marta ulab-uzish = 1 marta inyeksiya)
+            if (injBtn && !lastInjPinState) {
+                // Rising edge: Igna tomirga birinchi marta kirdi -> 1 marta ukol hisoblanadi
+                lastInjPinState = true;
                 processSmartMedicationAdministration();
-            } else if (!injectionInProgress) {
-                const injBanner = document.getElementById("inj-banner");
-                const injBtnEl = document.getElementById("inj-badge-small");
-                if (injBanner) injBanner.classList.add("hidden");
-                if (injBtnEl) {
-                    injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
+            } else if (!injBtn && lastInjPinState) {
+                // Falling edge: Igna tomirdan chiqarib olindi -> keyingi inyeksiyaga tayyor
+                lastInjPinState = false;
+                if (!injectionInProgress) {
+                    const injBanner = document.getElementById("inj-banner");
+                    const injBtnEl = document.getElementById("inj-badge-small");
+                    if (injBanner) injBanner.classList.add("hidden");
+                    if (injBtnEl) {
+                        injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
+                    }
                 }
             }
         }
 
         // ==================== AQLLI FARMAKOLOGIK REAKSIYA VA DAVOLASH DVIGATELI ====================
-        // ==================== AQLLI FARMAKOLOGIK REAKSIYA VA DAVOLASH DVIGATELI ====================
         function processSmartMedicationAdministration() {
-            if (injectionInProgress) return;
+            const now = Date.now();
+            if (injectionInProgress || (now - lastInjectionTime < 1500)) return;
+            lastInjectionTime = now;
 
             const med = selectedMedication;
             const medId = med.id;
@@ -2837,6 +2846,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                             } else {
                                 clearInterval(injectionCountdownTimer);
                                 injectionCountdownTimer = null;
+                                injectionInProgress = false;
 
                                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                                 totalSteps = 100;
@@ -3471,10 +3481,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             setTimeout(() => {
-                if (!injectionInProgress && injBanner) {
+                if (!injectionInProgress && !lastInjPinState && injBanner) {
                     injBanner.classList.add("hidden");
                 }
-                if (injBtnEl) {
+                if (injBtnEl && !lastInjPinState) {
                     injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
                 }
             }, 3000);
