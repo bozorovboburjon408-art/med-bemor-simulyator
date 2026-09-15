@@ -951,6 +951,15 @@ HTML_CONTENT = """<!DOCTYPE html>
         let transitionSteps = 0;
         let totalSteps = 0;
 
+        let bioWaveTimer = 0;
+        let bpSysDelta = 0;
+        let bpDiaDelta = 0;
+        let hrDelta = 0;
+        let spo2Delta = 0;
+        let cprPerfusionSys = 0;
+        let cprPerfusionDia = 0;
+        let lastCprPerfusionTime = 0;
+
         let audioCtx = null;
         let masterGain = null;
         let masterCompressor = null;
@@ -2623,6 +2632,12 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             processCPRStroke(fCurr);
 
+            if (fCurr > 5.0) {
+                lastCprPerfusionTime = Date.now();
+                cprPerfusionSys = Math.min(115, Math.round(35 + fCurr * 1.15));
+                cprPerfusionDia = Math.min(45, Math.round(15 + fCurr * 0.40));
+            }
+
             const bpm = data.bpm !== undefined ? parseInt(data.bpm) : currentBpm;
             const count = data.count !== undefined ? parseInt(data.count) : cprCount;
             const dOk = data.d_ok !== undefined ? Boolean(data.d_ok) : lastDepthOk;
@@ -3734,6 +3749,37 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         setInterval(() => {
+            bioWaveTimer += 0.08;
+
+            // Jonli bemorda nafas va tomir tonusi bilan bog'liq tabiiy fiziologik tebranishlar (Mayer to'lqinlari)
+            if (current.hr > 0 && current.mode !== "dying" && current.mode !== "asystole" && current.mode !== "vfib") {
+                const respWave = Math.sin(bioWaveTimer * 0.45);
+                const vasoWave = Math.cos(bioWaveTimer * 0.18);
+                const fastNoise = Math.sin(bioWaveTimer * 1.35) * 0.5;
+
+                // Sistolik bosim tebranishi: ±2.5 mmHg (masalan: 118-123 mmHg)
+                bpSysDelta = (respWave * 1.8 + vasoWave * 1.2 + fastNoise);
+                // Diastolik bosim tebranishi: ±1.5 mmHg (masalan: 78-82 mmHg)
+                bpDiaDelta = (respWave * 1.1 + vasoWave * 0.7 + fastNoise * 0.5);
+                // Puls tebranishi (Nafas sinus respirator aritmisi): ±1.2 bpm (masalan: 74-76 bpm)
+                hrDelta = (respWave * 1.2 + fastNoise * 0.4);
+                // SpO2 saturatsiya mayin drifti: ±0.35%
+                spo2Delta = vasoWave * 0.35;
+            } else {
+                bpSysDelta = 0;
+                bpDiaDelta = 0;
+                hrDelta = 0;
+                spo2Delta = 0;
+            }
+
+            // CPR paytidagi sun'iy perfuzion bosimning silliq so'nishi
+            if (cprPerfusionSys > 0) {
+                if (Date.now() - lastCprPerfusionTime > 600) {
+                    cprPerfusionSys = Math.max(0, cprPerfusionSys - 4);
+                    cprPerfusionDia = Math.max(0, cprPerfusionDia - 2);
+                }
+            }
+
             if (transitionSteps > 0) {
                 const factor = 1 / transitionSteps;
                 current.hr += (target.hr - current.hr) * factor;
@@ -3775,11 +3821,30 @@ HTML_CONTENT = """<!DOCTYPE html>
         }, 100);
 
         function updateNumericsUI() {
-            const hrVal = Math.round(current.hr);
-            const spo2Val = Math.round(current.spo2);
-            const sysVal = Math.round(current.sys);
-            const diaVal = Math.round(current.dia);
-            const mapVal = Math.round((sysVal + 2 * diaVal) / 3);
+            let hrVal = Math.round(current.hr + (current.hr > 0 ? hrDelta : 0));
+            let spo2Val = Math.round(current.spo2 + (current.spo2 > 0 ? spo2Delta : 0));
+            let sysVal = Math.round(current.sys + (current.sys > 0 ? bpSysDelta : 0));
+            let diaVal = Math.round(current.dia + (current.dia > 0 ? bpDiaDelta : 0));
+
+            // Agar CPR jarayonida perfuzion bosim mavjud bo'lsa
+            if (cprPerfusionSys > 0 && (current.hr <= 30 || current.mode === "dying" || current.mode === "asystole" || current.mode === "vfib")) {
+                sysVal = Math.max(sysVal, cprPerfusionSys);
+                diaVal = Math.max(diaVal, cprPerfusionDia);
+            }
+
+            // Asistoliya va VFib holatida CPR bo'lmasa qon bosimi mutlaq 0
+            if ((current.mode === "dying" || current.mode === "asystole" || current.mode === "vfib" || current.hr <= 0) && cprPerfusionSys <= 0) {
+                sysVal = 0;
+                diaVal = 0;
+                spo2Val = 0;
+            }
+
+            spo2Val = Math.max(0, Math.min(100, spo2Val));
+            sysVal = Math.max(0, sysVal);
+            diaVal = Math.max(0, diaVal);
+            hrVal = Math.max(0, hrVal);
+
+            const mapVal = (sysVal > 0 || diaVal > 0) ? Math.round((sysVal + 2 * diaVal) / 3) : 0;
             const rrVal = Math.round(current.rr);
 
             // Bemor holati tiklanganda yoki o'lim/vfib dan boshqa ssenariyga o'tilganda uzoq tiiiiit ovozini o'chiramiz
@@ -3787,37 +3852,48 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
             }
 
-            document.getElementById("num-hr").innerText = hrVal;
-            document.getElementById("num-pr").innerText = hrVal;
-            document.getElementById("num-spo2").innerText = spo2Val;
-            document.getElementById("num-sys").innerText = sysVal;
-            document.getElementById("num-dia").innerText = diaVal;
-            document.getElementById("num-map").innerText = mapVal;
-            document.getElementById("num-rr").innerText = rrVal;
-            document.getElementById("num-temp").innerText = current.temp.toFixed(1);
+            const elHr = document.getElementById("num-hr");
+            const elPr = document.getElementById("num-pr");
+            const elSpo2 = document.getElementById("num-spo2");
+            const elSys = document.getElementById("num-sys");
+            const elDia = document.getElementById("num-dia");
+            const elMap = document.getElementById("num-map");
+            const elRr = document.getElementById("num-rr");
+            const elTemp = document.getElementById("num-temp");
+
+            if (elHr) elHr.innerText = hrVal;
+            if (elPr) elPr.innerText = hrVal;
+            if (elSpo2) elSpo2.innerText = spo2Val;
+            if (elSys) elSys.innerText = sysVal;
+            if (elDia) elDia.innerText = diaVal;
+            if (elMap) elMap.innerText = mapVal;
+            if (elRr) elRr.innerText = rrVal;
+            if (elTemp) elTemp.innerText = current.temp.toFixed(1);
 
             const rhythmLabel = document.getElementById("ecg-rhythm-name");
-            if (current.rhythm === "vfib" || (current.mode === "vfib" && hrVal > 0)) {
-                rhythmLabel.innerText = "Qorinchalar Fibrillyatsiyasi (VFib)";
-                rhythmLabel.className = "text-xs font-black text-rose-600 alarm-blink";
-            } else if (hrVal <= 0) {
-                rhythmLabel.innerText = "ASYSTOLIYA (0 BPM)";
-                rhythmLabel.className = "text-xs font-black text-rose-600 alarm-blink";
-            } else if (hrVal <= 35 || current.mode === "brady") {
-                rhythmLabel.innerText = `Bradikardiya & AV-Blokada (${hrVal} BPM)`;
-                rhythmLabel.className = "text-xs font-black text-orange-600";
-            } else if (current.mode === "hyper") {
-                rhythmLabel.innerText = "Gipertonik Kriz (Sinus Ritmi)";
-                rhythmLabel.className = "text-xs font-black text-rose-600";
-            } else if (current.mode === "opioid") {
-                rhythmLabel.innerText = "Opioid Bradipnoe (Sinus Ritmi)";
-                rhythmLabel.className = "text-xs font-black text-teal-600";
-            } else if (hrVal > 150) {
-                rhythmLabel.innerText = "Ventrikulyar Taxikardiya";
-                rhythmLabel.className = "text-xs font-black text-amber-600";
-            } else {
-                rhythmLabel.innerText = "Sinus Ritmi";
-                rhythmLabel.className = "text-xs font-bold text-emerald-700";
+            if (rhythmLabel) {
+                if (current.rhythm === "vfib" || (current.mode === "vfib" && hrVal > 0)) {
+                    rhythmLabel.innerText = "Qorinchalar Fibrillyatsiyasi (VFib)";
+                    rhythmLabel.className = "text-xs font-black text-rose-600 alarm-blink";
+                } else if (hrVal <= 0) {
+                    rhythmLabel.innerText = "ASYSTOLIYA (0 BPM)";
+                    rhythmLabel.className = "text-xs font-black text-rose-600 alarm-blink";
+                } else if (hrVal <= 35 || current.mode === "brady") {
+                    rhythmLabel.innerText = `Bradikardiya & AV-Blokada (${hrVal} BPM)`;
+                    rhythmLabel.className = "text-xs font-black text-orange-600";
+                } else if (current.mode === "hyper") {
+                    rhythmLabel.innerText = "Gipertonik Kriz (Sinus Ritmi)";
+                    rhythmLabel.className = "text-xs font-black text-rose-600";
+                } else if (current.mode === "opioid") {
+                    rhythmLabel.innerText = "Opioid Bradipnoe (Sinus Ritmi)";
+                    rhythmLabel.className = "text-xs font-black text-teal-600";
+                } else if (hrVal > 150) {
+                    rhythmLabel.innerText = "Ventrikulyar Taxikardiya";
+                    rhythmLabel.className = "text-xs font-black text-amber-600";
+                } else {
+                    rhythmLabel.innerText = "Sinus Ritmi";
+                    rhythmLabel.className = "text-xs font-bold text-emerald-700";
+                }
             }
         }
 
