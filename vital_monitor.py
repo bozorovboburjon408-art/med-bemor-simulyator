@@ -283,63 +283,63 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="flex flex-col justify-between gap-1 min-h-0 overflow-hidden">
             
             <!-- HR / PULS -->
-            <div class="bg-emerald-50/70 border border-emerald-300 rounded-xl p-1.5 shadow-xs flex-1 flex flex-col justify-between">
-                <div class="flex justify-between items-center text-emerald-800 font-bold text-xs sm:text-sm">
-                    <span><i class="fa-solid fa-heart-pulse mr-1 text-emerald-600"></i> HR / PULS</span>
-                    <span class="text-xs text-slate-400 font-mono">bpm</span>
+            <div class="bg-emerald-50/70 border-2 border-emerald-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-emerald-800 font-bold text-sm sm:text-base">
+                    <span><i class="fa-solid fa-heart-pulse mr-1.5 text-emerald-600"></i> HR / PULS</span>
+                    <span class="text-xs text-slate-500 font-mono font-bold">bpm</span>
                 </div>
                 <div class="flex items-baseline justify-between my-auto">
-                    <span id="num-hr" class="mono text-4xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
-                    <div class="text-right text-xs sm:text-sm font-black leading-tight flex flex-col items-end">
-                        <div id="lbl-hr-high" class="text-xs sm:text-sm font-black">YUQ: 120</div>
-                        <div id="lbl-hr-low" class="text-xs sm:text-sm font-black">PAS: 50</div>
+                    <span id="num-hr" class="mono text-5xl lg:text-6xl font-black text-emerald-600 leading-none">75</span>
+                    <div class="text-right leading-tight flex flex-col items-end gap-0.5">
+                        <div id="lbl-hr-high" class="text-base sm:text-lg lg:text-xl font-black text-slate-800">YUQ: 120</div>
+                        <div id="lbl-hr-low" class="text-base sm:text-lg lg:text-xl font-black text-slate-800">PAS: 50</div>
                     </div>
                 </div>
-                <div class="flex justify-between items-center text-xs sm:text-sm text-slate-600 font-bold border-t border-slate-200 pt-1">
-                    <span>Zarbalar: <span id="num-count" class="font-black text-emerald-700">0</span></span>
-                    <span id="lbl-hr-status" class="text-xs sm:text-sm font-black text-emerald-700">Puls: Me'yorda</span>
+                <div class="flex justify-between items-center text-sm sm:text-base text-slate-700 font-bold border-t border-slate-200 pt-1">
+                    <span>Zarbalar: <span id="num-count" class="font-black text-emerald-700 text-base">0</span></span>
+                    <span id="lbl-hr-status" class="text-sm sm:text-base font-black text-emerald-700">Puls: Me'yorda</span>
                 </div>
             </div>
 
             <!-- SpO2 -->
-            <div class="bg-sky-50/70 border border-sky-300 rounded-xl p-1.5 shadow-xs flex-1 flex flex-col justify-between">
-                <div class="flex justify-between items-center text-sky-800 font-bold text-xs sm:text-sm">
-                    <span><i class="fa-solid fa-droplet mr-1 text-sky-600"></i> SpO2</span>
-                    <span class="text-xs text-slate-400 font-mono">%</span>
+            <div class="bg-sky-50/70 border-2 border-sky-300 rounded-xl p-2 shadow-xs flex-1 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-sky-800 font-bold text-sm sm:text-base">
+                    <span><i class="fa-solid fa-droplet mr-1.5 text-sky-600"></i> SpO2</span>
+                    <span class="text-xs text-slate-500 font-mono font-bold">%</span>
                 </div>
                 <div class="flex items-baseline justify-between my-auto">
-                    <span id="num-spo2" class="mono text-4xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
-                    <div class="text-right text-xs sm:text-sm font-black leading-tight flex flex-col items-end">
-                        <div id="lbl-spo2-pi" class="text-xs sm:text-sm font-black">PI: 4.2%</div>
-                        <div id="lbl-spo2-low" class="text-xs sm:text-sm font-black">PAS: 90%</div>
+                    <span id="num-spo2" class="mono text-5xl lg:text-6xl font-black text-sky-600 leading-none">98</span>
+                    <div class="text-right leading-tight flex flex-col items-end gap-0.5">
+                        <div id="lbl-spo2-pi" class="text-base sm:text-lg lg:text-xl font-black text-slate-800">PI: 4.2%</div>
+                        <div id="lbl-spo2-low" class="text-base sm:text-lg lg:text-xl font-black text-slate-800">PAS: 90%</div>
                     </div>
                 </div>
-                <div class="flex justify-between items-center text-xs sm:text-sm text-slate-600 font-bold border-t border-slate-200 pt-1">
-                    <span>Puls: <span id="num-pr" class="font-black text-sky-700">75</span></span>
-                    <span id="lbl-spo2-signal" class="text-xs sm:text-sm font-black text-emerald-700">Signal: Kuchli</span>
+                <div class="flex justify-between items-center text-sm sm:text-base text-slate-700 font-bold border-t border-slate-200 pt-1">
+                    <span>Puls: <span id="num-pr" class="font-black text-sky-700 text-base">75</span></span>
+                    <span id="lbl-spo2-signal" class="text-sm sm:text-base font-black text-emerald-700">Signal: Kuchli</span>
                 </div>
             </div>
 
             <!-- NIBP & RR/Temp Split -->
-            <div class="grid grid-cols-2 gap-1.5 shrink-0">
-                <div class="bg-slate-50 border border-slate-300 rounded-xl p-2 text-center shadow-xs flex flex-col justify-between">
-                    <div class="text-xs sm:text-sm font-black text-slate-800 flex items-center justify-between">
+            <div class="grid grid-cols-2 gap-2 shrink-0">
+                <div class="bg-slate-50 border-2 border-slate-300 rounded-xl p-2 text-center shadow-xs flex flex-col justify-between">
+                    <div class="text-sm sm:text-base font-black text-slate-800 flex items-center justify-between">
                         <span><i class="fa-solid fa-gauge-high mr-1 text-purple-600"></i> NIBP</span>
-                        <span class="text-[10px] text-slate-400 font-mono">mmHg</span>
+                        <span class="text-xs text-slate-400 font-mono">mmHg</span>
                     </div>
                     <div class="mono font-black text-slate-800 leading-none my-1 flex items-baseline justify-center gap-0.5">
-                        <span id="num-sys" class="text-2xl sm:text-3xl font-black text-purple-700">120</span><span class="text-lg text-slate-400">/</span><span id="num-dia" class="text-lg sm:text-xl font-black text-purple-600">80</span>
+                        <span id="num-sys" class="text-3xl sm:text-4xl font-black text-purple-700">120</span><span class="text-xl text-slate-400">/</span><span id="num-dia" class="text-2xl sm:text-3xl font-black text-purple-600">80</span>
                     </div>
-                    <div class="text-xs font-bold text-slate-600">MAP: <span id="num-map" class="text-xs sm:text-sm font-black text-emerald-700">93</span></div>
+                    <div class="text-sm font-bold text-slate-700">MAP: <span id="num-map" class="text-base sm:text-lg font-black text-emerald-700">93</span></div>
                 </div>
 
-                <div class="bg-amber-50/60 border border-amber-300 rounded-xl p-2 text-center shadow-xs flex flex-col justify-between">
-                    <div class="text-xs sm:text-sm font-black text-amber-800 flex items-center justify-between">
+                <div class="bg-amber-50/60 border-2 border-amber-300 rounded-xl p-2 text-center shadow-xs flex flex-col justify-between">
+                    <div class="text-sm sm:text-base font-black text-amber-800 flex items-center justify-between">
                         <span><i class="fa-solid fa-lungs mr-1 text-amber-600"></i> RESP</span>
-                        <span class="text-[10px] text-slate-400 font-mono">rpm</span>
+                        <span class="text-xs text-slate-400 font-mono">rpm</span>
                     </div>
-                    <span id="num-rr" class="mono text-2xl sm:text-3xl font-black text-amber-600 leading-none my-1">16</span>
-                    <div class="text-xs font-bold text-slate-600"><span id="num-temp" class="text-xs sm:text-sm font-black text-purple-700">36.6</span>°C</div>
+                    <span id="num-rr" class="mono text-3xl sm:text-4xl font-black text-amber-600 leading-none my-1">16</span>
+                    <div class="text-sm font-bold text-slate-700"><span id="num-temp" class="text-base sm:text-lg font-black text-purple-700">36.6</span>°C</div>
                 </div>
             </div>
 
@@ -3878,45 +3878,45 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (elHrHigh) {
                 elHrHigh.innerText = `YUQ: ${sysVal}`;
                 if (sysVal === 0) {
-                    elHrHigh.className = "text-xs sm:text-sm text-rose-600 font-black alarm-blink";
+                    elHrHigh.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black alarm-blink";
                 } else if (sysVal >= 160) {
-                    elHrHigh.className = "text-xs sm:text-sm text-rose-600 font-black alarm-blink";
+                    elHrHigh.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black alarm-blink";
                 } else if (sysVal <= 85) {
-                    elHrHigh.className = "text-xs sm:text-sm text-amber-600 font-black";
+                    elHrHigh.className = "text-base sm:text-lg lg:text-xl text-amber-600 font-black";
                 } else {
-                    elHrHigh.className = "text-xs sm:text-sm text-slate-700 font-black";
+                    elHrHigh.className = "text-base sm:text-lg lg:text-xl text-slate-800 font-black";
                 }
             }
 
             if (elHrLow) {
                 elHrLow.innerText = `PAS: ${diaVal}`;
                 if (diaVal === 0) {
-                    elHrLow.className = "text-xs sm:text-sm text-rose-600 font-black alarm-blink";
+                    elHrLow.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black alarm-blink";
                 } else if (diaVal >= 100) {
-                    elHrLow.className = "text-xs sm:text-sm text-rose-600 font-black alarm-blink";
+                    elHrLow.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black alarm-blink";
                 } else if (diaVal <= 50) {
-                    elHrLow.className = "text-xs sm:text-sm text-amber-600 font-black";
+                    elHrLow.className = "text-base sm:text-lg lg:text-xl text-amber-600 font-black";
                 } else {
-                    elHrLow.className = "text-xs sm:text-sm text-slate-700 font-black";
+                    elHrLow.className = "text-base sm:text-lg lg:text-xl text-slate-800 font-black";
                 }
             }
 
             if (elHrStatus) {
                 if (hrVal <= 0) {
                     elHrStatus.innerText = "Puls: Yo'q (0)";
-                    elHrStatus.className = "text-xs sm:text-sm font-black text-rose-600 alarm-blink";
+                    elHrStatus.className = "text-sm sm:text-base font-black text-rose-600 alarm-blink";
                 } else if (current.rhythm === "vfib" || current.mode === "vfib") {
                     elHrStatus.innerText = "Puls: Fibrillyatsiya";
-                    elHrStatus.className = "text-xs sm:text-sm font-black text-rose-600 alarm-blink";
+                    elHrStatus.className = "text-sm sm:text-base font-black text-rose-600 alarm-blink";
                 } else if (hrVal < 50 || current.mode === "brady") {
                     elHrStatus.innerText = "Puls: Bradikardiya";
-                    elHrStatus.className = "text-xs sm:text-sm font-black text-orange-600";
+                    elHrStatus.className = "text-sm sm:text-base font-black text-orange-600";
                 } else if (hrVal > 120 || current.mode === "attack" || current.mode === "tachycardia") {
                     elHrStatus.innerText = "Puls: Taxikardiya";
-                    elHrStatus.className = "text-xs sm:text-sm font-black text-amber-600";
+                    elHrStatus.className = "text-sm sm:text-base font-black text-amber-600";
                 } else {
                     elHrStatus.innerText = "Puls: Me'yorda";
-                    elHrStatus.className = "text-xs sm:text-sm font-black text-emerald-700";
+                    elHrStatus.className = "text-sm sm:text-base font-black text-emerald-700";
                 }
             }
 
@@ -3930,71 +3930,71 @@ HTML_CONTENT = """<!DOCTYPE html>
                 currentPI = 0.0;
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = "PI: 0.0%";
-                    elSpo2Pi.className = "text-xs sm:text-sm text-rose-600 font-black";
+                    elSpo2Pi.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90% ❌";
-                    elSpo2Low.className = "text-xs sm:text-sm text-rose-600 font-black";
+                    elSpo2Low.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Yo'q";
-                    elSpo2Signal.className = "text-xs sm:text-sm font-black text-rose-600 alarm-blink";
+                    elSpo2Signal.className = "text-sm sm:text-base font-black text-rose-600 alarm-blink";
                 }
             } else if (current.mode === "shock" || current.mode === "shok" || sysVal < 70) {
                 currentPI = Math.max(0.2, (0.4 + Math.sin(bioWaveTimer * 0.3) * 0.15));
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm text-rose-600 font-black";
+                    elSpo2Pi.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90%";
-                    elSpo2Low.className = "text-xs sm:text-sm text-amber-600 font-black";
+                    elSpo2Low.className = "text-base sm:text-lg lg:text-xl text-amber-600 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Zaif";
-                    elSpo2Signal.className = "text-xs sm:text-sm font-black text-rose-600";
+                    elSpo2Signal.className = "text-sm sm:text-base font-black text-rose-600";
                 }
             } else if (current.mode === "anaphylaxis" || current.mode === "hypoxia" || spo2Val < 85) {
                 currentPI = Math.max(0.8, (1.6 + Math.sin(bioWaveTimer * 0.3) * 0.3));
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm text-amber-600 font-black";
+                    elSpo2Pi.className = "text-base sm:text-lg lg:text-xl text-amber-600 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90% ⚠️";
-                    elSpo2Low.className = "text-xs sm:text-sm text-rose-600 font-black alarm-blink";
+                    elSpo2Low.className = "text-base sm:text-lg lg:text-xl text-rose-600 font-black alarm-blink";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Zaif";
-                    elSpo2Signal.className = "text-xs sm:text-sm font-black text-amber-600";
+                    elSpo2Signal.className = "text-sm sm:text-base font-black text-amber-600";
                 }
             } else if (current.mode === "opioid" || spo2Val < 92) {
                 currentPI = Math.max(1.2, (2.3 + Math.sin(bioWaveTimer * 0.3) * 0.3));
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm text-sky-700 font-black";
+                    elSpo2Pi.className = "text-base sm:text-lg lg:text-xl text-sky-700 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90% ⚠️";
-                    elSpo2Low.className = "text-xs sm:text-sm text-amber-600 font-black";
+                    elSpo2Low.className = "text-base sm:text-lg lg:text-xl text-amber-600 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: O'rtacha";
-                    elSpo2Signal.className = "text-xs sm:text-sm font-black text-sky-700";
+                    elSpo2Signal.className = "text-sm sm:text-base font-black text-sky-700";
                 }
             } else {
                 currentPI = (4.2 + Math.sin(bioWaveTimer * 0.3) * 0.35);
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm text-slate-700 font-black";
+                    elSpo2Pi.className = "text-base sm:text-lg lg:text-xl text-slate-800 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90%";
-                    elSpo2Low.className = "text-xs sm:text-sm text-slate-700 font-black";
+                    elSpo2Low.className = "text-base sm:text-lg lg:text-xl text-slate-800 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Kuchli";
-                    elSpo2Signal.className = "text-xs sm:text-sm font-black text-emerald-700";
+                    elSpo2Signal.className = "text-sm sm:text-base font-black text-emerald-700";
                 }
             }
 
