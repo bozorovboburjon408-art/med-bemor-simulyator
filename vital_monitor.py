@@ -156,12 +156,18 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         <!-- RIGHT ESSENTIAL CONTROLS (COMPACT) -->
         <div class="flex items-center gap-1.5 text-xs flex-nowrap shrink-0">
-            <!-- Hidden JS hooks to preserve background hardware communication -->
-            <div class="hidden" aria-hidden="true">
-                <button id="btn-web-serial"><span id="btn-web-serial-text">USB</span></button>
-                <div id="hw-badge"><span id="hw-dot"></span><span id="hw-text">ESP32</span></div>
-                <button id="pwa-vital-btn"></button>
+            <!-- Hidden JS hooks to preserve background hardware communication without showing long badge text -->
+            <div id="hw-badge" class="hidden" aria-hidden="true">
+                <span id="hw-dot"></span>
+                <span id="hw-text"></span>
             </div>
+            <button id="pwa-vital-btn" class="hidden"></button>
+
+            <!-- REAL HARDWARE WEB SERIAL USB CONNECT BUTTON (PORT SELECTION) -->
+            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse shrink-0" title="USB datchiklarini ulash (COM port tanlash)">
+                <i class="fa-brands fa-usb text-xs"></i>
+                <span id="btn-web-serial-text">🔌 USB</span>
+            </button>
 
             <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0" title="Tizim Hub">
                 <i class="fa-solid fa-hospital text-cyan-600"></i> Hub
@@ -2523,16 +2529,16 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             if (connected) {
                 if (btn) {
-                    btn.className = "px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition";
+                    btn.className = "px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition shrink-0";
                 }
-                if (btnText) btnText.innerText = "🔌 USB: Ulandi (Uzish)";
+                if (btnText) btnText.innerText = "🔌 USB (Ulandi)";
                 if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-500";
-                if (text) text.innerText = "USB: Jonli datchiklar";
+                if (text) text.innerText = "USB: Jonli";
             } else {
                 if (btn) {
-                    btn.className = "px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse";
+                    btn.className = "px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse shrink-0";
                 }
-                if (btnText) btnText.innerText = "🔌 USB Ulanish";
+                if (btnText) btnText.innerText = "🔌 USB";
                 if (dot) dot.className = "w-2 h-2 rounded-full bg-slate-400";
                 if (text) text.innerText = "USB: Ulanmagan";
             }
