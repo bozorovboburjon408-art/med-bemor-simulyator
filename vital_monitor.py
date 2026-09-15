@@ -1978,7 +1978,10 @@ HTML_CONTENT = """<!DOCTYPE html>
         let lastStrokeVerdictPeak = 0;
         let needleLatched = false;
         let needleReleaseTimeout = null;
+        let lastGlobalInjectionTime = 0;
         let lastPhysicalInjectionTime = 0;
+        const INJECTION_COOLDOWN_MS = 10000; // 10 soniyalik qat'iy oraliq (takroriy signallarni butunlay filtrlash)
+        const NEEDLE_RELEASE_HOLD_MS = 3000; // Igna tomirdan to'liq 3s chiqarilgandagina yangi inyeksiyaga ruxsat berish
 
         function updateStrokeVerdict(peakVal) {
             lastEvaluatedStrokeTime = Date.now();
@@ -2777,21 +2780,25 @@ HTML_CONTENT = """<!DOCTYPE html>
         function handleInjectionPin(isPinActive) {
             const now = Date.now();
             if (isPinActive) {
+                // Agar igna chiqarilishini kutuvchi taymer bo'lsa, bekor qilamiz (chunki igna hali ham tomirda)
                 if (needleReleaseTimeout) {
                     clearTimeout(needleReleaseTimeout);
                     needleReleaseTimeout = null;
                 }
 
+                // Rising Edge: Faqat igna yangidan kiritilganda (!needleLatched)
                 if (!needleLatched) {
                     needleLatched = true;
-                    // Inyeksiyalar orasida kamida 3.5 soniya mutlaq oraliq bo'lishi shart
-                    if (now - lastPhysicalInjectionTime >= 3500) {
+                    // 10 soniyalik cooldown va joriy jarayon band emasligini tekshiramiz
+                    if (now - lastGlobalInjectionTime >= INJECTION_COOLDOWN_MS && !injectionInProgress) {
                         lastPhysicalInjectionTime = now;
                         processSmartMedicationAdministration();
+                    } else {
+                        console.log("Hardware ukol signali bloklandi (cooldown: " + Math.round((INJECTION_COOLDOWN_MS - (now - lastGlobalInjectionTime)) / 1000) + "s qoldi)");
                     }
                 }
             } else {
-                // Pin 0 bo'lganda, igna rostdan ham tomirdan chiqarilganini tasdiqlash uchun 1.5s kutamiz
+                // Igna uzilganda, kontakt sakrashi/shovqinni hisobga olib, kamida 3.0 soniya davomida uzluksiz bo'sh turganini tasdiqlaymiz
                 if (needleLatched && !needleReleaseTimeout) {
                     needleReleaseTimeout = setTimeout(() => {
                         needleLatched = false;
@@ -2804,14 +2811,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                                 injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
                             }
                         }
-                    }, 1500);
+                    }, NEEDLE_RELEASE_HOLD_MS);
                 }
             }
         }
 
         // ==================== AQLLI FARMAKOLOGIK REAKSIYA VA DAVOLASH DVIGATELI ====================
         function processSmartMedicationAdministration() {
-            if (injectionInProgress) return;
+            const now = Date.now();
+            if (injectionInProgress || (now - lastGlobalInjectionTime < INJECTION_COOLDOWN_MS)) {
+                console.log("processSmartMedicationAdministration rad etildi (cooldown / jarayon ketmoqda)");
+                return;
+            }
+            lastGlobalInjectionTime = now;
 
             const med = selectedMedication;
             const medId = med.id;
@@ -2829,8 +2841,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             const mode = current.mode || "normal";
             const hr = Math.round(current.hr);
 
-            // ==================== 1. ASISTOLIYA / CPR BOSQICHI (mode === 'dying' / 'asystole' yoki HR <= 5) ====================
-            if (mode === "dying" || mode === "asystole" || (mode === "normal" && hr <= 5)) {
+            // ==================== 1. ASISTOLIYA / CPR BOSQICHI (mode === 'dying' / 'asystole' yoki HR <= 5 yoki CPR bosqichi faol) ====================
+            if (mode === "dying" || mode === "asystole" || (mode === "normal" && hr <= 5) || cprRevivalStage > 0) {
                 if (cprRevivalStage === 1) {
                     // 1-bosqich: 30:2 massajdan so'ng zaif puls (22 BPM) paydo bo'lgan
                     if (medId === "adrenalin") {
@@ -3505,10 +3517,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             setTimeout(() => {
-                if (!injectionInProgress && !lastInjPinState && injBanner) {
+                if (!injectionInProgress && !needleLatched && injBanner) {
                     injBanner.classList.add("hidden");
                 }
-                if (injBtnEl && !lastInjPinState) {
+                if (injBtnEl && !needleLatched) {
                     injBtnEl.className = "mt-1 w-full py-2 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0";
                 }
             }, 3000);
