@@ -117,94 +117,98 @@ HTML_CONTENT = """<!DOCTYPE html>
         .alarm-blink {
             animation: alarmBlink 0.8s infinite;
         }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
-<body class="h-screen w-screen bg-slate-100 text-slate-800 flex flex-col justify-between p-2 overflow-hidden select-none">
+<body class="h-screen w-screen bg-slate-100 text-slate-800 flex flex-col gap-1 p-1.5 overflow-hidden select-none box-border">
 
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
-    <!-- 1. TOP HEADER (COMPACT ~38px) -->
-    <header class="bg-white border border-slate-200 rounded-xl px-2.5 py-1 flex items-center justify-between gap-2 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
-        <div class="flex items-center space-x-2.5 shrink-0">
-            <img src="/static/logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
-            <div>
+    <!-- 1. TOP HEADER (FIXED ~40px, STRICTLY NEVER WRAPS) -->
+    <header class="h-10 min-h-[40px] max-h-[40px] bg-white border border-slate-200 rounded-xl px-2.5 flex items-center justify-between gap-2 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
+        <div class="flex items-center space-x-2 shrink-0 overflow-hidden">
+            <img src="/static/logo.png" alt="Logo" class="w-7 h-7 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
+            <div class="shrink-0">
                 <div class="flex items-center space-x-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink"></span>
-                    <span class="font-black text-xs md:text-sm tracking-wide text-slate-900">RO'TFMXMO va UIM Navoiy filiali</span>
-                    <span class="text-[10px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU IMTIHON XONASI</span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink shrink-0"></span>
+                    <span class="font-black text-xs md:text-sm tracking-wide text-slate-900">RO'TFMXMO va UIM</span>
+                    <span class="text-[9px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU</span>
                 </div>
-                <div class="text-[10px] text-slate-500 font-medium leading-none hidden sm:block">Amaliy reanimatsiya & kardiomonitoring simulyatori</div>
             </div>
-            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5 hidden md:block">
+            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2 hidden md:block shrink-0">
                 KOYKA: <span class="text-slate-900 font-bold">#04</span>
             </div>
-            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2.5">
-                BEMOR: <span class="text-emerald-700 font-bold">Anvar Karimov (40 yosh)</span>
+            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2 hidden sm:block shrink-0">
+                BEMOR: <span class="text-emerald-700 font-bold">Anvar K. (40y)</span>
             </div>
         </div>
 
-        <div id="alarm-banner" class="px-3 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 max-w-md truncate text-center shrink">
+        <div id="alarm-banner" class="flex-1 min-w-0 max-w-sm lg:max-w-md mx-1 px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 truncate text-center shrink">
             <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
         </div>
 
-        <div class="flex flex-wrap items-center gap-1.5 text-xs">
+        <div class="flex items-center gap-1.5 text-xs flex-nowrap shrink-0">
             <!-- REAL HARDWARE WEB SERIAL USB CONNECT BUTTON -->
-            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse">
+            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse shrink-0">
                 <i class="fa-brands fa-usb text-xs"></i>
-                <span id="btn-web-serial-text">🔌 USB Ulanish</span>
+                <span id="btn-web-serial-text">USB</span>
             </button>
 
-
-
-            <div id="hw-badge" class="px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold">
+            <div id="hw-badge" class="px-1.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold text-[11px] shrink-0">
                 <span id="hw-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
-                <span id="hw-text">USB: Kutilmoqda</span>
+                <span id="hw-text">ESP32</span>
             </div>
 
-            <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs">
+            <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0">
                 <i class="fa-solid fa-hospital text-cyan-600"></i> Hub
             </a>
 
-            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow-xs cursor-pointer">
+            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow-xs cursor-pointer shrink-0">
                 <i class="fa-solid fa-download"></i> O'rnatish
             </button>
 
-            <a href="/" target="_blank" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 font-bold shadow-xs">
-                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor (Veb)
+            <a href="/" target="_blank" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 font-bold shadow-xs shrink-0">
+                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Veb
             </a>
 
-            <button onclick="openPatientVoiceIntercomModal()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-md cursor-pointer transition active:scale-95 animate-pulse">
-                <i class="fa-solid fa-microphone"></i> 🎙️ AI Bemor Muloqot
+            <button onclick="openPatientVoiceIntercomModal()" class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-md cursor-pointer transition active:scale-95 animate-pulse shrink-0">
+                <i class="fa-solid fa-microphone"></i> 🎙️ AI Bemor
             </button>
 
-            <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs">
+            <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs shrink-0">
                 <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> Pult
             </a>
 
             <!-- Volume Slider -->
-            <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-2 py-1 rounded-lg">
+            <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded-lg shrink-0">
                 <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
                     <i id="audio-icon" class="fa-solid fa-volume-low text-emerald-600 text-xs"></i>
                     <span id="audio-text" class="text-xs font-bold">20%</span>
                 </button>
-                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="0.20" oninput="changeMonitorVolume(this.value)" class="w-12 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi (20% Me'yoriy)">
+                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="0.20" oninput="changeMonitorVolume(this.value)" class="w-10 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi">
             </div>
 
-            <button onclick="toggleFullScreen()" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
+            <button onclick="toggleFullScreen()" class="px-1.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer shrink-0" title="To'liq ekran">
                 <i class="fa-solid fa-expand"></i>
             </button>
-            <span id="clock" class="mono text-xs font-bold text-slate-700">00:00:00</span>
+            <span id="clock" class="mono text-xs font-bold text-slate-700 shrink-0">00:00:00</span>
         </div>
     </header>
 
-    <!-- INJECTION NOTIFICATION POPUP -->
-    <div id="inj-banner" class="hidden my-0.5 bg-purple-100 border border-purple-400 rounded-xl p-1.5 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink">
+    <!-- INJECTION NOTIFICATION FLOATING TOAST -->
+    <div id="inj-banner" class="hidden fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-purple-100 border-2 border-purple-400 rounded-xl px-4 py-2 shadow-2xl text-center text-purple-900 text-xs font-bold alarm-blink min-w-[320px]">
         <i class="fa-solid fa-syringe text-purple-600 text-sm mr-1"></i> 
         <span id="inj-banner-text">💉 UKOL QILINDI! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
-    <!-- BARCODE SCANNER TOAST NOTIFICATION -->
-    <div id="barcode-scan-toast" class="hidden my-0.5 bg-purple-600 text-white border-2 border-purple-300 rounded-xl p-2 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200">
+    <!-- BARCODE SCANNER FLOATING TOAST -->
+    <div id="barcode-scan-toast" class="hidden fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-purple-600 text-white border-2 border-purple-300 rounded-xl px-4 py-2 shadow-2xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200 min-w-[380px] max-w-lg">
         <div class="flex items-center gap-2.5">
             <span class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-sm font-bold shrink-0">
                 <i class="fa-solid fa-barcode"></i>
@@ -217,8 +221,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         <span class="mono px-2 py-0.5 rounded bg-white/20 text-xs font-black" id="scan-toast-badge">ADR-01</span>
     </div>
 
-    <!-- PATIENT VOICE & REVIVAL POPUP (3-SHAXS TIBBIY XABARI) -->
-    <div id="patient-revived-toast" class="hidden my-0.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white border-2 border-emerald-300 rounded-xl p-2 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+    <!-- PATIENT VOICE & REVIVAL FLOATING TOAST (3-SHAXS TIBBIY XABARI) -->
+    <div id="patient-revived-toast" class="hidden fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white border-2 border-emerald-300 rounded-xl px-4 py-2 shadow-2xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300 min-w-[420px] max-w-xl">
         <div class="flex items-center gap-3">
             <span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-base shrink-0 animate-bounce">
                 <i class="fa-solid fa-heart-pulse text-rose-300"></i>
@@ -244,7 +248,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     </div>
 
     <!-- 2. TOP 58% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2.5 my-0.5 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2.5 min-h-0 overflow-hidden" style="flex: 1.35;">
+    <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2 min-h-0 overflow-hidden" style="flex: 1.35;">
         
         <!-- LEFT 3 COLS: LIVE OSCILLOSCOPES (ECG & SpO2) -->
         <div class="lg:col-span-3 flex flex-col justify-between gap-1 border-r border-slate-100 pr-2 min-h-0 overflow-hidden">
@@ -348,7 +352,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     </div>
 
     <!-- 3. BOTTOM 42% SECTION: CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs min-h-0 flex flex-col justify-between overflow-hidden" style="flex: 0.92;">
+    <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs min-h-0 flex flex-col justify-between overflow-hidden" style="flex: 0.92;">
         
         <!-- Header Strip with Stage Badge and Prepared Drug Banner -->
         <div class="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-100 shrink-0">
@@ -493,59 +497,61 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (~36px) -->
-    <footer class="bg-white border border-slate-200 rounded-xl p-1 shadow-xs shrink-0 flex flex-wrap items-center justify-between gap-1 text-[11px]">
-        <div class="flex items-center gap-1 text-slate-700 font-bold shrink-0">
+    <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (~36px FIXED) -->
+    <footer class="h-9 min-h-[36px] max-h-[36px] bg-white border border-slate-200 rounded-xl px-2 shadow-xs shrink-0 flex items-center justify-between gap-1 text-[11px] whitespace-nowrap overflow-hidden">
+        <div class="flex items-center gap-1 text-slate-700 font-bold shrink-0 text-xs">
             <i class="fa-solid fa-stethoscope text-indigo-600"></i>
-            <span class="hidden sm:inline">Ssenariylar:</span>
+            <span class="hidden md:inline">Ssenariylar:</span>
         </div>
 
-        <div class="flex flex-wrap items-center gap-1">
-            <button onclick="setScenario('normal')" class="px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+        <div class="flex items-center gap-1 overflow-x-auto no-scrollbar shrink min-w-0">
+            <button onclick="setScenario('normal')" class="px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 🟢 Normal (75)
             </button>
 
-            <button onclick="setScenario('dying')" class="px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('dying')" class="px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 🚨 Asistoliya (0)
             </button>
 
-            <button onclick="setScenario('vfib')" class="px-2 py-0.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-950 border border-red-400 font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer alarm-blink">
+            <button onclick="setScenario('vfib')" class="px-2 py-0.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-950 border border-red-400 font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer alarm-blink shrink-0">
                 ⚡ VFib (230)
             </button>
 
-            <button onclick="setScenario('attack')" class="px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('attack')" class="px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 ⚡ Taxikardiya (185)
             </button>
 
-            <button onclick="setScenario('brady')" class="px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('brady')" class="px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 🫀 Bradikardiya (28)
             </button>
 
-            <button onclick="setScenario('hyper')" class="px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('hyper')" class="px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 🔴 Gipertoniya (220)
             </button>
 
-            <button onclick="setScenario('hypoxia')" class="px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('hypoxia')" class="px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 🫁 Gipoksiya (74%)
             </button>
 
-            <button onclick="setScenario('opioid')" class="px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('opioid')" class="px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 💉 Opioid Koma (RR 4)
             </button>
 
-            <button onclick="setScenario('shock')" class="px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('shock')" class="px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 🩸 Shok (65/35)
             </button>
 
-            <button onclick="setScenario('anaphylaxis')" class="px-2 py-0.5 rounded-lg bg-pink-50 hover:bg-pink-100 text-pink-800 border border-pink-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('anaphylaxis')" class="px-2 py-0.5 rounded-lg bg-pink-50 hover:bg-pink-100 text-pink-800 border border-pink-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 🐝 Anafilaksiya (70/40)
             </button>
+        </div>
 
-            <button onclick="openMedCabinetModal()" class="px-2 py-0.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+        <div class="flex items-center gap-1 shrink-0">
+            <button onclick="openMedCabinetModal()" class="px-2 py-0.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 <i class="fa-solid fa-pills"></i> 💊 Dorilar
             </button>
 
-            <button onclick="defibrillateShock()" class="px-2 py-0.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="defibrillateShock()" class="px-2 py-0.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer shrink-0">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Defibrilyator
             </button>
         </div>
@@ -3741,8 +3747,10 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function updateBanner(text, classes) {
             const b = document.getElementById("alarm-banner");
-            b.className = `px-3 py-0.5 rounded-lg text-xs uppercase tracking-wider border ${classes}`;
+            if (!b) return;
+            b.className = `flex-1 min-w-0 max-w-sm lg:max-w-md mx-1 px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wide border transition-all duration-300 truncate text-center shrink ${classes}`;
             b.innerHTML = text;
+            b.title = text.replace(/<[^>]*>?/gm, '');
         }
 
         setInterval(() => {
