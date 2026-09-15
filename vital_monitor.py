@@ -130,8 +130,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
-    <!-- 1. TOP HEADER (FIXED ~40px, STRICTLY NEVER WRAPS) -->
-    <header class="h-10 min-h-[40px] max-h-[40px] bg-white border border-slate-200 rounded-xl px-2.5 flex items-center justify-between gap-2 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
+    <!-- 1. TOP HEADER (FIXED ~40px, SPACIOUS & CLEAN) -->
+    <header class="h-10 min-h-[40px] max-h-[40px] bg-white border border-slate-200 rounded-xl px-2.5 flex items-center justify-between gap-3 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
         <div class="flex items-center space-x-2 shrink-0 overflow-hidden">
             <img src="/static/logo.png" alt="Logo" class="w-7 h-7 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
             <div class="shrink-0">
@@ -149,39 +149,25 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
         </div>
 
-        <div id="alarm-banner" class="flex-1 min-w-0 max-w-sm lg:max-w-md mx-1 px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 truncate text-center shrink">
-            <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
+        <!-- MAIN EXPANDED STATUS & CLINICAL DIAGNOSIS BANNER (WIDER & COMFORTABLE) -->
+        <div id="alarm-banner" class="flex-1 min-w-0 max-w-4xl mx-2 px-3 py-1 rounded-lg text-xs md:text-sm font-black uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 truncate text-center shrink shadow-xs">
+            <i class="fa-solid fa-heart-pulse mr-1.5"></i> STATUS: BARQAROR (NORMAL)
         </div>
 
+        <!-- RIGHT ESSENTIAL CONTROLS (COMPACT) -->
         <div class="flex items-center gap-1.5 text-xs flex-nowrap shrink-0">
-            <!-- REAL HARDWARE WEB SERIAL USB CONNECT BUTTON -->
-            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse shrink-0">
-                <i class="fa-brands fa-usb text-xs"></i>
-                <span id="btn-web-serial-text">USB</span>
-            </button>
-
-            <div id="hw-badge" class="px-1.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold text-[11px] shrink-0">
-                <span id="hw-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
-                <span id="hw-text">ESP32</span>
+            <!-- Hidden JS hooks to preserve background hardware communication -->
+            <div class="hidden" aria-hidden="true">
+                <button id="btn-web-serial"><span id="btn-web-serial-text">USB</span></button>
+                <div id="hw-badge"><span id="hw-dot"></span><span id="hw-text">ESP32</span></div>
+                <button id="pwa-vital-btn"></button>
             </div>
 
-            <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0">
+            <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0" title="Tizim Hub">
                 <i class="fa-solid fa-hospital text-cyan-600"></i> Hub
             </a>
 
-            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow-xs cursor-pointer shrink-0">
-                <i class="fa-solid fa-download"></i> O'rnatish
-            </button>
-
-            <a href="/" target="_blank" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 font-bold shadow-xs shrink-0">
-                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Veb
-            </a>
-
-            <button onclick="openPatientVoiceIntercomModal()" class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-md cursor-pointer transition active:scale-95 animate-pulse shrink-0">
-                <i class="fa-solid fa-microphone"></i> 🎙️ AI Bemor
-            </button>
-
-            <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs shrink-0">
+            <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs shrink-0" title="O'qituvchi pulti">
                 <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> Pult
             </a>
 
@@ -3748,7 +3734,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         function updateBanner(text, classes) {
             const b = document.getElementById("alarm-banner");
             if (!b) return;
-            b.className = `flex-1 min-w-0 max-w-sm lg:max-w-md mx-1 px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wide border transition-all duration-300 truncate text-center shrink ${classes}`;
+            b.className = `flex-1 min-w-0 max-w-4xl mx-2 px-3 py-1 rounded-lg text-xs md:text-sm font-black uppercase tracking-wide border transition-all duration-300 truncate text-center shrink shadow-xs ${classes}`;
             b.innerHTML = text;
             b.title = text.replace(/<[^>]*>?/gm, '');
         }
