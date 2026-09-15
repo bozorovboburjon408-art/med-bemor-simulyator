@@ -124,8 +124,8 @@ HTML_CONTENT = """<!DOCTYPE html>
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
     <!-- 1. TOP HEADER (COMPACT ~38px) -->
-    <header class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 shadow-xs shrink-0">
-        <div class="flex items-center space-x-2.5">
+    <header class="bg-white border border-slate-200 rounded-xl px-2.5 py-1 flex items-center justify-between gap-2 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
+        <div class="flex items-center space-x-2.5 shrink-0">
             <img src="/static/logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
             <div>
                 <div class="flex items-center space-x-1.5">
@@ -143,7 +143,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
         </div>
 
-        <div id="alarm-banner" class="px-3 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300">
+        <div id="alarm-banner" class="px-3 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 max-w-md truncate text-center shrink">
             <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
         </div>
 
@@ -243,8 +243,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- 2. TOP 50% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2 flex-1 min-h-0 overflow-hidden">
+    <!-- 2. TOP 58% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
+    <div class="bg-white border border-slate-200 rounded-xl p-2.5 my-0.5 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2.5 min-h-0 overflow-hidden" style="flex: 1.35;">
         
         <!-- LEFT 3 COLS: LIVE OSCILLOSCOPES (ECG & SpO2) -->
         <div class="lg:col-span-3 flex flex-col justify-between gap-1 border-r border-slate-100 pr-2 min-h-0 overflow-hidden">
@@ -347,8 +347,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- 3. BOTTOM 50% SECTION: CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+    <!-- 3. BOTTOM 42% SECTION: CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
+    <div class="bg-white border border-slate-200 rounded-xl p-2 my-0.5 shadow-xs min-h-0 flex flex-col justify-between overflow-hidden" style="flex: 0.92;">
         
         <!-- Header Strip with Stage Badge and Prepared Drug Banner -->
         <div class="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-100 shrink-0">
