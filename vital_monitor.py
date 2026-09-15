@@ -141,12 +141,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span class="text-[9px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU</span>
                 </div>
             </div>
-            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2 hidden md:block shrink-0">
-                KOYKA: <span class="text-slate-900 font-bold">#04</span>
-            </div>
-            <div class="text-xs text-slate-500 border-l border-slate-200 pl-2 hidden sm:block shrink-0">
-                BEMOR: <span class="text-emerald-700 font-bold">Anvar K. (40y)</span>
-            </div>
         </div>
 
         <!-- MAIN EXPANDED STATUS & CLINICAL DIAGNOSIS BANNER (WIDER & COMFORTABLE) -->
