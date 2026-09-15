@@ -291,13 +291,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <div class="flex items-baseline justify-between my-auto">
                     <span id="num-hr" class="mono text-4xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
                     <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
-                        <div>YUQ: 120</div>
-                        <div>PAS: 50</div>
+                        <div id="lbl-hr-high">YUQ: 120</div>
+                        <div id="lbl-hr-low">PAS: 50</div>
                     </div>
                 </div>
                 <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-200 pt-0.5">
                     <span>Zarbalar: <span id="num-count" class="font-bold text-emerald-700">0</span></span>
-                    <span>Puls: Normal</span>
+                    <span id="lbl-hr-status" class="font-bold text-emerald-700">Puls: Me'yorda</span>
                 </div>
             </div>
 
@@ -310,13 +310,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <div class="flex items-baseline justify-between my-auto">
                     <span id="num-spo2" class="mono text-4xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
                     <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
-                        <div>PI: 4.2%</div>
-                        <div>PAS: 90%</div>
+                        <div id="lbl-spo2-pi">PI: 4.2%</div>
+                        <div id="lbl-spo2-low">PAS: 90%</div>
                     </div>
                 </div>
                 <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-200 pt-0.5">
                     <span>Puls: <span id="num-pr" class="font-bold text-sky-700">75</span></span>
-                    <span>Signal: Kuchli</span>
+                    <span id="lbl-spo2-signal" class="font-bold text-emerald-700">Signal: Kuchli</span>
                 </div>
             </div>
 
@@ -3869,6 +3869,118 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (elMap) elMap.innerText = mapVal;
             if (elRr) elRr.innerText = rrVal;
             if (elTemp) elTemp.innerText = current.temp.toFixed(1);
+
+            // 1. HR Sub-labels (YUQ, PAS, Puls status)
+            const elHrHigh = document.getElementById("lbl-hr-high");
+            const elHrLow = document.getElementById("lbl-hr-low");
+            const elHrStatus = document.getElementById("lbl-hr-status");
+
+            if (elHrStatus) {
+                if (hrVal <= 0) {
+                    elHrStatus.innerText = "Puls: Yo'q (0)";
+                    elHrStatus.className = "font-black text-rose-600 alarm-blink";
+                    if (elHrLow) elHrLow.className = "text-rose-600 font-bold alarm-blink";
+                    if (elHrHigh) elHrHigh.className = "text-slate-400";
+                } else if (current.rhythm === "vfib" || current.mode === "vfib") {
+                    elHrStatus.innerText = "Puls: Fibrillyatsiya";
+                    elHrStatus.className = "font-black text-rose-600 alarm-blink";
+                    if (elHrHigh) elHrHigh.className = "text-rose-600 font-bold alarm-blink";
+                    if (elHrLow) elHrLow.className = "text-slate-400";
+                } else if (hrVal < 50 || current.mode === "brady") {
+                    elHrStatus.innerText = "Puls: Bradikardiya";
+                    elHrStatus.className = "font-bold text-orange-600";
+                    if (elHrLow) elHrLow.className = "text-orange-600 font-bold";
+                    if (elHrHigh) elHrHigh.className = "text-slate-400";
+                } else if (hrVal > 120 || current.mode === "attack" || current.mode === "tachycardia") {
+                    elHrStatus.innerText = "Puls: Taxikardiya";
+                    elHrStatus.className = "font-bold text-amber-600";
+                    if (elHrHigh) elHrHigh.className = "text-amber-600 font-bold";
+                    if (elHrLow) elHrLow.className = "text-slate-400";
+                } else {
+                    elHrStatus.innerText = "Puls: Me'yorda";
+                    elHrStatus.className = "font-bold text-emerald-700";
+                    if (elHrHigh) elHrHigh.className = "text-slate-500";
+                    if (elHrLow) elHrLow.className = "text-slate-500";
+                }
+            }
+
+            // 2. SpO2 Sub-labels (PI %, PAS 90%, Signal)
+            const elSpo2Pi = document.getElementById("lbl-spo2-pi");
+            const elSpo2Low = document.getElementById("lbl-spo2-low");
+            const elSpo2Signal = document.getElementById("lbl-spo2-signal");
+
+            let currentPI = 4.2;
+            if (spo2Val <= 0 || hrVal <= 0) {
+                currentPI = 0.0;
+                if (elSpo2Pi) {
+                    elSpo2Pi.innerText = "PI: 0.0%";
+                    elSpo2Pi.className = "text-rose-600 font-bold";
+                }
+                if (elSpo2Low) {
+                    elSpo2Low.innerText = "PAS: 90% ❌";
+                    elSpo2Low.className = "text-rose-600 font-black";
+                }
+                if (elSpo2Signal) {
+                    elSpo2Signal.innerText = "Signal: Yo'q";
+                    elSpo2Signal.className = "font-black text-rose-600 alarm-blink";
+                }
+            } else if (current.mode === "shock" || current.mode === "shok" || sysVal < 70) {
+                currentPI = Math.max(0.2, (0.4 + Math.sin(bioWaveTimer * 0.3) * 0.15));
+                if (elSpo2Pi) {
+                    elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
+                    elSpo2Pi.className = "text-rose-600 font-bold";
+                }
+                if (elSpo2Low) {
+                    elSpo2Low.innerText = "PAS: 90%";
+                    elSpo2Low.className = "text-amber-600 font-bold";
+                }
+                if (elSpo2Signal) {
+                    elSpo2Signal.innerText = "Signal: Zaif";
+                    elSpo2Signal.className = "font-bold text-rose-600";
+                }
+            } else if (current.mode === "anaphylaxis" || current.mode === "hypoxia" || spo2Val < 85) {
+                currentPI = Math.max(0.8, (1.6 + Math.sin(bioWaveTimer * 0.3) * 0.3));
+                if (elSpo2Pi) {
+                    elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
+                    elSpo2Pi.className = "text-amber-600 font-bold";
+                }
+                if (elSpo2Low) {
+                    elSpo2Low.innerText = "PAS: 90% ⚠️";
+                    elSpo2Low.className = "text-rose-600 font-bold alarm-blink";
+                }
+                if (elSpo2Signal) {
+                    elSpo2Signal.innerText = "Signal: Zaif";
+                    elSpo2Signal.className = "font-bold text-amber-600";
+                }
+            } else if (current.mode === "opioid" || spo2Val < 92) {
+                currentPI = Math.max(1.2, (2.3 + Math.sin(bioWaveTimer * 0.3) * 0.3));
+                if (elSpo2Pi) {
+                    elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
+                    elSpo2Pi.className = "text-sky-700 font-bold";
+                }
+                if (elSpo2Low) {
+                    elSpo2Low.innerText = "PAS: 90% ⚠️";
+                    elSpo2Low.className = "text-amber-600 font-bold";
+                }
+                if (elSpo2Signal) {
+                    elSpo2Signal.innerText = "Signal: O'rtacha";
+                    elSpo2Signal.className = "font-bold text-sky-700";
+                }
+            } else {
+                currentPI = (4.2 + Math.sin(bioWaveTimer * 0.3) * 0.35);
+                if (elSpo2Pi) {
+                    elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
+                    elSpo2Pi.className = "text-slate-500 font-semibold";
+                }
+                if (elSpo2Low) {
+                    elSpo2Low.innerText = "PAS: 90%";
+                    elSpo2Low.className = "text-slate-500 font-semibold";
+                }
+                if (elSpo2Signal) {
+                    elSpo2Signal.innerText = "Signal: Kuchli";
+                    elSpo2Signal.className = "font-bold text-emerald-700";
+                }
+            }
 
             const rhythmLabel = document.getElementById("ecg-rhythm-name");
             if (rhythmLabel) {
