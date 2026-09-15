@@ -3870,37 +3870,53 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (elRr) elRr.innerText = rrVal;
             if (elTemp) elTemp.innerText = current.temp.toFixed(1);
 
-            // 1. HR Sub-labels (YUQ, PAS, Puls status)
+            // 1. HR Sub-labels (YUQ: Sistolik qon bosimi, PAS: Diastolik qon bosimi, Puls statusi)
             const elHrHigh = document.getElementById("lbl-hr-high");
             const elHrLow = document.getElementById("lbl-hr-low");
             const elHrStatus = document.getElementById("lbl-hr-status");
+
+            if (elHrHigh) {
+                elHrHigh.innerText = `YUQ: ${sysVal}`;
+                if (sysVal === 0) {
+                    elHrHigh.className = "text-rose-600 font-black alarm-blink";
+                } else if (sysVal >= 160) {
+                    elHrHigh.className = "text-rose-600 font-bold alarm-blink";
+                } else if (sysVal <= 85) {
+                    elHrHigh.className = "text-amber-600 font-bold";
+                } else {
+                    elHrHigh.className = "text-slate-600 font-bold";
+                }
+            }
+
+            if (elHrLow) {
+                elHrLow.innerText = `PAS: ${diaVal}`;
+                if (diaVal === 0) {
+                    elHrLow.className = "text-rose-600 font-black alarm-blink";
+                } else if (diaVal >= 100) {
+                    elHrLow.className = "text-rose-600 font-bold alarm-blink";
+                } else if (diaVal <= 50) {
+                    elHrLow.className = "text-amber-600 font-bold";
+                } else {
+                    elHrLow.className = "text-slate-600 font-bold";
+                }
+            }
 
             if (elHrStatus) {
                 if (hrVal <= 0) {
                     elHrStatus.innerText = "Puls: Yo'q (0)";
                     elHrStatus.className = "font-black text-rose-600 alarm-blink";
-                    if (elHrLow) elHrLow.className = "text-rose-600 font-bold alarm-blink";
-                    if (elHrHigh) elHrHigh.className = "text-slate-400";
                 } else if (current.rhythm === "vfib" || current.mode === "vfib") {
                     elHrStatus.innerText = "Puls: Fibrillyatsiya";
                     elHrStatus.className = "font-black text-rose-600 alarm-blink";
-                    if (elHrHigh) elHrHigh.className = "text-rose-600 font-bold alarm-blink";
-                    if (elHrLow) elHrLow.className = "text-slate-400";
                 } else if (hrVal < 50 || current.mode === "brady") {
                     elHrStatus.innerText = "Puls: Bradikardiya";
                     elHrStatus.className = "font-bold text-orange-600";
-                    if (elHrLow) elHrLow.className = "text-orange-600 font-bold";
-                    if (elHrHigh) elHrHigh.className = "text-slate-400";
                 } else if (hrVal > 120 || current.mode === "attack" || current.mode === "tachycardia") {
                     elHrStatus.innerText = "Puls: Taxikardiya";
                     elHrStatus.className = "font-bold text-amber-600";
-                    if (elHrHigh) elHrHigh.className = "text-amber-600 font-bold";
-                    if (elHrLow) elHrLow.className = "text-slate-400";
                 } else {
                     elHrStatus.innerText = "Puls: Me'yorda";
                     elHrStatus.className = "font-bold text-emerald-700";
-                    if (elHrHigh) elHrHigh.className = "text-slate-500";
-                    if (elHrLow) elHrLow.className = "text-slate-500";
                 }
             }
 
