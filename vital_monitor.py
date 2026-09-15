@@ -217,7 +217,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         <span class="mono px-2 py-0.5 rounded bg-white/20 text-xs font-black" id="scan-toast-badge">ADR-01</span>
     </div>
 
-    <!-- PATIENT VOICE & REVIVAL POPUP -->
+    <!-- PATIENT VOICE & REVIVAL POPUP (3-SHAXS TIBBIY XABARI) -->
     <div id="patient-revived-toast" class="hidden my-0.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white border-2 border-emerald-300 rounded-xl p-2 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
         <div class="flex items-center gap-3">
             <span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-base shrink-0 animate-bounce">
@@ -226,10 +226,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             <div>
                 <div class="text-[10px] uppercase tracking-wider font-black text-emerald-200 flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
-                    <span>Bemor Jonlandi (Anvar Karimov, 40 yosh)</span>
+                    <span>TIBBIY XABAR: BEMOR REANIMATSIYASI</span>
                 </div>
-                <div id="patient-revived-speech" class="text-xs md:text-sm font-black text-white italic">
-                    "Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!"
+                <div id="patient-revived-speech" class="text-xs md:text-sm font-black text-white">
+                    "Bemor muvaffaqiyatli reanimatsiya qilindi. Spontan qon aylanishi va sinus ritmi tiklandi."
                 </div>
             </div>
         </div>
@@ -1297,9 +1297,9 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         const REVIVED_VOICES = [
-            { src: '/static/audio/patient_revived_1.mp3', text: "Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!" },
-            { src: '/static/audio/patient_revived_2.mp3', text: "Xudoga shukur... Doktor, rahmat sizga! O'zimga keldim, nafas olishim yengillashdi!" },
-            { src: '/static/audio/patient_revived_3.mp3', text: "Doktor, katta rahmat! Og'riq qoldi, yuragim me'yorida ura boshladi!" }
+            { src: '/static/audio/patient_revived_1.mp3', text: "Bemor muvaffaqiyatli reanimatsiya qilindi. Spontan qon aylanishi va sinus ritmi tiklandi." },
+            { src: '/static/audio/patient_revived_2.mp3', text: "Reanimatsiya choralari samarali yakunlandi. Bemorning gemodinamik ko'rsatkichlari barqarorlashdi." },
+            { src: '/static/audio/patient_revived_3.mp3', text: "Yurak ritmi va gemodinamika to'liq tiklandi. Bemor barqaror holatga keltirildi." }
         ];
 
         function triggerPatientRevivedExperience(customSpeech) {
@@ -1326,7 +1326,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 playRevivalChime();
             }, 450);
 
-            // 3. Bemorning o'zbekcha minnatdorchilik ovozi (3 xil variatsiya)
+            // 3. 3-shaxs tibbiy xabari
             setTimeout(() => {
                 playVoiceAudio(voiceSrc, speechText);
             }, 950);
@@ -1877,48 +1877,48 @@ HTML_CONTENT = """<!DOCTYPE html>
             const isHeart = qLower.includes("yurak") || qLower.includes("puls") || qLower.includes("urish") || qLower.includes("gupill");
 
             if (isName) {
-                patientResponse = "Ismim Anvar Karimov, yoshim 40 da, doktor.";
+                patientResponse = "Bemor: Anvar Karimov, 40 yoshda.";
             } else if (mode === "dying" || mode === "asystole" || mode === "vfib") {
-                patientResponse = "🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Bemor savollarga javob bera olmaydi, darhol CPR massaji va Defibrillyator qo'llang!";
+                patientResponse = "🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya / VFib). Zudlik bilan CPR massaji va Defibrillyator qo'llang!";
             } else if (mode === "opioid") {
-                patientResponse = "(Bemor chuqur komada, savollarga javob bermaydi)... Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Zudlik bilan Nalokson (0.4mg) va sun'iy nafas talab qilinadi!";
+                patientResponse = "Bemor chuqur komada, reaksiyasiz. Qorachiqlar toraygan, nafas daqiqasiga 4 marta. Zudlik bilan Nalokson (0.4mg) va sun'iy nafas talab qilinadi!";
             } else if (mode === "hyper") {
-                if (isGreeting) patientResponse = "Vaalaykum assalom, doktor! Boshim juda qattiq og'riyapti, ensam lo'qqillab ketmoqda... Qon bosimim 220 ga chiqib ketgan!";
-                else if (isPain || isHead) patientResponse = "Ensam va peshonam tars yorilib ketay deyapti, ko'zlarim oldida qora dog'lar uchmoqda, ko'nglim aynyapti, doktor...";
-                else if (isDrug) patientResponse = "Doimiy Lozartan ichardim, bugun asabiylashib ertalab ichishni unutibman, doktor...";
-                else if (isHeart) patientResponse = "Yuragim ham qattiq gupillab uryapti, ko'kragimda og'irlik bor, doktor.";
-                else patientResponse = "Boshim qattiq og'riyapti, ensamda kuchli lo'qqillash bor, qon bosimim juda baland, doktor.";
+                if (isGreeting) patientResponse = "Bemor gipertonik kriz holatida. Qon bosimi 220 ga 130 millimetrga yetgan, enseal sohada kuchli bosim mavjud.";
+                else if (isPain || isHead) patientResponse = "Bemor ensa va peshona sohasida lo'qqillovchi og'riq, ko'z oldida qora dog'lar va ko'ngil aynishini bildirmoqda.";
+                else if (isDrug) patientResponse = "Bemor doimiy Lozartan qabul qiladi, biroq bugun ertalabki dozani qabul qilishni unutgan.";
+                else if (isHeart) patientResponse = "Bemor yurak sohasida kuchli gupillash va noqulaylik sezmoqda, arterial bosim o'ta yuqori.";
+                else patientResponse = "Bemor gipertonik kriz holatida. Qon bosimi 220 ga 130 millimetr simob ustuniga teng, asoratlar xavfi mavjud.";
             } else if (mode === "attack") {
-                if (isGreeting || isHeart) patientResponse = "Assalomu alaykum, doktor... Yuragim ko'kragimdan chiqib ketayotgandek daqiqasiga 185 marta o'ta tez urib ketyapti, qattiq gupillayapti!";
-                else if (isBreath) patientResponse = "Nafasim yetmayapti, chuqur nafas ololmayapman, ichimda kuchli xavotir va vahima bor, doktor...";
-                else if (isDrug) patientResponse = "Doimiy dori ichmayman, lekin bugun ishda 4 finjon achchiq kofe ichgan edim, shundan keyin boshlandi...";
-                else patientResponse = "Yuragim juda tez urib, ko'kragim gupillab to'xtamayapti, doktor, iltimos yordam bering!";
+                if (isGreeting || isHeart) patientResponse = "Bemor o'tkir taxikardiya holatida. Yurak qisqarishlar soni daqiqasiga 185 martaga yetgan, kuchli gupillash kuzatilmoqda.";
+                else if (isBreath) patientResponse = "Bemor taxikardiya sababli hansirash va nafas yetishmovchiligidan aziyat chekmoqda.";
+                else if (isDrug) patientResponse = "Bemor doimiy dori ichmaydi, xuruj ish jarayonida ko'p miqdorda kofe iste'mol qilgandan so'ng boshlangan.";
+                else patientResponse = "Bemor o'tkir taxikardiya holatida. Yurak urishi daqiqasiga 185 marta, antiaritmik terapiya talab qilinadi.";
             } else if (mode === "brady") {
-                if (isGreeting || isHead) patientResponse = "Vaalaykum assalom, doktor... Boshim aylanib, ko'zim qorong'ulashyapti, butun tanamda mador qolmadi, hushimdan ketyapman...";
-                else if (isDrug) patientResponse = "Qon bosimimga Atenolol ichardim, bugun adashib 2 ta ichib qo'ygan edim, shundan keyin sekinlashib ketdi...";
-                else if (isHeart) patientResponse = "Yuragim daqiqasiga atigi 28 marta juda sekin uryapti, butun vujudim muzlab holsizlanyapti...";
-                else if (isPain) patientResponse = "O'tkir og'riq yo'q, lekin juda holsizman, oyoq-qo'llarim muzdek bo'lib boryapti, doktor...";
-                else patientResponse = "Doktor... Boshim qorong'ulashib ketdi, yuragim juda sekin urib butunlay holsizlantiryapti...";
+                if (isGreeting || isHead) patientResponse = "Bemor og'ir bradikardiya holatida. Bosh aylanishi, ko'z qorong'ulashishi va umumiy adinamiya kuzatilmoqda.";
+                else if (isDrug) patientResponse = "Bemor gipotenziv maqsadda Atenolol qabul qiladi, bugun adashib oshiqcha doza qabul qilingan.";
+                else if (isHeart) patientResponse = "Bemorning yurak ritmi daqiqasiga 28 martagacha pasaygan, atrioventrikulyar blokada belgilari mavjud.";
+                else if (isPain) patientResponse = "O'tkir og'riq yo'q, biroq to'qimalar gipoperfuziyasi sababli qo'l-oyoqlar sovuq va mador yo'qolgan.";
+                else patientResponse = "Bemor og'ir bradikardiya holatida. Puls 28 marta, zudlik bilan Atropin yoki Adrenalin talab qilinadi.";
             } else if (mode === "hypoxia") {
-                if (isGreeting || isBreath) patientResponse = "Doktor... Havoo yetmayapti... Bo'g'ilyapman... Kislorod saturatsiyam 74 foizga tushib ketdi... Yordam bering!";
-                else if (isDrug) patientResponse = "Ustaxonada lak va chang hididan keyin to'satdan bronxlarim qisilib bo'g'ilish boshlandi, doktor...";
-                else patientResponse = "Nafas... qisyapti... tomog'im bo'g'ilyapti, gapirishga holim yetmayapti, doktor...";
+                if (isGreeting || isBreath) patientResponse = "Bemor o'tkir gipoksiya va bronxospazm holatida. Kislorod saturatsiyasi 74 foizga tushib ketgan, nafas yetishmovchiligi mavjud.";
+                else if (isDrug) patientResponse = "Toksik bug'lar va chang ta'sirida o'tkir allergik bronxospazm yuzaga kelgan.";
+                else patientResponse = "Bemor o'tkir gipoksiya holatida. Saturatsiya 74 foiz, bronxolitik va gormonal terapiya zarur.";
             } else if (mode === "shock") {
-                if (isGreeting || isHead) patientResponse = "Vaalaykum assalom, doktor... Qon bosimim 65 ga tushib ketdi, ko'zim oldi qorong'ilashib hushdan ketyapman...";
-                else if (isHeart) patientResponse = "Yuragim 145 marta tez uryapti, lekin tomir urishim juda zaif va bilinar-bilinmas, doktor...";
-                else if (isDrug) patientResponse = "Kuchli qon yo'qotish va suvsizlanishdan so'ng to'satdan ahvolim og'irlashdi, doktor...";
-                else patientResponse = "Badanimni sovuq yopishqoq ter bosdi, qattiq chanqayapman, quvvatim qolmadi, doktor...";
+                if (isGreeting || isHead) patientResponse = "Bemor gipovolemik shok holatida. Qon bosimi 65 ga 35 ga tushgan, hushning xiralashuvi kuzatilmoqda.";
+                else if (isHeart) patientResponse = "Bemor kompensator taxikardiyada (145 BPM), biroq periferik puls juda zaif.";
+                else if (isDrug) patientResponse = "Suyuqlik va qon yo'qotish oqibatida gipovolemiya rivojlangan.";
+                else patientResponse = "Bemor shok holatida. Sovuq yopishqoq ter, gipotenziya va kollaps mavjud. Zudlik bilan infuziya talab qilinadi.";
             } else if (mode === "anaphylaxis") {
-                if (isGreeting || isBreath) patientResponse = "Doktor, badanim toshma bosdi, tomog'im va tilim shishib havo kirmay bo'g'ilyapman! Zudlik bilan Adrenalin bering!";
-                else if (isDrug) patientResponse = "Ukol qilinganidan 5 minut o'tib butun badanim qichishib toshma toshdi va tomog'im qisilib qoldi, doktor...";
-                else patientResponse = "Lab-yuzim shishib ketdi, stridor va bo'g'ilish boryapti, nafasim qisyapti, yordam bering!";
+                if (isGreeting || isBreath) patientResponse = "Bemor og'ir anafilaktik shok holatida. Angioedema, tomoq va laringial shish, stridor hamda badanda toshmalar kuzatilmoqda.";
+                else if (isDrug) patientResponse = "Inyeksiyadan 5 daqiqa o'tib generalizatsiyalangan allergik reaksiya va kvinke shishi boshlangan.";
+                else patientResponse = "Bemor anafilaktik shok holatida. Zudlik bilan muskul ichiga Adrenalin 0.5 milligramm yuborilishi shart.";
             } else {
-                if (isGreeting) patientResponse = "Vaalaykum assalom, doktor! O'zimni juda yaxshi his qilyapman, profilaktik ko'rikka kelgandim.";
-                else if (isPain) patientResponse = "Yo'q, doktor, hech qayerim og'rimayapti, o'zimni sog'lom his qilyapman.";
-                else if (isBreath) patientResponse = "Nafas olishim bir maromda va erkin, hech qanday qiyinchilik yo'q.";
-                else if (isHeart) patientResponse = "Yuragim daqiqasiga 75 marta bir maromda, me'yorida urmoqda.";
-                else if (isDrug) patientResponse = "Doimiy hech qanday dori ichmayman, sog'lig'im joyida.";
-                else patientResponse = "O'zimni juda yaxshi his qilyapman, rahmat doktor.";
+                if (isGreeting) patientResponse = "Bemorning umumiy klinik holati qoniqarli. Barcha hayotiy parametrlar me'yorda.";
+                else if (isPain) patientResponse = "Bemorda og'riq sindromi yoki noqulayliklar aniqlanmadi.";
+                else if (isBreath) patientResponse = "Nafas olish bir maromda va erkin, o'pka ventilyatsiyasi normal.";
+                else if (isHeart) patientResponse = "Yurak qisqarishlar soni daqiqasiga 75 marta, sinus ritmi barqaror.";
+                else if (isDrug) patientResponse = "Bemor doimiy dori vositalarini qabul qilmaydi, sog'lom.";
+                else patientResponse = "Bemorning gemodinamik ko'rsatkichlari to'liq me'yorda.";
             }
             respond(patientResponse);
         }
@@ -1941,7 +1941,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 div.innerHTML = `
                     <div class="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">AI</div>
                     <div class="bg-white border border-slate-200 p-2.5 rounded-2xl rounded-tl-none shadow-xs text-slate-800 font-bold max-w-[85%]">
-                        🗣️ <span class="text-emerald-700">Anvar Karimov:</span> "${text}"
+                        🗣️ <span class="text-emerald-700">Tibbiy Diktori:</span> "${text}"
                     </div>
                 `;
             }
@@ -3624,7 +3624,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-rose-100 text-rose-900 border border-rose-400 flex items-center gap-1.5 shadow-sm";
                 }
                 startAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_asystole.mp3', "Diqqat! Asistoliya! Yurak to'xtadi!");
+                playVoiceAudio('/static/audio/scenario_asystole.mp3', "Diqqat! Bemor asistoliya holatiga tushdi. Yurak to'xtadi.");
                 return;
             }
 
@@ -3642,7 +3642,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-red-200 text-red-950 border border-red-400 flex items-center gap-1.5 shadow-sm";
                 }
                 startAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_vfib.mp3', "Kritik holat! Qorinchalar fibrillyatsiyasi!");
+                playVoiceAudio('/static/audio/scenario_vfib.mp3', "Kritik holat! Qorinchalar fibrillyatsiyasi yuz berdi. Zudlik bilan defibrillyatsiya talab qilinadi.");
                 return;
             }
 
@@ -3668,42 +3668,42 @@ HTML_CONTENT = """<!DOCTYPE html>
                 transitionSteps = 120; totalSteps = 120;
                 updateBanner("🫀 BRADIKARDIYA & AV-BLOKADA (28 BPM)! ATROPIN YOKI ADRENALIN TALAB QILINADI!", "bg-orange-100 text-orange-900 border-orange-400 alarm-blink font-black");
                 stopAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_brady.mp3', "Diqqat! Og'ir bradikardiya va AV-blokada!");
+                playVoiceAudio('/static/audio/scenario_brady.mp3', "Diqqat! Bemor og'ir bradikardiya va atrioventrikulyar blokada holatiga tushdi. Puls daqiqasiga 28 marta.");
             } else if (type === "hyper" || type === "gipertoniya") {
                 target = { hr: 115, spo2: 95, sys: 220, dia: 130, rr: 24, temp: 36.8, mode: "hyper", rhythm: "sinus" };
                 current.mode = "hyper";
                 transitionSteps = 120; totalSteps = 120;
                 updateBanner("🔴 GIPERTONIK KRIZ: AYoTB KESKIN OSHDI (220/130 mmHg)! NITROGLITSERIN YOKI FUROSEMID KERAK!", "bg-rose-100 text-rose-900 border-rose-400 alarm-blink font-black");
                 stopAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_hyper.mp3', "Xavfli gipertonik kriz!");
+                playVoiceAudio('/static/audio/scenario_hyper.mp3', "Bemor gipertonik kriz holatiga tushdi. Qon bosimi 220 ga 130 millimetrga yetdi.");
             } else if (type === "hypoxia" || type === "gipoksiya") {
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
                 current.mode = "hypoxia";
                 transitionSteps = 120; totalSteps = 120;
                 updateBanner("🫁 GIPOKSIYA: BO'G'ILISH VA KISLOROD YETISHMOVCHILIGI (74%)! DEKSAMETAZON KERAK!", "bg-sky-100 text-sky-900 border-sky-400 alarm-blink font-black");
                 stopAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_hypoxia.mp3', "Diqqat! Gipoksiya va kislorod yetishmovchiligi!");
+                playVoiceAudio('/static/audio/scenario_hypoxia.mp3', "Diqqat! Bemor o'tkir gipoksiya va bronxospazm holatiga tushdi. Kislorod saturatsiyasi 74 foizga tushib ketdi.");
             } else if (type === "opioid") {
                 target = { hr: 42, spo2: 62, sys: 80, dia: 50, rr: 4, temp: 35.2, mode: "opioid", rhythm: "sinus" };
                 current.mode = "opioid";
                 transitionSteps = 120; totalSteps = 120;
                 updateBanner("💉 OPIOID KOMA: NAFAS TORMOZLANISHI (RR 4/min, SpO2 62%)! NALOKSON (0.4mg) VA SUN'IY NAFAS KERAK!", "bg-teal-100 text-teal-900 border-teal-400 alarm-blink font-black");
                 stopAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_opioid.mp3', "Favqulodda holat! Opioid komasi!");
+                playVoiceAudio('/static/audio/scenario_opioid.mp3', "Favqulodda holat! Bemor opioid komasi holatiga tushdi. Nafas chastotasi daqiqasiga 4 martagacha pasaygan.");
             } else if (type === "shock" || type === "shok") {
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
                 current.mode = "shock";
                 transitionSteps = 120; totalSteps = 120;
                 updateBanner("🩸 SHOK: QON BOSIMINING KESKIN TUSHISHI (65/35)! FIZRASTVOR INFUSIYASI KERAK!", "bg-purple-100 text-purple-900 border-purple-400 alarm-blink font-black");
                 stopAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_shock.mp3', "Xavfli shok holati! Qon bosimi keskin tushib ketdi!");
+                playVoiceAudio('/static/audio/scenario_shock.mp3', "Xavfli holat! Bemor gipovolemik shok holatiga tushdi. Qon bosimi 65 ga 35 ga tushib ketdi.");
             } else if (type === "anaphylaxis" || type === "anafilaksiya") {
                 target = { hr: 140, spo2: 78, sys: 70, dia: 40, rr: 32, temp: 37.8, mode: "anaphylaxis", rhythm: "sinus" };
                 current.mode = "anaphylaxis";
                 transitionSteps = 120; totalSteps = 120;
                 updateBanner("🐝 ANAFILAKTIK SHOK: STRIDOR, ANGIOEDEMA VA GIPOTENZIYA (70/40 mmHg)! BIRINCHI TANLOV: IM ADRENALIN 0.5mg (1:1000)!", "bg-pink-100 text-pink-950 border-pink-400 alarm-blink font-black");
                 stopAsystoleTone();
-                playVoiceAudio('/static/audio/scenario_anaphylaxis.mp3', "Kritik holat! Anafilaktik shok!");
+                playVoiceAudio('/static/audio/scenario_anaphylaxis.mp3', "Kritik holat! Bemor anafilaktik shok holatiga tushdi. Bronxospazm va arterial gipotenziya kuzatilmoqda.");
             }
             updateAIPatientSubtitle();
         }
@@ -3779,7 +3779,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         if (injBanner) injBanner.classList.add("hidden");
                         injectionInProgress = false;
                         cprRevivalStage = 0;
-                        triggerPatientRevivedExperience("Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!");
+                        triggerPatientRevivedExperience("Bemor muvaffaqiyatli reanimatsiya qilindi. Spontan qon aylanishi va me'yordagi sinus ritmi tiklandi.");
                     }
                 }
             }

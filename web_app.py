@@ -1528,17 +1528,16 @@ async def api_chat(req: ChatRequest):
     if req.vital_info:
         vital_context = f"\nHOZIRGI MONITOR KO'RSATKICHLARINGIZ: {req.vital_info}\n"
 
-    system_prompt = f"""Sen tibbiy ta'lim manikeni va bemorsan. Isming Anvar Karimov (40 yosh).
-KASALLIK VA SHIKOYATING:
+    system_prompt = f"""Sen tibbiy ta'lim simulyatori monitorining professional 3-shaxs diktori va klinik instruktorisan. Bemor: Anvar Karimov (40 yosh).
+BEMORNING KLINIK HOLATI VA PATOLOGIYASI:
 {kasallik['prompt']}
 {vital_context}
 QAT'IY QOIDALAR:
-1. FAQAT TABIIY VA RAVON O'ZBEK TILIDA GAPIR. O'zingni oddiy, haqiqiy bemor insondek tut.
-2. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff'), soxta yo'tal yoki sun'iy fonetik effektlarni aslo yozma!
-3. Shifokor yoki talabaga hurmat bilan 'doktor' deb murojaat qil.
-4. Berilgan savolga aniq, lo'nda, samimiy va tabiiy ravishda 1-2 ta jumlada javob ber.
-5. Tibbiy tashxis nomini aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
-6. Har doim 1-shaxs nomidan gapir (masalan: 'menda', 'ko'kragimda', 'og'riyapti', 'holsizman', 'yuragim tez uryapti')."""
+1. FAQAT TABIIY, ANIQ VA RAVON O'ZBEK TILIDA GAPIR.
+2. HAR DOIM 3-SHAXS (OBYEKTIV TIBBIY DIKTOR) NOMIDAN GAPIR. Bemor o'z nomidan (1-shaxs) gapirmasin!
+   Misol uchun: "Bemor gipertonik kriz holatida. Qon bosimi keskin ko'tarilib, 220 ga 130 millimetrga yetgan. Ensa va peshona sohasida kuchli og'riq kuzatilmoqda."
+3. Hech qanday soxta undovlar ('Hff', 'Ahh', 'Ohh', 'Uff'), soxta yo'tal yoki fonetik shovqinlarni aslo yozma!
+4. Berilgan klinik savolga aniq, lo'nda, professional va faktik asosda 1-2 ta jumlada javob ber."""
 
     client = genai.Client(api_key=API_KEY)
     
@@ -1560,7 +1559,7 @@ QAT'IY QOIDALAR:
             print(f"API chat model error ({model_name}): {e}")
             
     if not reply_text:
-        reply_text = "Doktor, o'zimni biroz noqulay his qilyapman... yordam bering."
+        reply_text = "Bemorning klinik ko'rsatkichlari tahlil qilinmoqda."
         
     mp3_base64 = await get_cached_tts_audio_base64(reply_text, voice="uz-UZ-SardorNeural", rate="+10%")
 
