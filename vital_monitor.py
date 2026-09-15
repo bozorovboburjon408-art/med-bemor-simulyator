@@ -123,116 +123,101 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
-    <!-- 1. TOP HEADER (COMPACT ~34px) -->
-    <header class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 flex flex-wrap items-center justify-between gap-1.5 shadow-xs shrink-0">
-        <div class="flex items-center space-x-2">
-            <img src="/static/logo.png" alt="Logo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
-            <div>
-                <div class="flex items-center space-x-1.5 leading-tight">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink"></span>
-                    <span class="font-black text-xs md:text-sm tracking-wide text-slate-900">RO'TFMXMO va UIM Navoiy filiali</span>
-                    <span class="text-[9px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU IMTIHON XONASI</span>
-                </div>
-                <div class="text-[9px] text-slate-500 font-medium leading-none hidden sm:block">Amaliy reanimatsiya & kardiomonitoring simulyatori</div>
+    <!-- 1. TOP HEADER (FIXED COMPACT ~32px, NO-WRAP) -->
+    <header class="h-8 sm:h-9 bg-white border border-slate-200 rounded-lg px-2 flex items-center justify-between gap-2 shadow-xs shrink-0 overflow-hidden">
+        <div class="flex items-center space-x-2 shrink-0">
+            <img src="/static/logo.png" alt="Logo" class="w-6 h-6 rounded object-contain bg-white border border-slate-200 p-0.5 shrink-0">
+            <div class="flex items-center space-x-1.5 leading-none">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink"></span>
+                <span class="font-black text-xs sm:text-sm tracking-wide text-slate-900 truncate max-w-[160px] sm:max-w-none">RO'TFMXMO va UIM</span>
+                <span class="text-[9px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden md:inline-block">ICU</span>
             </div>
-            <div class="text-[11px] text-slate-500 border-l border-slate-200 pl-2 hidden md:block">
+            <div class="text-[11px] text-slate-500 border-l border-slate-200 pl-2 hidden lg:block">
                 KOYKA: <span class="text-slate-900 font-bold">#04</span>
             </div>
-            <div class="text-[11px] text-slate-500 border-l border-slate-200 pl-2">
+            <div class="text-[11px] text-slate-500 border-l border-slate-200 pl-2 hidden sm:block">
                 BEMOR: <span class="text-emerald-700 font-bold">Anvar Karimov (40 yosh)</span>
             </div>
         </div>
 
-        <div id="alarm-banner" class="px-2.5 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300">
-            <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
+        <div id="alarm-banner" class="px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 shrink-0 truncate max-w-[220px] sm:max-w-none">
+            <i class="fa-solid fa-heart-pulse mr-1"></i> BARQAROR (NORMAL)
         </div>
 
-        <div class="flex flex-wrap items-center gap-1.5 text-xs">
+        <div class="flex items-center gap-1 text-xs shrink-0">
             <!-- REAL HARDWARE WEB SERIAL USB CONNECT BUTTON -->
-            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2 py-0.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse">
+            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-black text-[11px] flex items-center gap-1 shadow-xs cursor-pointer transition">
                 <i class="fa-brands fa-usb text-xs"></i>
-                <span id="btn-web-serial-text">🔌 USB Ulanish</span>
+                <span id="btn-web-serial-text" class="hidden sm:inline">USB</span>
             </button>
 
-            <div id="hw-badge" class="px-2 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold text-xs">
-                <span id="hw-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
-                <span id="hw-text">USB: Kutilmoqda</span>
+            <div id="hw-badge" class="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1 font-bold text-[10px] hidden md:flex">
+                <span id="hw-dot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                <span id="hw-text">USB</span>
             </div>
 
-            <a href="/hub" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs">
-                <i class="fa-solid fa-hospital text-cyan-600"></i> Hub
-            </a>
-
-            <button id="pwa-vital-btn" onclick="installVitalPWA()" class="hidden px-2 py-0.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center gap-1 font-black shadow-xs cursor-pointer">
-                <i class="fa-solid fa-download"></i> O'rnatish
+            <button onclick="openPatientVoiceIntercomModal()" class="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] flex items-center gap-1 shadow-xs cursor-pointer transition active:scale-95">
+                <i class="fa-solid fa-microphone text-xs"></i> <span class="hidden sm:inline">AI Bemor</span>
             </button>
 
-            <a href="/" target="_blank" class="px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center gap-1 font-bold shadow-xs">
-                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor (Veb)
-            </a>
-
-            <button onclick="openPatientVoiceIntercomModal()" class="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow-md cursor-pointer transition active:scale-95 animate-pulse">
-                <i class="fa-solid fa-microphone"></i> 🎙️ AI Bemor Muloqot
-            </button>
-
-            <a href="/console" target="_blank" class="px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs">
-                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> Pult
+            <a href="/console" target="_blank" class="px-1.5 py-0.5 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold text-[11px] shadow-xs">
+                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> <span class="hidden sm:inline">Pult</span>
             </a>
 
             <!-- Volume Slider -->
-            <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded-lg">
-                <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
+            <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded">
+                <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-0.5 cursor-pointer">
                     <i id="audio-icon" class="fa-solid fa-volume-low text-emerald-600 text-xs"></i>
-                    <span id="audio-text" class="text-xs font-bold">20%</span>
+                    <span id="audio-text" class="text-[10px] font-bold hidden sm:inline">20%</span>
                 </button>
-                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="0.20" oninput="changeMonitorVolume(this.value)" class="w-10 sm:w-12 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer" title="Ovoz balandligi (20% Me'yoriy)">
+                <input type="range" id="monitor-volume-slider" min="0" max="1" step="0.05" value="0.20" oninput="changeMonitorVolume(this.value)" class="w-10 accent-emerald-600 h-1.5 bg-slate-300 rounded cursor-pointer">
             </div>
 
-            <button onclick="toggleFullScreen()" class="px-1.5 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
+            <button onclick="toggleFullScreen()" class="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer">
                 <i class="fa-solid fa-expand text-xs"></i>
             </button>
-            <span id="clock" class="mono text-xs font-bold text-slate-700">00:00:00</span>
+            <span id="clock" class="mono text-[11px] font-bold text-slate-700">00:00:00</span>
         </div>
     </header>
 
     <!-- INJECTION NOTIFICATION POPUP -->
     <div id="inj-banner" class="hidden bg-purple-100 border border-purple-400 rounded-lg p-1 shadow-sm text-center text-purple-900 text-xs font-bold alarm-blink shrink-0">
-        <i class="fa-solid fa-syringe text-purple-600 text-sm mr-1"></i> 
+        <i class="fa-solid fa-syringe text-purple-600 text-xs mr-1"></i> 
         <span id="inj-banner-text">💉 UKOL QILINDI! FARMAKOLOGIK TA'SIR KUZATILMOQDA...</span>
     </div>
 
     <!-- BARCODE SCANNER TOAST NOTIFICATION -->
-    <div id="barcode-scan-toast" class="hidden bg-purple-600 text-white border-2 border-purple-300 rounded-lg p-1.5 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200 shrink-0">
+    <div id="barcode-scan-toast" class="hidden bg-purple-600 text-white border border-purple-300 rounded-lg p-1.5 shadow-lg flex items-center justify-between animate-in fade-in duration-200 shrink-0">
         <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
+            <span class="w-5 h-5 rounded bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
                 <i class="fa-solid fa-barcode"></i>
             </span>
             <div>
-                <div id="scan-toast-title" class="text-[9px] font-black uppercase text-purple-200 tracking-wide leading-none">📷 SHTRIX-KOD QABUL QILINDI</div>
+                <div id="scan-toast-title" class="text-[9px] font-black uppercase text-purple-200 leading-none">📷 SHTRIX-KOD QABUL QILINDI</div>
                 <div id="scan-toast-msg" class="text-xs font-black text-white leading-tight">Adrenalin 1 mg/ml (ADR-01) — Manikenga ukol qilishga tayyor!</div>
             </div>
         </div>
-        <span class="mono px-1.5 py-0.5 rounded bg-white/20 text-xs font-black" id="scan-toast-badge">ADR-01</span>
+        <span class="mono px-1.5 py-0.2 rounded bg-white/20 text-xs font-black" id="scan-toast-badge">ADR-01</span>
     </div>
 
     <!-- PATIENT VOICE & REVIVAL POPUP -->
-    <div id="patient-revived-toast" class="hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white border-2 border-emerald-300 rounded-lg p-1.5 shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300 shrink-0">
-        <div class="flex items-center gap-2.5">
-            <span class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm shrink-0 animate-bounce">
+    <div id="patient-revived-toast" class="hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white border border-emerald-300 rounded-lg p-1.5 shadow-lg flex items-center justify-between animate-in fade-in duration-300 shrink-0">
+        <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs shrink-0 animate-bounce">
                 <i class="fa-solid fa-heart-pulse text-rose-300"></i>
             </span>
             <div>
                 <div class="text-[9px] uppercase tracking-wider font-black text-emerald-200 flex items-center gap-1 leading-none">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping"></span>
-                    <span>Bemor Jonlandi (Anvar Karimov, 40 yosh)</span>
+                    <span>Bemor Jonlandi (Anvar Karimov)</span>
                 </div>
-                <div id="patient-revived-speech" class="text-xs md:text-sm font-black text-white italic leading-tight">
+                <div id="patient-revived-speech" class="text-xs font-black text-white italic leading-tight">
                     "Uh... Rahmat sizga, doktor! Nafasim qaytdi... Meni hayotga qaytardingiz!"
                 </div>
             </div>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
-            <span class="px-2 py-0.5 rounded-lg bg-white/25 text-[10px] font-black tracking-wide border border-white/30">
+            <span class="px-2 py-0.2 rounded bg-white/25 text-[10px] font-black border border-white/30">
                 🎉 ROSC: 75 BPM
             </span>
             <button onclick="dismissRevivedToast()" class="text-white/80 hover:text-white p-0.5 rounded cursor-pointer">
@@ -241,20 +226,20 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- 2. TOP SECTION (~55% HEIGHT): VITAL SIGNS & OSCILLOSCOPE MONITOR -->
-    <div class="bg-white border border-slate-200 rounded-xl p-1.5 sm:p-2 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-1.5 sm:gap-2 flex-[1.25] min-h-0 overflow-hidden">
+    <!-- 2. TOP SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
+    <div class="bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-1.5 flex-[1.15] min-h-0 overflow-hidden">
         
         <!-- LEFT 3 COLS: LIVE OSCILLOSCOPES (ECG & SpO2) -->
-        <div class="lg:col-span-3 flex flex-col justify-between gap-1 border-r border-slate-100 pr-1.5 sm:pr-2 min-h-0 overflow-hidden">
+        <div class="lg:col-span-3 flex flex-col justify-between gap-1 border-r border-slate-100 pr-1.5 min-h-0 overflow-hidden">
             
             <!-- 1. ECG Lead II Waveform -->
             <div class="flex-1 flex flex-col min-h-0 pb-0.5 border-b border-slate-100">
                 <div class="flex justify-between items-center text-xs font-bold text-emerald-800 mb-0.5 shrink-0 leading-none">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-bolt text-emerald-600"></i> EKG Lead II (mV)
-                        <span class="text-[9px] text-slate-400 font-normal hidden sm:inline">25mm/s 10mm/mV</span>
+                    <span class="flex items-center gap-1">
+                        <i class="fa-solid fa-bolt text-emerald-600 text-xs"></i> EKG Lead II (mV)
+                        <span class="text-[8px] text-slate-400 font-normal hidden sm:inline">25mm/s 10mm/mV</span>
                     </span>
-                    <span id="ecg-rhythm-name" class="font-extrabold text-emerald-700">Sinus Ritmi</span>
+                    <span id="ecg-rhythm-name" class="font-extrabold text-emerald-700 text-xs">Sinus Ritmi</span>
                 </div>
                 <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
                     <canvas id="ecgCanvas" class="w-full h-full block"></canvas>
@@ -264,10 +249,10 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- 2. SpO2 Pleth Waveform -->
             <div class="flex-1 flex flex-col min-h-0 pt-0.5">
                 <div class="flex justify-between items-center text-xs font-bold text-sky-800 mb-0.5 shrink-0 leading-none">
-                    <span class="flex items-center gap-1.5">
-                        <i class="fa-solid fa-wave-square text-sky-600"></i> SpO2 Pleth (Puls to'lqini)
+                    <span class="flex items-center gap-1">
+                        <i class="fa-solid fa-wave-square text-sky-600 text-xs"></i> SpO2 Pleth (Puls to'lqini)
                     </span>
-                    <span id="pleth-status" class="font-extrabold text-sky-700">Normal perfuziya</span>
+                    <span id="pleth-status" class="font-extrabold text-sky-700 text-xs">Normal perfuziya</span>
                 </div>
                 <div class="flex-1 relative min-h-0 rounded-lg bg-white border border-slate-200 overflow-hidden">
                     <canvas id="plethCanvas" class="w-full h-full block"></canvas>
@@ -277,67 +262,73 @@ HTML_CONTENT = """<!DOCTYPE html>
             <canvas id="respCanvas" class="hidden" width="10" height="10"></canvas>
         </div>
 
-        <!-- RIGHT 1 COL: 4 VITAL NUMERIC CARDS -->
-        <div class="flex flex-col justify-between gap-1 sm:gap-1.5 min-h-0 overflow-hidden">
+        <!-- RIGHT 1 COL: 3 NON-OVERLAPPING VITAL NUMERIC CARDS -->
+        <div class="flex flex-col justify-between gap-1 h-full min-h-0 overflow-hidden">
             
-            <!-- HR / PULS -->
-            <div class="bg-emerald-50/70 border-2 border-emerald-300 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-xs flex-1 flex flex-col justify-between min-h-0">
-                <div class="flex justify-between items-center text-emerald-800 font-bold text-xs sm:text-sm leading-none">
-                    <span><i class="fa-solid fa-heart-pulse mr-1 text-emerald-600"></i> HR / PULS</span>
-                    <span class="text-[10px] sm:text-xs text-slate-500 font-mono font-bold">bpm</span>
+            <!-- 1. HR / PULS CARD -->
+            <div class="bg-emerald-50/80 border border-emerald-300 rounded-lg p-1 sm:p-1.5 shadow-2xs flex-1 flex flex-col justify-between overflow-hidden min-h-0">
+                <div class="flex items-center justify-between leading-none text-emerald-800 font-bold text-xs">
+                    <span class="flex items-center gap-1">
+                        <i class="fa-solid fa-heart-pulse text-emerald-600 text-xs"></i> HR / PULS <span class="text-[9px] text-slate-400 font-mono font-normal">bpm</span>
+                    </span>
+                    <span id="lbl-hr-status" class="text-[10px] font-black text-emerald-700 bg-emerald-100/90 px-1.5 py-0.2 rounded">Puls: Me'yorda</span>
                 </div>
-                <div class="flex items-baseline justify-between my-auto py-0.5">
-                    <span id="num-hr" class="mono text-4xl sm:text-5xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
-                    <div class="text-right leading-tight flex flex-col items-end gap-0.5">
-                        <div id="lbl-hr-high" class="text-xs sm:text-sm md:text-base font-black text-slate-800">YUQ: 120</div>
-                        <div id="lbl-hr-low" class="text-xs sm:text-sm md:text-base font-black text-slate-800">PAS: 50</div>
+                <div class="flex items-baseline justify-between leading-none my-auto py-0.5">
+                    <span id="num-hr" class="mono text-3xl sm:text-4xl font-black text-emerald-600 leading-none">75</span>
+                    <div class="text-right leading-none flex flex-col items-end gap-0.5">
+                        <span id="lbl-hr-high" class="text-[11px] sm:text-xs font-black text-slate-800">YUQ: 120</span>
+                        <span id="lbl-hr-low" class="text-[10px] sm:text-[11px] font-black text-slate-600">PAS: 50</span>
                     </div>
                 </div>
-                <div class="flex justify-between items-center text-[11px] sm:text-xs text-slate-700 font-bold border-t border-slate-200 pt-0.5 leading-none">
+                <div class="flex items-center justify-between text-[9px] text-slate-500 font-bold leading-none border-t border-emerald-200/60 pt-0.5">
                     <span>Zarbalar: <span id="num-count" class="font-black text-emerald-700">0</span></span>
-                    <span id="lbl-hr-status" class="font-black text-emerald-700">Puls: Me'yorda</span>
+                    <span>Sinus Ritmi</span>
                 </div>
             </div>
 
-            <!-- SpO2 -->
-            <div class="bg-sky-50/70 border-2 border-sky-300 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-xs flex-1 flex flex-col justify-between min-h-0">
-                <div class="flex justify-between items-center text-sky-800 font-bold text-xs sm:text-sm leading-none">
-                    <span><i class="fa-solid fa-droplet mr-1 text-sky-600"></i> SpO2</span>
-                    <span class="text-[10px] sm:text-xs text-slate-500 font-mono font-bold">%</span>
+            <!-- 2. SpO2 CARD -->
+            <div class="bg-sky-50/80 border border-sky-300 rounded-lg p-1 sm:p-1.5 shadow-2xs flex-1 flex flex-col justify-between overflow-hidden min-h-0">
+                <div class="flex items-center justify-between leading-none text-sky-800 font-bold text-xs">
+                    <span class="flex items-center gap-1">
+                        <i class="fa-solid fa-droplet text-sky-600 text-xs"></i> SpO2 <span class="text-[9px] text-slate-400 font-mono font-normal">%</span>
+                    </span>
+                    <span id="lbl-spo2-signal" class="text-[10px] font-black text-emerald-700 bg-sky-100/90 px-1.5 py-0.2 rounded">Signal: Kuchli</span>
                 </div>
-                <div class="flex items-baseline justify-between my-auto py-0.5">
-                    <span id="num-spo2" class="mono text-4xl sm:text-5xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
-                    <div class="text-right leading-tight flex flex-col items-end gap-0.5">
-                        <div id="lbl-spo2-pi" class="text-xs sm:text-sm md:text-base font-black text-slate-800">PI: 4.2%</div>
-                        <div id="lbl-spo2-low" class="text-xs sm:text-sm md:text-base font-black text-slate-800">PAS: 90%</div>
+                <div class="flex items-baseline justify-between leading-none my-auto py-0.5">
+                    <span id="num-spo2" class="mono text-3xl sm:text-4xl font-black text-sky-600 leading-none">98</span>
+                    <div class="text-right leading-none flex flex-col items-end gap-0.5">
+                        <span id="lbl-spo2-pi" class="text-[11px] sm:text-xs font-black text-slate-800">PI: 4.2%</span>
+                        <span id="lbl-spo2-low" class="text-[10px] sm:text-[11px] font-black text-slate-600">PAS: 90%</span>
                     </div>
                 </div>
-                <div class="flex justify-between items-center text-[11px] sm:text-xs text-slate-700 font-bold border-t border-slate-200 pt-0.5 leading-none">
+                <div class="flex items-center justify-between text-[9px] text-slate-500 font-bold leading-none border-t border-sky-200/60 pt-0.5">
                     <span>Puls: <span id="num-pr" class="font-black text-sky-700">75</span></span>
-                    <span id="lbl-spo2-signal" class="font-black text-emerald-700">Signal: Kuchli</span>
+                    <span>Pleth OK</span>
                 </div>
             </div>
 
-            <!-- NIBP & RR/Temp Split -->
-            <div class="grid grid-cols-2 gap-1.5 shrink-0">
-                <div class="bg-slate-50 border-2 border-slate-300 rounded-lg sm:rounded-xl p-1 sm:p-1.5 text-center shadow-xs flex flex-col justify-between">
-                    <div class="text-[11px] sm:text-xs font-black text-slate-800 flex items-center justify-between leading-none">
-                        <span><i class="fa-solid fa-gauge-high mr-1 text-purple-600"></i> NIBP</span>
-                        <span class="text-[9px] text-slate-400 font-mono">mmHg</span>
+            <!-- 3. NIBP & RESP SPLIT CARD -->
+            <div class="grid grid-cols-2 gap-1 shrink-0">
+                <!-- NIBP -->
+                <div class="bg-slate-50 border border-slate-300 rounded-lg p-1 text-center shadow-2xs flex flex-col justify-between overflow-hidden">
+                    <div class="text-[10px] font-black text-slate-800 flex items-center justify-between leading-none">
+                        <span><i class="fa-solid fa-gauge-high mr-0.5 text-purple-600"></i> NIBP</span>
+                        <span class="text-[8px] text-slate-400 font-mono">mmHg</span>
                     </div>
                     <div class="mono font-black text-slate-800 leading-none my-0.5 flex items-baseline justify-center gap-0.5">
-                        <span id="num-sys" class="text-2xl sm:text-3xl font-black text-purple-700">120</span><span class="text-base text-slate-400">/</span><span id="num-dia" class="text-xl sm:text-2xl font-black text-purple-600">80</span>
+                        <span id="num-sys" class="text-xl sm:text-2xl font-black text-purple-700">120</span><span class="text-xs text-slate-400">/</span><span id="num-dia" class="text-lg sm:text-xl font-black text-purple-600">80</span>
                     </div>
-                    <div class="text-[10px] sm:text-[11px] font-bold text-slate-700 leading-none">MAP: <span id="num-map" class="text-xs sm:text-sm font-black text-emerald-700">93</span></div>
+                    <div class="text-[9px] font-bold text-slate-600 leading-none">MAP: <span id="num-map" class="text-[10px] font-black text-emerald-700">93</span></div>
                 </div>
 
-                <div class="bg-amber-50/60 border-2 border-amber-300 rounded-lg sm:rounded-xl p-1 sm:p-1.5 text-center shadow-xs flex flex-col justify-between">
-                    <div class="text-[11px] sm:text-xs font-black text-amber-800 flex items-center justify-between leading-none">
-                        <span><i class="fa-solid fa-lungs mr-1 text-amber-600"></i> RESP</span>
-                        <span class="text-[9px] text-slate-400 font-mono">rpm</span>
+                <!-- RESP -->
+                <div class="bg-amber-50/70 border border-amber-300 rounded-lg p-1 text-center shadow-2xs flex flex-col justify-between overflow-hidden">
+                    <div class="text-[10px] font-black text-amber-800 flex items-center justify-between leading-none">
+                        <span><i class="fa-solid fa-lungs mr-0.5 text-amber-600"></i> RESP</span>
+                        <span class="text-[8px] text-slate-400 font-mono">rpm</span>
                     </div>
-                    <span id="num-rr" class="mono text-2xl sm:text-3xl font-black text-amber-600 leading-none my-0.5">16</span>
-                    <div class="text-[10px] sm:text-[11px] font-bold text-slate-700 leading-none"><span id="num-temp" class="text-xs sm:text-sm font-black text-purple-700">36.6</span>°C</div>
+                    <span id="num-rr" class="mono text-xl sm:text-2xl font-black text-amber-600 leading-none my-0.5">16</span>
+                    <div class="text-[9px] font-bold text-slate-600 leading-none"><span id="num-temp" class="text-[10px] font-black text-purple-700">36.6</span>°C</div>
                 </div>
             </div>
 
@@ -345,63 +336,60 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- 3. BOTTOM SECTION (~45% HEIGHT): CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
-    <div class="bg-white border border-slate-200 rounded-xl p-1.5 sm:p-2 shadow-xs flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+    <!-- 3. BOTTOM SECTION: CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
+    <div class="bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
         
         <!-- Header Strip with Stage Badge and Prepared Drug Banner -->
-        <div class="flex flex-wrap items-center justify-between gap-1.5 pb-0.5 sm:pb-1 border-b border-slate-100 shrink-0">
-            <div class="flex items-center gap-1.5">
-                <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs font-black shrink-0">
+        <div class="flex items-center justify-between gap-1 pb-0.5 border-b border-slate-100 shrink-0">
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span class="w-4 h-4 rounded bg-rose-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">
                     <i class="fa-solid fa-heart-pulse"></i>
                 </span>
-                <div>
-                    <span class="text-[11px] sm:text-xs font-black text-slate-900 uppercase tracking-wide">YURAK-O'PKA REANIMATSIYASI (CPR 30:2) VA FARMAKOTERAPIYA</span>
-                    <span class="text-[9px] text-slate-500 font-semibold ml-1.5 hidden md:inline">Standart: 30 zarba + 2 nafas</span>
-                </div>
+                <span class="text-[11px] font-black text-slate-900 uppercase tracking-wide">YURAK-O'PKA REANIMATSIYASI (CPR 30:2)</span>
             </div>
 
             <!-- Prepared Medication Status Chip -->
-            <div id="active-med-chip" class="px-2 py-0.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-900 border border-purple-300 flex items-center gap-1 shadow-xs cursor-pointer hover:bg-purple-100 transition" onclick="openMedCabinetModal()">
-                <i class="fa-solid fa-syringe text-purple-600 text-xs"></i>
-                <span class="text-[11px]">TAYYOR DORI:</span>
-                <span id="active-med-name" class="font-black text-purple-700 text-xs">Adrenalin 1mg/ml (ADR-01)</span>
+            <div id="active-med-chip" class="px-2 py-0.2 rounded-md text-[10px] font-bold bg-purple-50 text-purple-900 border border-purple-300 flex items-center gap-1 shadow-2xs cursor-pointer hover:bg-purple-100 transition shrink-0" onclick="openMedCabinetModal()">
+                <i class="fa-solid fa-syringe text-purple-600 text-[10px]"></i>
+                <span class="hidden sm:inline">DORI:</span>
+                <span id="active-med-name" class="font-black text-purple-700">Adrenalin 1mg (ADR-01)</span>
             </div>
 
-            <div id="cpr-stage-badge" class="px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-black bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                <span>0-BOSQICH: ASISTOLIYA (CPR KUTILMOQDA)</span>
+            <div id="cpr-stage-badge" class="px-2 py-0.2 rounded-md text-[10px] font-black bg-slate-100 text-slate-700 border border-slate-300 flex items-center gap-1 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                <span>0-BOSQICH: ASISTOLIYA</span>
             </div>
         </div>
 
         <!-- 3 Columns: A. Force Meter | B. 30:2 Cycle Hub | C. Airway & Smart Injection -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-1.5 sm:gap-2 my-0.5 flex-1 min-h-0 items-stretch">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-1.5 my-0.5 flex-1 min-h-0 items-stretch">
             
             <!-- COLUMN A (4 cols): COMPRESSION FORCE -->
-            <div class="md:col-span-4 bg-slate-50/90 border border-slate-200 rounded-lg sm:rounded-xl p-1.5 sm:p-2 flex flex-col justify-between shadow-xs h-full overflow-hidden">
-                <div class="flex justify-between items-center text-xs font-black text-slate-700 shrink-0 leading-none">
+            <div class="md:col-span-4 bg-slate-50/90 border border-slate-200 rounded-lg p-1.5 flex flex-col justify-between shadow-2xs h-full overflow-hidden">
+                <div class="flex justify-between items-center text-[11px] font-black text-slate-700 shrink-0 leading-none">
                     <span class="flex items-center gap-1">
-                        <i class="fa-solid fa-hand-fist text-rose-600"></i> BOSISH KUCHI:
+                        <i class="fa-solid fa-hand-fist text-rose-600 text-xs"></i> BOSISH KUCHI:
                     </span>
-                    <button type="button" onclick="tareCprForce()" title="Boshlang'ich vaznni 0 qilish" class="py-0.5 px-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded border border-slate-300 text-[9px] sm:text-[10px] font-bold cursor-pointer active:scale-95 transition flex items-center gap-1 shadow-xs">
-                        <i class="fa-solid fa-scale-balanced text-rose-600"></i> ⚖️ 0 Qilish
+                    <button type="button" onclick="tareCprForce()" title="Boshlang'ich vaznni 0 qilish" class="py-0.2 px-1 bg-white hover:bg-slate-100 text-slate-700 rounded border border-slate-300 text-[9px] font-bold cursor-pointer active:scale-95 transition flex items-center gap-0.5 shadow-2xs">
+                        <i class="fa-solid fa-scale-balanced text-rose-600 text-[9px]"></i> 0 Qilish
                     </button>
                 </div>
 
-                <div class="flex items-baseline justify-between my-auto py-0.5">
-                    <div id="cpr-force-val" class="mono text-3xl sm:text-4xl lg:text-4xl font-black text-rose-600 tracking-tight leading-none">0.0 kg</div>
-                    <div id="cpr-eval-verdict" class="px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-black bg-slate-200 text-slate-700 shadow-xs">
+                <div class="flex items-baseline justify-between my-auto py-0.5 leading-none">
+                    <div id="cpr-force-val" class="mono text-2xl sm:text-3xl font-black text-rose-600 tracking-tight leading-none">0.0 kg</div>
+                    <div id="cpr-eval-verdict" class="px-1.5 py-0.5 rounded text-[10px] font-black bg-slate-200 text-slate-700 shadow-2xs">
                         BOSISHGA TAYYOR
                     </div>
                 </div>
 
                 <div class="shrink-0">
-                    <div class="w-full bg-slate-200 rounded-lg h-4 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
+                    <div class="w-full bg-slate-200 rounded h-3 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
                         <div id="cpr-force-bar" class="bg-rose-500 h-full rounded transition-all duration-75" style="width: 0%;"></div>
-                        <div class="absolute inset-y-0 left-[63%] w-[28%] bg-emerald-500/25 border-x-2 border-emerald-500 pointer-events-none flex items-center justify-center">
-                            <span class="text-[7px] sm:text-[8px] font-black text-emerald-900 tracking-wider">ME'YOR (38-55 kg)</span>
+                        <div class="absolute inset-y-0 left-[63%] w-[28%] bg-emerald-500/25 border-x border-emerald-500 pointer-events-none flex items-center justify-center">
+                            <span class="text-[7px] font-black text-emerald-900 tracking-wider">38-55 kg</span>
                         </div>
                     </div>
-                    <div class="flex justify-between text-[8px] sm:text-[9px] font-bold text-slate-500 mt-0.5 leading-none">
+                    <div class="flex justify-between text-[8px] font-bold text-slate-500 mt-0.5 leading-none">
                         <span>0 kg</span>
                         <span class="text-emerald-700 font-bold">5 - 6 sm chuqurlik</span>
                         <span>60 kg</span>
@@ -410,71 +398,71 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
 
             <!-- COLUMN B (5 cols): 30:2 CYCLE COUNTERS & REAL-TIME QUALITY -->
-            <div class="md:col-span-5 bg-indigo-50/50 border border-indigo-200 rounded-lg sm:rounded-xl p-1.5 sm:p-2 flex flex-col justify-between shadow-xs h-full overflow-hidden">
-                <div class="flex justify-between items-center text-xs font-black text-indigo-900 shrink-0 leading-none">
+            <div class="md:col-span-5 bg-indigo-50/50 border border-indigo-200 rounded-lg p-1.5 flex flex-col justify-between shadow-2xs h-full overflow-hidden">
+                <div class="flex justify-between items-center text-[11px] font-black text-indigo-900 shrink-0 leading-none">
                     <span class="flex items-center gap-1">
-                        <i class="fa-solid fa-rotate text-indigo-600"></i> 30:2 SIKL HISOBI:
+                        <i class="fa-solid fa-rotate text-indigo-600 text-xs"></i> 30:2 SIKL HISOBI:
                     </span>
-                    <span id="cpr-rate-badge" class="px-1.5 py-0.2 rounded text-[9px] sm:text-[10px] font-bold bg-white text-indigo-800 border border-indigo-200">
+                    <span id="cpr-rate-badge" class="px-1 py-0.2 rounded text-[9px] font-bold bg-white text-indigo-800 border border-indigo-200">
                         100 - 120 /min me'yor
                     </span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-1.5 my-auto py-0.5">
-                    <div class="bg-white border border-indigo-200 rounded-lg p-1 sm:p-1.5 text-center shadow-xs">
-                        <div class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase leading-none">Ko'krak Massaji</div>
-                        <div class="flex items-baseline justify-center gap-0.5 my-0.5">
-                            <span id="cpr-cycle-comps" class="mono text-2xl sm:text-3xl font-black text-indigo-600 leading-none">0</span>
-                            <span class="text-[10px] sm:text-xs font-bold text-slate-400">/ 30</span>
+                <div class="grid grid-cols-2 gap-1 my-auto py-0.5">
+                    <div class="bg-white border border-indigo-200 rounded p-1 text-center shadow-2xs">
+                        <div class="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase leading-none">Ko'krak Massaji</div>
+                        <div class="flex items-baseline justify-center gap-0.5 mt-0.5 leading-none">
+                            <span id="cpr-cycle-comps" class="mono text-2xl font-black text-indigo-600 leading-none">0</span>
+                            <span class="text-[10px] font-bold text-slate-400">/ 30</span>
                         </div>
                     </div>
 
-                    <div class="bg-white border border-sky-200 rounded-lg p-1 sm:p-1.5 text-center shadow-xs">
-                        <div class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase leading-none">Sun'iy Nafas</div>
-                        <div class="flex items-baseline justify-center gap-0.5 my-0.5">
-                            <span id="cpr-cycle-vents" class="mono text-2xl sm:text-3xl font-black text-sky-600 leading-none">0</span>
-                            <span class="text-[10px] sm:text-xs font-bold text-slate-400">/ 2</span>
+                    <div class="bg-white border border-sky-200 rounded p-1 text-center shadow-2xs">
+                        <div class="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase leading-none">Sun'iy Nafas</div>
+                        <div class="flex items-baseline justify-center gap-0.5 mt-0.5 leading-none">
+                            <span id="cpr-cycle-vents" class="mono text-2xl font-black text-sky-600 leading-none">0</span>
+                            <span class="text-[10px] font-bold text-slate-400">/ 2</span>
                         </div>
                     </div>
                 </div>
 
-                <div id="cpr-cycle-badge" class="py-0.5 px-1.5 rounded-lg text-center text-[10px] sm:text-xs font-black bg-indigo-100 text-indigo-900 border border-indigo-300 shrink-0 leading-tight">
+                <div id="cpr-cycle-badge" class="py-0.2 px-1 rounded text-center text-[10px] font-black bg-indigo-100 text-indigo-900 border border-indigo-300 shrink-0 leading-tight">
                     SIKL: 0/30 ZARBA | 0/2 NAFAS
                 </div>
 
                 <!-- 4 Real-time Quality Chips -->
-                <div class="grid grid-cols-4 gap-1 mt-0.5 text-[8px] sm:text-[9px] font-bold shrink-0">
-                    <div id="badge-d" class="p-0.5 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs leading-none">Chuqurlik: -</div>
-                    <div id="badge-r" class="p-0.5 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs leading-none">Bo'shatish: -</div>
-                    <div id="badge-bpm" class="p-0.5 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs leading-none">Tezlik: -</div>
-                    <div id="badge-pos" class="p-0.5 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-xs leading-none">Joyi: -</div>
+                <div class="grid grid-cols-4 gap-0.5 mt-0.5 text-[8px] font-bold shrink-0">
+                    <div id="badge-d" class="p-0.2 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-2xs leading-none">Chuqurlik: -</div>
+                    <div id="badge-r" class="p-0.2 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-2xs leading-none">Bo'shatish: -</div>
+                    <div id="badge-bpm" class="p-0.2 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-2xs leading-none">Tezlik: -</div>
+                    <div id="badge-pos" class="p-0.2 rounded bg-white border border-slate-200 text-slate-600 text-center shadow-2xs leading-none">Joyi: -</div>
                 </div>
             </div>
 
             <!-- COLUMN C (3 cols): AIRWAY & SMART INJECTION HUB -->
-            <div class="md:col-span-3 bg-sky-50/50 border border-sky-200 rounded-lg sm:rounded-xl p-1.5 sm:p-2 flex flex-col justify-between shadow-xs h-full overflow-hidden">
-                <div class="flex justify-between items-center text-xs font-black text-sky-900 shrink-0 leading-none">
+            <div class="md:col-span-3 bg-sky-50/50 border border-sky-200 rounded-lg p-1.5 flex flex-col justify-between shadow-2xs h-full overflow-hidden">
+                <div class="flex justify-between items-center text-[11px] font-black text-sky-900 shrink-0 leading-none">
                     <span class="flex items-center gap-1">
-                        <i class="fa-solid fa-lungs text-sky-600"></i> O'PKA BOSIMI:
+                        <i class="fa-solid fa-lungs text-sky-600 text-xs"></i> O'PKA BOSIMI:
                     </span>
                     <span id="cpr-bpm-val" class="mono font-black text-emerald-700 text-xs">0 /min</span>
                 </div>
 
-                <div class="flex items-baseline justify-between my-auto py-0.5">
-                    <div id="lung-p-val" class="mono text-2xl sm:text-3xl font-black text-sky-600 leading-none">0.0 kPa</div>
-                    <div id="stomach-alert" class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-white text-slate-600 border border-slate-200">
+                <div class="flex items-baseline justify-between my-auto py-0.5 leading-none">
+                    <div id="lung-p-val" class="mono text-2xl font-black text-sky-600 leading-none">0.0 kPa</div>
+                    <div id="stomach-alert" class="px-1 py-0.2 rounded text-[9px] font-bold bg-white text-slate-600 border border-slate-200">
                         Oshqozon toza
                     </div>
                 </div>
 
                 <div class="shrink-0">
-                    <div class="w-full bg-slate-200 rounded-lg h-3.5 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
+                    <div class="w-full bg-slate-200 rounded h-3 overflow-hidden relative shadow-inner p-0.5 border border-slate-300">
                         <div id="lung-p-bar" class="bg-sky-500 h-full rounded transition-all duration-75" style="width: 0%;"></div>
                         <div class="absolute inset-y-0 left-[32%] w-[56%] bg-sky-400/25 border-x border-sky-500 pointer-events-none flex items-center justify-center">
                             <span class="text-[7px] font-black text-sky-900">0.8-2.2 kPa</span>
                         </div>
                     </div>
-                    <div id="lung-status-text" class="text-[8px] sm:text-[9px] text-sky-700 font-bold mt-0.5 text-center leading-none">
+                    <div id="lung-status-text" class="text-[8px] text-sky-700 font-bold mt-0.5 text-center leading-none">
                         Me'yor: 0.8 - 2.2 kPa
                     </div>
                 </div>
@@ -482,7 +470,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <div class="hidden"><span id="stomach-p-val">0.0</span></div>
 
                 <!-- SMART INJECTION BUTTON -->
-                <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-0.5 w-full py-1.5 px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shrink-0 leading-none">
+                <button type="button" onclick="triggerManualInjection()" id="inj-badge-small" class="mt-0.5 w-full py-1 px-2 rounded bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow flex items-center justify-center gap-1 transition cursor-pointer active:scale-95 shrink-0 leading-none">
                     <i class="fa-solid fa-syringe text-xs"></i> <span id="inj-btn-label">💉 UKOL: ADRENALIN</span>
                 </button>
             </div>
@@ -491,59 +479,59 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (~32px) -->
-    <footer class="bg-white border border-slate-200 rounded-lg p-1 shadow-xs shrink-0 flex flex-wrap items-center justify-between gap-1 text-[10px] sm:text-[11px]">
+    <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (SINGLE ROW, OVERFLOW-X AUTO, NO-WRAP) -->
+    <footer class="h-7 sm:h-8 px-1.5 bg-white border border-slate-200 rounded-lg shadow-xs shrink-0 flex items-center justify-between gap-1 text-[10px] sm:text-[11px] overflow-x-auto">
         <div class="flex items-center gap-1 text-slate-700 font-bold shrink-0">
             <i class="fa-solid fa-stethoscope text-indigo-600 text-xs"></i>
-            <span class="hidden sm:inline">Ssenariylar:</span>
+            <span class="text-[10px]">Ssenariylar:</span>
         </div>
 
-        <div class="flex flex-wrap items-center gap-1">
-            <button onclick="setScenario('normal')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+        <div class="flex items-center gap-1 shrink-0">
+            <button onclick="setScenario('normal')" class="px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 🟢 Normal (75)
             </button>
 
-            <button onclick="setScenario('dying')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('dying')" class="px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 🚨 Asistoliya (0)
             </button>
 
-            <button onclick="setScenario('vfib')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-950 border border-red-400 font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer alarm-blink">
+            <button onclick="setScenario('vfib')" class="px-1.5 py-0.5 rounded bg-red-100 hover:bg-red-200 text-red-950 border border-red-400 font-black transition active:scale-95 shadow-2xs shrink-0 cursor-pointer alarm-blink">
                 ⚡ VFib (230)
             </button>
 
-            <button onclick="setScenario('attack')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('attack')" class="px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 ⚡ Taxikardiya (185)
             </button>
 
-            <button onclick="setScenario('brady')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('brady')" class="px-1.5 py-0.5 rounded bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 🫀 Bradikardiya (28)
             </button>
 
-            <button onclick="setScenario('hyper')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('hyper')" class="px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 🔴 Gipertoniya (220)
             </button>
 
-            <button onclick="setScenario('hypoxia')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('hypoxia')" class="px-1.5 py-0.5 rounded bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 🫁 Gipoksiya (74%)
             </button>
 
-            <button onclick="setScenario('opioid')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                💉 Opioid Koma (RR 4)
+            <button onclick="setScenario('opioid')" class="px-1.5 py-0.5 rounded bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
+                💉 Opioid (RR 4)
             </button>
 
-            <button onclick="setScenario('shock')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="setScenario('shock')" class="px-1.5 py-0.5 rounded bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 🩸 Shok (65/35)
             </button>
 
-            <button onclick="setScenario('anaphylaxis')" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-pink-50 hover:bg-pink-100 text-pink-800 border border-pink-300 font-bold transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
-                🐝 Anafilaksiya (70/40)
+            <button onclick="setScenario('anaphylaxis')" class="px-1.5 py-0.5 rounded bg-pink-50 hover:bg-pink-100 text-pink-800 border border-pink-300 font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
+                🐝 Anafilaksiya
             </button>
 
-            <button onclick="openMedCabinetModal()" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="openMedCabinetModal()" class="px-1.5 py-0.5 rounded bg-purple-600 hover:bg-purple-700 text-white font-black transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 <i class="fa-solid fa-pills"></i> 💊 Dorilar
             </button>
 
-            <button onclick="defibrillateShock()" class="px-1.5 sm:px-2 py-0.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-black transition active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer">
+            <button onclick="defibrillateShock()" class="px-1.5 py-0.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-black transition active:scale-95 shadow-2xs shrink-0 cursor-pointer">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> ⚡ Defibrilyator
             </button>
         </div>
@@ -3876,45 +3864,45 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (elHrHigh) {
                 elHrHigh.innerText = `YUQ: ${sysVal}`;
                 if (sysVal === 0) {
-                    elHrHigh.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black alarm-blink";
+                    elHrHigh.className = "text-[11px] sm:text-xs text-rose-600 font-black alarm-blink";
                 } else if (sysVal >= 160) {
-                    elHrHigh.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black alarm-blink";
+                    elHrHigh.className = "text-[11px] sm:text-xs text-rose-600 font-black alarm-blink";
                 } else if (sysVal <= 85) {
-                    elHrHigh.className = "text-xs sm:text-sm md:text-base text-amber-600 font-black";
+                    elHrHigh.className = "text-[11px] sm:text-xs text-amber-600 font-black";
                 } else {
-                    elHrHigh.className = "text-xs sm:text-sm md:text-base text-slate-800 font-black";
+                    elHrHigh.className = "text-[11px] sm:text-xs text-slate-800 font-black";
                 }
             }
 
             if (elHrLow) {
                 elHrLow.innerText = `PAS: ${diaVal}`;
                 if (diaVal === 0) {
-                    elHrLow.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black alarm-blink";
+                    elHrLow.className = "text-[10px] sm:text-[11px] text-rose-600 font-black alarm-blink";
                 } else if (diaVal >= 100) {
-                    elHrLow.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black alarm-blink";
+                    elHrLow.className = "text-[10px] sm:text-[11px] text-rose-600 font-black alarm-blink";
                 } else if (diaVal <= 50) {
-                    elHrLow.className = "text-xs sm:text-sm md:text-base text-amber-600 font-black";
+                    elHrLow.className = "text-[10px] sm:text-[11px] text-amber-600 font-black";
                 } else {
-                    elHrLow.className = "text-xs sm:text-sm md:text-base text-slate-800 font-black";
+                    elHrLow.className = "text-[10px] sm:text-[11px] text-slate-600 font-black";
                 }
             }
 
             if (elHrStatus) {
                 if (hrVal <= 0) {
                     elHrStatus.innerText = "Puls: Yo'q (0)";
-                    elHrStatus.className = "text-[11px] sm:text-xs font-black text-rose-600 alarm-blink";
+                    elHrStatus.className = "text-[10px] font-black text-rose-600 bg-rose-100/90 px-1.5 py-0.2 rounded alarm-blink";
                 } else if (current.rhythm === "vfib" || current.mode === "vfib") {
-                    elHrStatus.innerText = "Puls: Fibrillyatsiya";
-                    elHrStatus.className = "text-[11px] sm:text-xs font-black text-rose-600 alarm-blink";
+                    elHrStatus.innerText = "Puls: VFib";
+                    elHrStatus.className = "text-[10px] font-black text-rose-600 bg-rose-100/90 px-1.5 py-0.2 rounded alarm-blink";
                 } else if (hrVal < 50 || current.mode === "brady") {
                     elHrStatus.innerText = "Puls: Bradikardiya";
-                    elHrStatus.className = "text-[11px] sm:text-xs font-black text-orange-600";
+                    elHrStatus.className = "text-[10px] font-black text-orange-600 bg-orange-100/90 px-1.5 py-0.2 rounded";
                 } else if (hrVal > 120 || current.mode === "attack" || current.mode === "tachycardia") {
                     elHrStatus.innerText = "Puls: Taxikardiya";
-                    elHrStatus.className = "text-[11px] sm:text-xs font-black text-amber-600";
+                    elHrStatus.className = "text-[10px] font-black text-amber-600 bg-amber-100/90 px-1.5 py-0.2 rounded";
                 } else {
                     elHrStatus.innerText = "Puls: Me'yorda";
-                    elHrStatus.className = "text-[11px] sm:text-xs font-black text-emerald-700";
+                    elHrStatus.className = "text-[10px] font-black text-emerald-700 bg-emerald-100/90 px-1.5 py-0.2 rounded";
                 }
             }
 
@@ -3928,71 +3916,71 @@ HTML_CONTENT = """<!DOCTYPE html>
                 currentPI = 0.0;
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = "PI: 0.0%";
-                    elSpo2Pi.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black";
+                    elSpo2Pi.className = "text-[11px] sm:text-xs text-rose-600 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90% ❌";
-                    elSpo2Low.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black";
+                    elSpo2Low.className = "text-[10px] sm:text-[11px] text-rose-600 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Yo'q";
-                    elSpo2Signal.className = "text-[11px] sm:text-xs font-black text-rose-600 alarm-blink";
+                    elSpo2Signal.className = "text-[10px] font-black text-rose-600 bg-rose-100/90 px-1.5 py-0.2 rounded alarm-blink";
                 }
             } else if (current.mode === "shock" || current.mode === "shok" || sysVal < 70) {
                 currentPI = Math.max(0.2, (0.4 + Math.sin(bioWaveTimer * 0.3) * 0.15));
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black";
+                    elSpo2Pi.className = "text-[11px] sm:text-xs text-rose-600 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90%";
-                    elSpo2Low.className = "text-xs sm:text-sm md:text-base text-amber-600 font-black";
+                    elSpo2Low.className = "text-[10px] sm:text-[11px] text-amber-600 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Zaif";
-                    elSpo2Signal.className = "text-[11px] sm:text-xs font-black text-rose-600";
+                    elSpo2Signal.className = "text-[10px] font-black text-rose-600 bg-rose-100/90 px-1.5 py-0.2 rounded";
                 }
             } else if (current.mode === "anaphylaxis" || current.mode === "hypoxia" || spo2Val < 85) {
                 currentPI = Math.max(0.8, (1.6 + Math.sin(bioWaveTimer * 0.3) * 0.3));
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm md:text-base text-amber-600 font-black";
+                    elSpo2Pi.className = "text-[11px] sm:text-xs text-amber-600 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90% ⚠️";
-                    elSpo2Low.className = "text-xs sm:text-sm md:text-base text-rose-600 font-black alarm-blink";
+                    elSpo2Low.className = "text-[10px] sm:text-[11px] text-rose-600 font-black alarm-blink";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Zaif";
-                    elSpo2Signal.className = "text-[11px] sm:text-xs font-black text-amber-600";
+                    elSpo2Signal.className = "text-[10px] font-black text-amber-600 bg-amber-100/90 px-1.5 py-0.2 rounded";
                 }
             } else if (current.mode === "opioid" || spo2Val < 92) {
                 currentPI = Math.max(1.2, (2.3 + Math.sin(bioWaveTimer * 0.3) * 0.3));
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm md:text-base text-sky-700 font-black";
+                    elSpo2Pi.className = "text-[11px] sm:text-xs text-sky-700 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90% ⚠️";
-                    elSpo2Low.className = "text-xs sm:text-sm md:text-base text-amber-600 font-black";
+                    elSpo2Low.className = "text-[10px] sm:text-[11px] text-amber-600 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: O'rtacha";
-                    elSpo2Signal.className = "text-[11px] sm:text-xs font-black text-sky-700";
+                    elSpo2Signal.className = "text-[10px] font-black text-sky-700 bg-sky-100/90 px-1.5 py-0.2 rounded";
                 }
             } else {
                 currentPI = (4.2 + Math.sin(bioWaveTimer * 0.3) * 0.35);
                 if (elSpo2Pi) {
                     elSpo2Pi.innerText = `PI: ${currentPI.toFixed(1)}%`;
-                    elSpo2Pi.className = "text-xs sm:text-sm md:text-base text-slate-800 font-black";
+                    elSpo2Pi.className = "text-[11px] sm:text-xs text-slate-800 font-black";
                 }
                 if (elSpo2Low) {
                     elSpo2Low.innerText = "PAS: 90%";
-                    elSpo2Low.className = "text-xs sm:text-sm md:text-base text-slate-800 font-black";
+                    elSpo2Low.className = "text-[10px] sm:text-[11px] text-slate-600 font-black";
                 }
                 if (elSpo2Signal) {
                     elSpo2Signal.innerText = "Signal: Kuchli";
-                    elSpo2Signal.className = "text-[11px] sm:text-xs font-black text-emerald-700";
+                    elSpo2Signal.className = "text-[10px] font-black text-emerald-700 bg-sky-100/90 px-1.5 py-0.2 rounded";
                 }
             }
 
