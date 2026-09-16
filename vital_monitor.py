@@ -73,13 +73,19 @@ HTML_CONTENT = """<!DOCTYPE html>
         html, body {
             margin: 0;
             padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+            width: 100%;
+            min-height: 100%;
             background-color: #f1f5f9;
             color: #0f172a;
             font-family: 'Rajdhani', sans-serif;
             user-select: none;
+        }
+        @media (min-width: 1024px) {
+            html, body {
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
         }
 
         .mono {
@@ -126,16 +132,16 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
     </style>
 </head>
-<body class="h-screen w-screen bg-slate-100 text-slate-800 flex flex-col gap-1 p-1.5 overflow-hidden select-none box-border">
+<body class="min-h-screen lg:h-screen w-full lg:w-screen bg-slate-100 text-slate-800 flex flex-col gap-1 p-1.5 overflow-y-auto lg:overflow-hidden select-none box-border">
 
     <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50"></div>
 
     <!-- 1. TOP HEADER (FIXED ~40px, SPACIOUS & CLEAN) -->
-    <header class="h-10 min-h-[40px] max-h-[40px] bg-white border border-slate-200 rounded-xl px-2.5 flex items-center justify-between gap-3 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
-        <div class="flex items-center space-x-2 shrink-0 overflow-hidden">
-            <img src="/static/logo.png" alt="Logo" class="w-7 h-7 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
+    <header class="h-10 min-h-[40px] max-h-[40px] bg-white border border-slate-200 rounded-xl px-2 sm:px-2.5 flex items-center justify-between gap-2 sm:gap-3 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
+        <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0 overflow-hidden">
+            <img src="/static/logo.png" alt="Logo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
             <div class="shrink-0">
-                <div class="flex items-center space-x-1.5">
+                <div class="flex items-center space-x-1">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink shrink-0"></span>
                     <span class="font-black text-xs md:text-sm tracking-wide text-slate-900">RO'TFMXMO va UIM</span>
                     <span class="text-[9px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU</span>
@@ -144,12 +150,12 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <!-- MAIN EXPANDED STATUS & CLINICAL DIAGNOSIS BANNER (WIDER & COMFORTABLE) -->
-        <div id="alarm-banner" class="flex-1 min-w-0 max-w-4xl mx-2 px-3 py-1 rounded-lg text-xs md:text-sm font-black uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 truncate text-center shrink shadow-xs">
-            <i class="fa-solid fa-heart-pulse mr-1.5"></i> STATUS: BARQAROR (NORMAL)
+        <div id="alarm-banner" class="flex-1 min-w-0 max-w-4xl mx-1 sm:mx-2 px-2 sm:px-3 py-1 rounded-lg text-xs md:text-sm font-black uppercase tracking-wide bg-emerald-100 text-emerald-800 border border-emerald-300 transition-all duration-300 truncate text-center shrink shadow-xs">
+            <i class="fa-solid fa-heart-pulse mr-1"></i> STATUS: BARQAROR (NORMAL)
         </div>
 
         <!-- RIGHT ESSENTIAL CONTROLS (COMPACT) -->
-        <div class="flex items-center gap-1.5 text-xs flex-nowrap shrink-0">
+        <div class="flex items-center gap-1 sm:gap-1.5 text-xs flex-nowrap shrink-0">
             <!-- Hidden JS hooks to preserve background hardware communication without showing long badge text -->
             <div id="hw-badge" class="hidden" aria-hidden="true">
                 <span id="hw-dot"></span>
@@ -158,21 +164,21 @@ HTML_CONTENT = """<!DOCTYPE html>
             <button id="pwa-vital-btn" class="hidden"></button>
 
             <!-- REAL HARDWARE WEB SERIAL USB CONNECT BUTTON (PORT SELECTION) -->
-            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse shrink-0" title="USB datchiklarini ulash (COM port tanlash)">
+            <button id="btn-web-serial" onclick="toggleDirectWebSerial()" class="px-2 sm:px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1 shadow-xs cursor-pointer transition animate-pulse shrink-0" title="USB datchiklarini ulash (COM port tanlash)">
                 <i class="fa-brands fa-usb text-xs"></i>
                 <span id="btn-web-serial-text">🔌 USB</span>
             </button>
 
-            <a href="/hub" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0" title="Tizim Hub">
-                <i class="fa-solid fa-hospital text-cyan-600"></i> Hub
+            <a href="/hub" class="px-1.5 sm:px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0" title="Tizim Hub">
+                <i class="fa-solid fa-hospital text-cyan-600"></i> <span class="hidden sm:inline">Hub</span>
             </a>
 
-            <a href="/console" target="_blank" class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs shrink-0" title="O'qituvchi pulti">
-                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> Pult
+            <a href="/console" target="_blank" class="px-1.5 sm:px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs shrink-0" title="O'qituvchi pulti">
+                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> <span class="hidden sm:inline">Pult</span>
             </a>
 
-            <!-- Volume Slider -->
-            <div class="flex items-center gap-1 bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded-lg shrink-0">
+            <!-- Volume Slider (Desktop/Tablet) -->
+            <div class="hidden md:flex items-center gap-1 bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded-lg shrink-0">
                 <button id="btn-audio" onclick="toggleAudio()" class="text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer">
                     <i id="audio-icon" class="fa-solid fa-volume-low text-emerald-600 text-xs"></i>
                     <span id="audio-text" class="text-xs font-bold">20%</span>
@@ -183,7 +189,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <button onclick="toggleFullScreen()" class="px-1.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 cursor-pointer shrink-0" title="To'liq ekran">
                 <i class="fa-solid fa-expand"></i>
             </button>
-            <span id="clock" class="mono text-xs font-bold text-slate-700 shrink-0">00:00:00</span>
+            <span id="clock" class="mono text-xs font-bold text-slate-700 shrink-0 hidden sm:inline">00:00:00</span>
         </div>
     </header>
 
@@ -233,18 +239,18 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </div>
 
-    <!-- 2. TOP 58% SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2 min-h-0 overflow-hidden" style="flex: 1.35;">
+    <!-- 2. TOP SECTION: VITAL SIGNS & OSCILLOSCOPE MONITOR -->
+    <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs grid grid-cols-1 lg:grid-cols-4 gap-2 min-h-0 overflow-hidden shrink-0 lg:shrink" style="flex: 1.35;">
         
         <!-- LEFT 3 COLS: LIVE OSCILLOSCOPES (ECG & SpO2) -->
-        <div class="lg:col-span-3 flex flex-col justify-between gap-1 border-r border-slate-100 pr-2 min-h-0 overflow-hidden">
+        <div class="lg:col-span-3 flex flex-col justify-between gap-1 border-b lg:border-b-0 lg:border-r border-slate-100 pb-2 lg:pb-0 lg:pr-2 min-h-0 overflow-hidden">
             
             <!-- 1. ECG Lead II Waveform -->
-            <div class="flex-1 flex flex-col min-h-0 pb-1 border-b border-slate-100">
+            <div class="h-28 sm:h-36 lg:h-auto lg:flex-1 flex flex-col min-h-0 pb-1 border-b border-slate-100">
                 <div class="flex justify-between items-center text-xs font-bold text-emerald-800 mb-0.5 shrink-0">
                     <span class="flex items-center gap-1.5">
                         <i class="fa-solid fa-bolt text-emerald-600"></i> EKG Lead II (mV)
-                        <span class="text-[10px] text-slate-400 font-normal">25mm/s 10mm/mV</span>
+                        <span class="text-[10px] text-slate-400 font-normal hidden sm:inline">25mm/s 10mm/mV</span>
                     </span>
                     <span id="ecg-rhythm-name" class="font-extrabold text-emerald-700">Sinus Ritmi</span>
                 </div>
@@ -254,7 +260,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
 
             <!-- 2. SpO2 Pleth Waveform -->
-            <div class="flex-1 flex flex-col min-h-0 pt-0.5">
+            <div class="h-28 sm:h-36 lg:h-auto lg:flex-1 flex flex-col min-h-0 pt-0.5">
                 <div class="flex justify-between items-center text-xs font-bold text-sky-800 mb-0.5 shrink-0">
                     <span class="flex items-center gap-1.5">
                         <i class="fa-solid fa-wave-square text-sky-600"></i> SpO2 Pleth (Puls to'lqini)
@@ -270,7 +276,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <!-- RIGHT 1 COL: 4 VITAL NUMERIC CARDS -->
-        <div class="flex flex-col justify-between gap-1 min-h-0 overflow-hidden">
+        <div class="grid grid-cols-2 lg:flex lg:flex-col justify-between gap-1.5 min-h-0 overflow-hidden">
             
             <!-- HR / PULS -->
             <div class="bg-emerald-50/70 border border-emerald-300 rounded-xl p-1.5 shadow-xs flex-1 flex flex-col justify-between">
@@ -279,15 +285,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span class="text-[10px] text-slate-400">bpm</span>
                 </div>
                 <div class="flex items-baseline justify-between my-auto">
-                    <span id="num-hr" class="mono text-4xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
+                    <span id="num-hr" class="mono text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-600 leading-none">75</span>
                     <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
                         <div id="lbl-hr-high">YUQ: 120</div>
                         <div id="lbl-hr-low">PAS: 80</div>
                     </div>
                 </div>
                 <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-200 pt-0.5">
-                    <span>Zarbalar: <span id="num-count" class="font-bold text-emerald-700">0</span></span>
-                    <span id="lbl-hr-status" class="font-bold text-emerald-700">Puls: Normal</span>
+                    <span>Zarba: <span id="num-count" class="font-bold text-emerald-700">0</span></span>
+                    <span id="lbl-hr-status" class="font-bold text-emerald-700">Normal</span>
                 </div>
             </div>
 
@@ -298,7 +304,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span class="text-[10px] text-slate-400">%</span>
                 </div>
                 <div class="flex items-baseline justify-between my-auto">
-                    <span id="num-spo2" class="mono text-4xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
+                    <span id="num-spo2" class="mono text-3xl sm:text-4xl lg:text-5xl font-black text-sky-600 leading-none">98</span>
                     <div class="text-right text-[10px] text-slate-500 font-semibold leading-tight">
                         <div id="lbl-spo2-pi">PI: 4.2%</div>
                         <div id="lbl-spo2-low">PAS: 90%</div>
@@ -306,19 +312,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
                 <div class="flex justify-between text-[10px] text-slate-500 border-t border-slate-200 pt-0.5">
                     <span>Puls: <span id="num-pr" class="font-bold text-sky-700">75</span></span>
-                    <span id="lbl-spo2-signal" class="font-bold text-emerald-700">Signal: Kuchli</span>
+                    <span id="lbl-spo2-signal" class="font-bold text-emerald-700">Kuchli</span>
                 </div>
             </div>
 
             <!-- NIBP & RR/Temp Split -->
-            <div class="grid grid-cols-2 gap-1 shrink-0">
+            <div class="col-span-2 grid grid-cols-2 gap-1.5 lg:col-span-1 shrink-0">
                 <div class="bg-slate-50 border border-slate-300 rounded-xl p-1.5 text-center shadow-xs flex flex-col justify-between">
                     <div class="text-[10px] font-bold text-slate-800 flex items-center justify-between">
                         <span>NIBP</span>
                         <span class="text-slate-400">mmHg</span>
                     </div>
                     <div class="mono font-black text-slate-800 leading-none my-0.5">
-                        <span id="num-sys" class="text-lg">120</span>/<span id="num-dia" class="text-sm">80</span>
+                        <span id="num-sys" class="text-base sm:text-lg">120</span>/<span id="num-dia" class="text-xs sm:text-sm">80</span>
                     </div>
                     <div class="text-[9px] text-slate-600 font-bold">MAP: <span id="num-map" class="text-emerald-700">93</span></div>
                 </div>
@@ -328,7 +334,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <span>RESP</span>
                         <span class="text-slate-400">rpm</span>
                     </div>
-                    <span id="num-rr" class="mono text-xl font-black text-amber-600 leading-none my-0.5">16</span>
+                    <span id="num-rr" class="mono text-lg sm:text-xl font-black text-amber-600 leading-none my-0.5">16</span>
                     <div class="text-[9px] text-purple-700 font-bold"><span id="num-temp">36.6</span>°C</div>
                 </div>
             </div>
@@ -337,8 +343,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
     </div>
 
-    <!-- 3. BOTTOM 42% SECTION: CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs min-h-0 flex flex-col justify-between overflow-hidden" style="flex: 0.92;">
+    <!-- 3. BOTTOM SECTION: CPR 30:2 EXERCISE DASHBOARD & SCANNER HUD -->
+    <div class="bg-white border border-slate-200 rounded-xl p-2 shadow-xs min-h-0 flex flex-col justify-between overflow-hidden shrink-0 lg:shrink" style="flex: 0.92;">
         
         <!-- Header Strip with Stage Badge and Prepared Drug Banner -->
         <div class="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-100 shrink-0">
@@ -484,7 +490,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     </div>
 
     <!-- 4. BOTTOM CLINICAL SCENARIOS BAR (~36px FIXED) -->
-    <footer class="h-9 min-h-[36px] max-h-[36px] bg-white border border-slate-200 rounded-xl px-2 shadow-xs shrink-0 flex items-center justify-between gap-1 text-[11px] whitespace-nowrap overflow-hidden">
+    <footer class="h-9 min-h-[36px] max-h-[36px] bg-white border border-slate-200 rounded-xl px-2 shadow-xs shrink-0 flex items-center justify-between gap-1 text-[11px] whitespace-nowrap overflow-hidden sticky bottom-0 z-30">
         <div class="flex items-center gap-1 text-slate-700 font-bold shrink-0 text-xs">
             <i class="fa-solid fa-stethoscope text-indigo-600"></i>
             <span class="hidden md:inline">Ssenariylar:</span>
@@ -3970,6 +3976,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             });
         }
         window.addEventListener("resize", resizeCanvases);
+        window.addEventListener("orientationchange", () => setTimeout(resizeCanvases, 250));
         setTimeout(resizeCanvases, 100);
 
         let ecgX = 0;
