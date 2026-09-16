@@ -2229,7 +2229,8 @@
         // ==================== CENTRAL TELEMETRY HANDLER ====================
         function handleIncomingTelemetryData(data) {
             const force = parseFloat(data.force !== undefined ? data.force : (data.f_curr || 0));
-            const lungP = parseFloat(data.lung_p || 0);
+            const rawLung = parseFloat(data.lung_p || 0);
+            const lungP = rawLung * 2.5; // 2.5x sezgirlik kuchaytirgichi
             const stomachP = parseFloat(data.stomach_p || 0);
             const posBtn = data.pos_btn !== undefined ? data.pos_btn : (data.pos_ok ? 1 : 0);
             const injBtn = data.inj_btn !== undefined ? data.inj_btn : (data.inj_ok ? 1 : 0);

@@ -2101,7 +2101,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             let force = Math.max(0, rawForce - forceTareOffset);
             if (force < 0.2) force = 0.0; // Tinch holatdagi shovqinni nolga tenglash
 
-            const lungP = parseFloat(data.lung_p || 0);
+            const rawLung = parseFloat(data.lung_p || 0);
+            const lungP = rawLung * 2.5; // 2.5x sezgirlik kuchaytirgichi
             const stomachP = parseFloat(data.stomach_p || 0);
             const posBtn = data.pos_btn !== undefined ? data.pos_btn : (data.pos_ok ? 1 : 0);
             const injBtn = data.inj_btn !== undefined ? data.inj_btn : (data.inj_ok ? 1 : 0);

@@ -2619,7 +2619,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             const posBtn = (data.pos_btn === 1 || data.pos_btn === true || data.pos_ok === true || data.pos_valid === true);
             const injBtn = (data.inj_btn === 1 || data.inj_btn === true || data.inj_ok === true);
-            const lungP = parseFloat(data.lung_p || 0);
+            const rawLungP = parseFloat(data.lung_p || 0);
+            const lungP = rawLungP * 2.5; // 2.5x sezgirlik kuchaytirgichi (shlang qochishini kompensatsiya qilish va 0.8-2.2 kPa me'yorga oson chiqishi uchun)
             const stomachP = parseFloat(data.stomach_p || 0);
 
             processCPRStroke(fCurr);

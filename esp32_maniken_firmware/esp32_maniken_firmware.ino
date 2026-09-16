@@ -95,11 +95,10 @@ void loop() {
     curForce = (r < 0.5) ? 0.0 : r;
   }
 
-  // O'pka bosimi (MPS20N0040D)
+  // O'pka bosimi (MPS20N0040D) - nozik havo oqimlarini ham o'tkazish uchun 0.05 ga tushirildi
   if (lungSensor.is_ready()) {
     float r = lungSensor.get_units(1);
-    // 0.2 kPa dan kichik shovqinlar filtrlanadi
-    curLung = (r < 0.2) ? 0.0 : r;
+    curLung = (r < 0.05) ? 0.0 : r;
   }
 
   // Oshqozon bosimi (MPS20N0040D)
