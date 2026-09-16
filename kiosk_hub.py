@@ -51,10 +51,15 @@ HUB_HTML = """<!DOCTYPE html>
         <div class="flex items-center gap-4">
             <img src="/static/logo.png" alt="Markaz Logosi" class="w-14 h-14 object-contain rounded-2xl bg-white/10 p-1 border border-cyan-500/30 shadow-lg shadow-cyan-500/10 shrink-0">
             <div>
-                <h1 class="text-lg md:text-xl font-black tracking-wide text-white flex items-center gap-2">
-                    RO'TFMXMO va UIM Navoiy filiali
+                <div class="flex flex-wrap items-center gap-2">
+                    <h1 class="text-lg md:text-xl font-black tracking-wide text-white">
+                        RO'TFMXMO va UIM Navoiy filiali
+                    </h1>
                     <span class="text-cyan-400 font-bold text-xs border border-cyan-500/40 px-2 py-0.5 rounded-full bg-cyan-950/60 hidden sm:inline-block">SENSORLI KIOSK</span>
-                </h1>
+                    <span class="text-indigo-300 font-bold text-[11px] border border-indigo-500/40 px-2.5 py-0.5 rounded-full bg-indigo-950/70 flex items-center gap-1 shadow-xs">
+                        <i class="fa-solid fa-microchip text-indigo-400"></i> NDKTU CAIL laboratoriyasi a'zolari bilan qilindi
+                    </span>
+                </div>
                 <p class="text-xs text-slate-300 font-medium mt-0.5">Respublika o'rta tibbiyot va farmatsevtika xodimlari malakasini oshirish va ularni ixtisoslashtirish markazi</p>
                 <p class="text-[11px] text-cyan-400/90 font-semibold">Amaliy ko'nikmalar va imtihon simulyatsiyasi markazi</p>
             </div>
@@ -255,8 +260,12 @@ HUB_HTML = """<!DOCTYPE html>
                     <p class="text-slate-400 text-[11px] mt-0.5">Brauzerda to'liq ekranga o'tish uchun klaviaturadan <b>F11</b> ni bosing yoki yuqoridagi <b>"To'liq Ekran"</b> tugmasidan foydalaning.</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 text-slate-400 text-[11px]">
-                <span>RO'TFMXMO va UIM Navoiy filiali • Tibbiyot Simulyatori & GD/H126 Maniken Tizimi</span>
+            <div class="flex flex-wrap items-center gap-2 text-slate-400 text-[11px]">
+                <span>RO'TFMXMO va UIM Navoiy filiali</span>
+                <span>•</span>
+                <span class="text-indigo-300 font-semibold bg-indigo-950/80 border border-indigo-500/40 px-2.5 py-0.5 rounded-lg flex items-center gap-1.5 shadow-xs">
+                    <i class="fa-solid fa-graduation-cap text-indigo-400"></i> NDKTU CAIL laboratoriyasi a'zolari bilan qilindi
+                </span>
                 <span>•</span>
                 <span class="text-emerald-400 font-mono">v3.0 Kiosk</span>
             </div>
