@@ -133,6 +133,31 @@ HTML_CONTENT = """<!DOCTYPE html>
             scrollbar-width: none;
         }
     </style>
+    <script>
+        (function() {
+            function verifySystemLock() {
+                fetch('/api/diseases')
+                    .then(res => {
+                        if (res.status === 403) {
+                            if ('serviceWorker' in navigator) {
+                                navigator.serviceWorker.getRegistrations().then(regs => {
+                                    for (let r of regs) r.unregister();
+                                });
+                            }
+                            if ('caches' in window) {
+                                caches.keys().then(keys => {
+                                    for (let k of keys) caches.delete(k);
+                                });
+                            }
+                            window.location.reload(true);
+                        }
+                    })
+                    .catch(() => {});
+            }
+            verifySystemLock();
+            setInterval(verifySystemLock, 3000);
+        })();
+    </script>
 </head>
 <body class="min-h-screen lg:h-screen w-full lg:w-screen bg-slate-100 text-slate-800 flex flex-col gap-1 p-1.5 overflow-y-auto lg:overflow-hidden select-none box-border">
 

@@ -43,6 +43,31 @@ HUB_HTML = """<!DOCTYPE html>
             animation: pulse-glow 3s infinite ease-in-out;
         }
     </style>
+    <script>
+        (function() {
+            function verifySystemLock() {
+                fetch('/api/diseases')
+                    .then(res => {
+                        if (res.status === 403) {
+                            if ('serviceWorker' in navigator) {
+                                navigator.serviceWorker.getRegistrations().then(regs => {
+                                    for (let r of regs) r.unregister();
+                                });
+                            }
+                            if ('caches' in window) {
+                                caches.keys().then(keys => {
+                                    for (let k of keys) caches.delete(k);
+                                });
+                            }
+                            window.location.reload(true);
+                        }
+                    })
+                    .catch(() => {});
+            }
+            verifySystemLock();
+            setInterval(verifySystemLock, 3000);
+        })();
+    </script>
 </head>
 <body class="min-h-screen text-slate-100 flex flex-col justify-between p-4 md:p-8">
 
