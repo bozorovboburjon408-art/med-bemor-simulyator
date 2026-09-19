@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
 from medication_manager import load_medications
 from medication_labels import LABELS_HTML, get_labels_html
+from system_lock import apply_system_lock_middleware, is_system_locked, is_system_locked_simple
 try:
     import serial
     import serial.tools.list_ports
@@ -27,6 +28,7 @@ except:
     pass
 
 app = FastAPI(title="ICU & CPR Imtihon Xonasi - Aqlli Vital Monitor & Dori Skaneri")
+apply_system_lock_middleware(app)
 
 try:
     from fastapi.staticfiles import StaticFiles
@@ -4268,6 +4270,9 @@ async def post_telemetry(request: Request):
 
 @app.websocket("/ws/telemetry")
 async def websocket_telemetry(websocket: WebSocket):
+    if is_system_locked_simple():
+        await websocket.close(code=1008, reason="Obuna muddati tugadi")
+        return
     await websocket.accept()
     active_websockets.append(websocket)
     try:

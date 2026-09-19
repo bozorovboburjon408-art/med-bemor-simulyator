@@ -699,7 +699,16 @@ class BemorSimulyator:
 
 
 if __name__ == "__main__":
+    from system_lock import SYSTEM_LOCKED, LOCK_MESSAGE
     root = tk.Tk()
+    if SYSTEM_LOCKED:
+        root.withdraw()
+        messagebox.showerror(
+            "Xizmat to'xtatilgan",
+            f"🚫 {LOCK_MESSAGE}\n\nRO'TFMXMO va UIM Navoiy filiali — Tibbiy Simulyator\nLitsenziya muddati yakunlangan."
+        )
+        root.destroy()
+        sys.exit(0)
     app = BemorSimulyator(root)
     root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()

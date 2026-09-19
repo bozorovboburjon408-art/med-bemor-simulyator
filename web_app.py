@@ -23,6 +23,7 @@ from vital_monitor import HTML_CONTENT as MONITOR_HTML, get_monitor_html, active
 from manikin_console import HTML_CONTENT as CONSOLE_HTML
 from kiosk_hub import HUB_HTML
 from intubation_simulator import INTUBATION_HTML
+from system_lock import apply_system_lock_middleware, is_system_locked, is_system_locked_simple
 
 
 
@@ -325,6 +326,7 @@ QAT'IY QOIDALAR:
 8. TALAFFUZ: O'zbek tilidagi eng ravon, talaffuzi oson va xalqona so'zlardan foydalan, nutqing ravon va tushunarli bo'lsin."""
 
 app = FastAPI(title="RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori")
+apply_system_lock_middleware(app)
 
 # HTML Content (Single Page Responsive App)
 HTML_CONTENT = """<!DOCTYPE html>
@@ -1377,6 +1379,9 @@ async def post_telemetry(request: Request):
 
 @app.websocket("/ws/telemetry")
 async def websocket_telemetry(websocket: WebSocket):
+    if is_system_locked_simple():
+        await websocket.close(code=1008, reason="Obuna muddati tugadi")
+        return
     await websocket.accept()
     monitor_websockets.append(websocket)
     try:
@@ -1620,6 +1625,9 @@ async def api_stt(req: STTRequest):
 
 @app.websocket("/ws/chat/{kasallik_id}")
 async def websocket_chat(websocket: WebSocket, kasallik_id: str):
+    if is_system_locked_simple():
+        await websocket.close(code=1008, reason="Obuna muddati tugadi")
+        return
     await websocket.accept()
     
     kasallik = KASALLIKLAR.get(kasallik_id, KASALLIKLAR["normal"])

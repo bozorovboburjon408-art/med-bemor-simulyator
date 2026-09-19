@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 import uvicorn
 import webbrowser
 import threading
+from system_lock import apply_system_lock_middleware, is_system_locked, is_system_locked_simple
 
 try:
     if sys.stdout.encoding != 'utf-8':
@@ -17,6 +18,7 @@ except:
     pass
 
 app = FastAPI(title="MedLife: Yurak-O'pka Reanimatsiyasi Simulyatori")
+apply_system_lock_middleware(app)
 
 active_websockets: List[WebSocket] = []
 
@@ -2415,6 +2417,9 @@ async def post_telemetry(request: Request):
 
 @app.websocket("/ws/telemetry")
 async def websocket_telemetry(websocket: WebSocket):
+    if is_system_locked_simple():
+        await websocket.close(code=1008, reason="Obuna muddati tugadi")
+        return
     await websocket.accept()
     active_websockets.append(websocket)
     try:
