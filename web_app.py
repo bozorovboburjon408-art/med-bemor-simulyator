@@ -390,15 +390,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="/hub" class="nav-other-module px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-cyan-300 font-bold text-xs flex items-center gap-1.5 shadow transition border border-cyan-500/30">
+                <a href="/hub" class="px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-cyan-300 font-bold text-xs flex items-center gap-1.5 shadow transition border border-cyan-500/30">
                     <i class="fa-solid fa-hospital"></i>
                     <span>Kiosk Hub</span>
                 </a>
-                <a href="/vital" target="_blank" class="nav-other-module px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
+                <a href="/vital" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
                     <i class="fa-solid fa-heart-pulse"></i>
                     <span>Vital Monitor</span>
                 </a>
-                <a href="/console" target="_blank" class="nav-other-module px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
+                <a href="/console" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition">
                     <i class="fa-solid fa-hand-holding-heart"></i>
                     <span>Pult & CPR</span>
                 </a>
@@ -414,15 +414,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <span id="conn-text">Tayyor</span>
                 </div>
             </div>
-            <script>
-                (function() {
-                    const p = window.location.pathname;
-                    const q = new URLSearchParams(window.location.search);
-                    if (p === '/ai' || p === '/ai-bemor' || p === '/bemor' || q.get('solo') === '1' || q.get('mode') === 'ai') {
-                        document.querySelectorAll('.nav-other-module').forEach(el => el.style.display = 'none');
-                    }
-                })();
-            </script>
         </div>
     </header>
 
@@ -1295,9 +1286,6 @@ async def get_sw():
     return FileResponse("static/sw.js", media_type="application/javascript")
 
 @app.get("/", response_class=HTMLResponse)
-@app.get("/ai", response_class=HTMLResponse)
-@app.get("/ai-bemor", response_class=HTMLResponse)
-@app.get("/bemor", response_class=HTMLResponse)
 async def get_index():
     return HTMLResponse(content=HTML_CONTENT)
 
@@ -1309,8 +1297,6 @@ async def get_print_labels():
 
 @app.get("/monitor", response_class=HTMLResponse)
 @app.get("/vital", response_class=HTMLResponse)
-@app.get("/cpr", response_class=HTMLResponse)
-@app.get("/cpr-monitor", response_class=HTMLResponse)
 async def get_monitor():
     return HTMLResponse(content=get_monitor_html())
 
