@@ -196,7 +196,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <span id="btn-web-serial-text">🔌 USB</span>
             </button>
 
-            <a href="/hub" class="px-1.5 sm:px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0" title="Tizim Hub">
+            <a href="/hub" class="nav-hub-link px-1.5 sm:px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0" title="Tizim Hub">
                 <i class="fa-solid fa-hospital text-cyan-600"></i> <span class="hidden sm:inline">Hub</span>
             </a>
 
@@ -217,6 +217,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <i class="fa-solid fa-expand"></i>
             </button>
             <span id="clock" class="mono text-xs font-bold text-slate-700 shrink-0 hidden sm:inline">00:00:00</span>
+            <script>
+                (function() {
+                    const p = window.location.pathname;
+                    const q = new URLSearchParams(window.location.search);
+                    if (p === '/cpr' || p === '/cpr-monitor' || q.get('solo') === '1') {
+                        document.querySelectorAll('.nav-hub-link').forEach(el => el.style.display = 'none');
+                    }
+                })();
+            </script>
         </div>
     </header>
 
