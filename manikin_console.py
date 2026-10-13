@@ -17,7 +17,7 @@ try:
 except:
     pass
 
-app = FastAPI(title="Yurak-O'pka Reanimatsiyasi (CPR 30:2) va Imtihon Simulyatori")
+app = FastAPI(title="MedLife: Yurak-O'pka Reanimatsiyasi Simulyatori")
 apply_system_lock_middleware(app)
 
 active_websockets: List[WebSocket] = []
@@ -38,11 +38,11 @@ HTML_CONTENT = """<!DOCTYPE html>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Yurak-O'pka Reanimatsiyasi (CPR 30:2) va Imtihon Pulti</title>
+    <title>RO'TFMXMO va UIM Navoiy filiali — CPR Simulyatori Pulti</title>
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CPR Imtihon Pulti">
+    <meta name="apple-mobile-web-app-title" content="Maniken Pulti">
     <link rel="manifest" href="/manifest_console.json">
     <link rel="icon" href="/static/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -202,14 +202,12 @@ HTML_CONTENT = """<!DOCTYPE html>
     <!-- Top Medical Navigation & Device Header (Clean White Medical Styling) -->
     <header class="no-print w-full max-w-7xl bg-white border border-slate-200 rounded-2xl px-4 py-2.5 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
         
-        <!-- Left: CPR Icon & Title -->
+        <!-- Left: Logo & Hospital Badge -->
         <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                <i class="fa-solid fa-heart-pulse text-xl"></i>
-            </div>
+            <img src="/static/logo.png" alt="Logo" class="w-11 h-11 rounded-xl object-contain bg-slate-50 p-1 border border-slate-200 shrink-0 shadow-sm">
             <div>
-                <h1 class="font-extrabold text-slate-900 text-sm md:text-base leading-tight">YURAK-O'PKA REANIMATSIYASI (CPR 30:2) VA IMTIHON PULTI</h1>
-                <p class="text-xs text-slate-500 font-medium">Kompressiya kuchi (kg), o'pka ventilyatsiyasi (kPa) va 100 ballik baholash tizimi</p>
+                <h1 class="font-extrabold text-slate-900 text-sm md:text-base leading-tight">RO'TFMXMO va UIM Navoiy filiali</h1>
+                <p class="text-xs text-slate-500 font-medium">Yurak-o'pka reanimatsiyasi (CPR) & GD/H126 maniken datchiklari pulti</p>
             </div>
         </div>
 
@@ -228,11 +226,17 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         <!-- Right: Mode Switches and Links -->
         <div class="flex flex-wrap items-center gap-2">
+            <a href="/hub" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-cyan-300 font-bold rounded-xl transition border border-cyan-500/40 text-xs flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-hospital text-cyan-400"></i> Kiosk Hub
+            </a>
             <button id="pwa-console-btn" onclick="installConsolePWA()" class="hidden px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl transition text-xs flex items-center gap-1.5 shadow cursor-pointer">
                 <i class="fa-solid fa-download"></i> O'rnatish
             </button>
-            <a href="/cpr" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition text-xs flex items-center gap-1.5 shadow-sm">
-                <i class="fa-solid fa-heart-pulse"></i> Vital Monitor (EKG)
+            <a href="/vital" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-heart-pulse text-emerald-600"></i> Vital Monitor
+            </a>
+            <a href="/" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-hospital-user text-indigo-600"></i> AI Bemor
             </a>
             <button onclick="toggleFullScreenConsole()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-300 text-xs flex items-center gap-1 cursor-pointer">
                 <i class="fa-solid fa-expand"></i>

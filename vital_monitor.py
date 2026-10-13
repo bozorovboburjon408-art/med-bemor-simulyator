@@ -60,11 +60,11 @@ HTML_CONTENT = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CPR Reanimatsiya (30:2) va ICU Vital Monitor Simulyatori</title>
+    <title>RO'TFMXMO va UIM Navoiy filiali — ICU Vital Monitor & Dori Skaneri</title>
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="CPR & Vital Monitor">
+    <meta name="apple-mobile-web-app-title" content="Vital Monitor">
     <link rel="manifest" href="/manifest_vital.json">
     <link rel="icon" href="/static/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -166,14 +166,12 @@ HTML_CONTENT = """<!DOCTYPE html>
     <!-- 1. TOP HEADER (FIXED ~40px, SPACIOUS & CLEAN) -->
     <header class="h-10 min-h-[40px] max-h-[40px] bg-white border border-slate-200 rounded-xl px-2 sm:px-2.5 flex items-center justify-between gap-2 sm:gap-3 shadow-xs shrink-0 whitespace-nowrap overflow-hidden">
         <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0 overflow-hidden">
-            <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <i class="fa-solid fa-heart-pulse text-xs"></i>
-            </div>
+            <img src="/static/logo.png" alt="Logo" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg object-contain bg-white border border-slate-200 p-0.5 shrink-0 shadow-xs">
             <div class="shrink-0">
                 <div class="flex items-center space-x-1">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 alarm-blink shrink-0"></span>
-                    <span id="cpr-header-title" class="font-black text-xs md:text-sm tracking-wide text-slate-900">CPR VA VITAL MONITOR</span>
-                    <span class="text-[9px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU 30:2</span>
+                    <span class="font-black text-xs md:text-sm tracking-wide text-slate-900">RO'TFMXMO va UIM</span>
+                    <span class="text-[9px] bg-cyan-100 text-cyan-800 font-extrabold px-1.5 py-0.2 rounded border border-cyan-300 hidden sm:inline-block">ICU</span>
                 </div>
             </div>
         </div>
@@ -202,8 +200,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <i class="fa-solid fa-hospital text-cyan-600"></i> <span class="hidden sm:inline">Hub</span>
             </a>
 
-            <a id="nav-pult-link" href="/console" target="_blank" class="px-1.5 sm:px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs shrink-0" title="CPR Imtihon Pulti">
-                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> <span class="hidden sm:inline">CPR Pult</span>
+            <a href="/console" target="_blank" class="px-1.5 sm:px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 flex items-center gap-1 font-bold shadow-xs shrink-0" title="O'qituvchi pulti">
+                <i class="fa-solid fa-hand-holding-heart text-purple-600"></i> <span class="hidden sm:inline">Pult</span>
             </a>
 
             <!-- Volume Slider (Desktop/Tablet) -->
@@ -223,10 +221,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 (function() {
                     const p = window.location.pathname;
                     const q = new URLSearchParams(window.location.search);
-                    if (p === '/cpr' || p === '/cpr-monitor' || p === '/vital' || p === '/monitor' || q.get('solo') === '1') {
+                    if (p === '/cpr' || p === '/cpr-monitor' || q.get('solo') === '1') {
                         document.querySelectorAll('.nav-hub-link').forEach(el => el.style.display = 'none');
-                        const pultLink = document.getElementById('nav-pult-link');
-                        if (pultLink) pultLink.href = '/cpr-pult';
                     }
                 })();
             </script>

@@ -1320,7 +1320,6 @@ async def api_compressor(req: CompressorRequest):
     return JSONResponse(content={"status": "ok", "cmd": req.cmd})
 
 @app.get("/console", response_class=HTMLResponse)
-@app.get("/cpr-pult", response_class=HTMLResponse)
 async def get_console():
     return HTMLResponse(content=CONSOLE_HTML)
 
