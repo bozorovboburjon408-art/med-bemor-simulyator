@@ -415,11 +415,11 @@ HTML_CONTENT = """<!DOCTYPE html>
         })();
     </script>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-slate-800 flex flex-col">
+<body class="bg-slate-100 min-h-screen md:h-screen font-sans text-slate-800 flex flex-col md:overflow-hidden">
 
     <!-- Header -->
-    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50 shrink-0">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
                 <img src="/static/logo.png" alt="Logo" class="w-11 h-11 rounded-xl object-contain bg-white/20 p-1 border border-white/30 shrink-0 shadow-sm">
                 <div>
@@ -469,11 +469,11 @@ HTML_CONTENT = """<!DOCTYPE html>
     </div>
 
     <!-- Main Container -->
-    <main class="max-w-6xl w-full mx-auto p-4 flex-1 flex flex-col md:flex-row gap-4">
+    <main class="max-w-7xl w-full mx-auto p-3 md:p-4 flex-1 flex flex-col md:flex-row gap-4 min-h-0 md:overflow-hidden">
         
         <!-- Selection Sidebar / Left Panel -->
-        <div id="selection-panel" class="w-full md:w-1/3 bg-white rounded-2xl shadow-sm p-4 flex flex-col border border-slate-200">
-            <div class="flex items-center justify-between mb-3">
+        <div id="selection-panel" class="w-full md:w-1/3 bg-white rounded-2xl shadow-sm p-4 flex flex-col border border-slate-200 min-h-0 md:h-full">
+            <div class="shrink-0 flex items-center justify-between mb-3">
                 <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
                     <i class="fa-solid fa-stethoscope text-indigo-600"></i> Kasallik Holati
                 </h2>
@@ -481,19 +481,19 @@ HTML_CONTENT = """<!DOCTYPE html>
             </div>
 
             <!-- Search / Filter -->
-            <div class="relative mb-3">
+            <div class="shrink-0 relative mb-3">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
                 <input type="text" id="search-box" placeholder="Kasallikni qidirish..." 
                        class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
 
-            <!-- Disease List -->
-            <div id="disease-list" class="flex-1 overflow-y-auto chat-scroll space-y-2 pr-1 max-h-[480px]">
+            <!-- Disease List (Scrolls independently) -->
+            <div id="disease-list" class="flex-1 overflow-y-auto chat-scroll space-y-2 pr-1 min-h-0">
                 __BOOTSTRAP_CARDS__
             </div>
 
-            <!-- Current condition card -->
-            <div id="condition-card" class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <!-- Current condition card (Pinned at bottom of left panel) -->
+            <div id="condition-card" class="shrink-0 mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                 <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Klinik Tavsif:</div>
                 <p id="condition-desc" class="text-xs text-slate-700 leading-relaxed">40 yoshli sog'lom maktab o'qituvchisi. Yillik profilaktik ko'rikka kelgan. Shikoyati yo'q, qon bosimi 120/80.</p>
                 
@@ -509,12 +509,12 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
         <!-- Chat & Simulation Panel / Right Panel -->
-        <div class="w-full md:w-2/3 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+        <div class="w-full md:w-2/3 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-0 md:h-full overflow-hidden">
             
-            <!-- Chat Header -->
-            <div id="chat-header" class="bg-emerald-600 text-white px-5 py-3.5 flex items-center justify-between shadow-sm transition-all duration-300">
+            <!-- Chat Header (Pinned permanently at top) -->
+            <div id="chat-header" class="shrink-0 bg-emerald-600 text-white px-4 md:px-5 py-3 flex items-center justify-between shadow-sm transition-all duration-300">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl relative">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl relative shrink-0">
                         <i class="fa-solid fa-user-injured"></i>
                         <span id="call-active-badge" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-ping"></span>
                     </div>
@@ -550,21 +550,21 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </div>
 
                     <button onclick="resetChat()" title="Suhbatni tozalash"
-                            class="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm">
+                            class="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm cursor-pointer">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Messages Log -->
-            <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-[380px] max-h-[500px]">
+            <!-- Messages Log (Only this area scrolls internally) -->
+            <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-0">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
-                    🟢 <b>Jonli simulyatsiya faol!</b> Shifokor yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). <b>"Jonli Qo'ng'iroq"</b> tugmasi orqali uzluksiz ovozli suhbat qurishingiz mumkin.
+                    🟢 <b>Jonli simulyatsiya faol!</b> Pastdagi katta <b>"Jonli Qo'ng'iroq"</b> tugmasini bosib bemor bilan ovozli muloqot qiling. Mikrofonni yoqib savolingizni bering, bemor darhol javob beradi.
                 </div>
             </div>
 
-            <!-- Status bar -->
-            <div class="px-4 py-1.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <!-- Status bar (Pinned) -->
+            <div class="shrink-0 px-4 py-1.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
                 <div id="typing-status" class="flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span>Tayyor</span>
@@ -577,14 +577,42 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Input area -->
-            <div class="p-3 bg-white border-t border-slate-200">
+            <!-- Bottom Action Controller (Pinned permanently at bottom) -->
+            <div class="shrink-0 p-3 bg-white border-t border-slate-200 flex flex-col gap-2.5 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+                <!-- Primary Row: Prominent Live Call Button & Volume Controls -->
+                <div class="flex items-center gap-2">
+                    <!-- Big Touchscreen Live Call Toggle Button -->
+                    <button id="bottom-call-btn" onclick="toggleLiveCall()" 
+                            class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-black text-sm md:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg transition-all cursor-pointer">
+                        <i id="bottom-call-icon" class="fa-solid fa-phone-volume text-lg"></i>
+                        <span id="bottom-call-text">JONLI QO'NG'IROQ (SUHBATNI BOSHLASH)</span>
+                    </button>
+
+                    <!-- Bottom Volume Slider & Mute Toggle -->
+                    <div class="flex items-center bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl px-3 py-2 space-x-2 shrink-0 transition" title="Bemor ovozi balandligi">
+                        <button id="bottom-speaker-btn" type="button" onclick="toggleSpeaker()" class="text-slate-600 hover:text-indigo-600 transition text-base cursor-pointer" title="Ovozni o'chirish / yoqish">
+                            <i id="bottom-speaker-icon" class="fa-solid fa-volume-low text-indigo-600"></i>
+                        </button>
+                        <input type="range" id="bottom-volume-slider" min="0" max="1" step="0.05" value="0.35"
+                               oninput="changeVolume(this.value)"
+                               class="w-16 sm:w-20 md:w-24 h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-indigo-600" title="Ovoz balandligi">
+                        <span id="bottom-volume-val" class="text-xs font-mono font-bold text-slate-700 w-8 text-right">35%</span>
+                    </div>
+
+                    <!-- Reset Chat -->
+                    <button onclick="resetChat()" title="Suhbatni boshidan boshlash / tozalash"
+                            class="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition text-sm shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+
+                <!-- Secondary Row: Optional Text Form -->
                 <form id="chat-form" onsubmit="sendMessage(event)" class="flex items-center gap-2">
-                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing..." 
+                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing (ixtiyoriy)..." 
                             autocomplete="off"
-                            class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            class="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition">
                     <button type="submit" id="send-btn" 
-                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-xs md:text-sm transition flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0">
                         <span>Yuborish</span>
                         <i class="fa-solid fa-paper-plane text-xs"></i>
                     </button>
@@ -934,6 +962,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             try {
                 renderDiseases();
                 selectDisease("normal");
+                applyVolume();
             } catch (e) {
                 console.error("Error initializing diseases:", e);
             }
@@ -1055,16 +1084,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                 player.volume = effectiveVol;
             }
             
+            // Top Header Volume
             const slider = document.getElementById("volume-slider");
             if (slider && speakerEnabled) {
                 slider.value = currentVolume;
             }
-            
             const valEl = document.getElementById("volume-val");
             if (valEl) {
                 valEl.innerText = `${Math.round(effectiveVol * 100)}%`;
             }
-            
             const icon = document.getElementById("speaker-icon");
             if (icon) {
                 if (!speakerEnabled || effectiveVol === 0) {
@@ -1073,6 +1101,26 @@ HTML_CONTENT = """<!DOCTYPE html>
                     icon.className = "fa-solid fa-volume-low";
                 } else {
                     icon.className = "fa-solid fa-volume-high";
+                }
+            }
+
+            // Bottom Controller Volume
+            const bottomSlider = document.getElementById("bottom-volume-slider");
+            if (bottomSlider && speakerEnabled) {
+                bottomSlider.value = currentVolume;
+            }
+            const bottomValEl = document.getElementById("bottom-volume-val");
+            if (bottomValEl) {
+                bottomValEl.innerText = `${Math.round(effectiveVol * 100)}%`;
+            }
+            const bottomIcon = document.getElementById("bottom-speaker-icon");
+            if (bottomIcon) {
+                if (!speakerEnabled || effectiveVol === 0) {
+                    bottomIcon.className = "fa-solid fa-volume-xmark text-rose-500";
+                } else if (effectiveVol < 0.4) {
+                    bottomIcon.className = "fa-solid fa-volume-low text-indigo-600";
+                } else {
+                    bottomIcon.className = "fa-solid fa-volume-high text-indigo-600";
                 }
             }
         }
@@ -1197,6 +1245,9 @@ HTML_CONTENT = """<!DOCTYPE html>
         function updateCallUI(active) {
             const btn = document.getElementById("live-call-btn");
             const txt = document.getElementById("live-call-text");
+            const bottomBtn = document.getElementById("bottom-call-btn");
+            const bottomIcon = document.getElementById("bottom-call-icon");
+            const bottomTxt = document.getElementById("bottom-call-text");
             const callBadge = document.getElementById("call-active-badge");
             const callIndicator = document.getElementById("call-indicator");
             const header = document.getElementById("chat-header");
@@ -1205,7 +1256,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (btn) {
                     btn.className = "px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer animate-pulse";
                 }
-                if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-slash mr-1"></i> Qo'ng'iroqni Tugatish`;
+                if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-slash mr-1"></i> To'xtatish`;
+                
+                if (bottomBtn) {
+                    bottomBtn.className = "flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-black text-sm md:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-red-500/30 transition-all cursor-pointer animate-pulse";
+                }
+                if (bottomIcon) {
+                    bottomIcon.className = "fa-solid fa-phone-slash text-lg animate-bounce";
+                }
+                if (bottomTxt) {
+                    bottomTxt.innerText = "SUHBATNI TO'XTATISH (MIKROFONNI O'CHIRISH)";
+                }
+
                 if (callBadge) callBadge.classList.remove("hidden");
                 if (callIndicator) callIndicator.classList.remove("hidden");
                 if (header) {
@@ -1218,6 +1280,17 @@ HTML_CONTENT = """<!DOCTYPE html>
                     btn.className = "px-3.5 py-1.5 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer";
                 }
                 if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-volume text-emerald-600 mr-1"></i> Jonli Qo'ng'iroq`;
+                
+                if (bottomBtn) {
+                    bottomBtn.className = "flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-black text-sm md:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg transition-all cursor-pointer";
+                }
+                if (bottomIcon) {
+                    bottomIcon.className = "fa-solid fa-phone-volume text-lg";
+                }
+                if (bottomTxt) {
+                    bottomTxt.innerText = "JONLI QO'NG'IROQ (SUHBATNI BOSHLASH)";
+                }
+
                 if (callBadge) callBadge.classList.add("hidden");
                 if (callIndicator) callIndicator.classList.add("hidden");
                 if (header) {
