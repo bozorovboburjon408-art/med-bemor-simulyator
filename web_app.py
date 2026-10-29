@@ -634,7 +634,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             if (typeof navigator === "undefined" || !("serial" in navigator) || !navigator.serial) {
-                alert("Brauzeringiz Web Serial API-ni qo'llab-quvvatlamaydi!\n\nIltimos, Google Chrome yoki Microsoft Edge brauzeridan kiring.");
+                alert("Brauzeringiz Web Serial API-ni qo'llab-quvvatlamaydi! Iltimos, Google Chrome yoki Microsoft Edge brauzeridan foydalaning.");
                 return;
             }
 
@@ -649,13 +649,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                 const currentItem = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
                 const currentBpm = (currentItem && currentItem.bpm) ? currentItem.bpm : 75;
                 await sendWebSerialPulse(currentBpm);
-                alert("✅ Arduino USB Pulsator muvaffaqiyatli ulandi (9600 bod)!\nJoriy ritm: " + currentBpm + " BPM");
+                alert("✅ Arduino USB Pulsator muvaffaqiyatli ulandi (9600 bod)! Joriy ritm: " + currentBpm + " BPM");
             } catch(err) {
                 console.error("Pulse Serial ulanish xatosi:", err);
                 if (err.name === "NotFoundError") {
                     console.log("Port tanlash bekor qilindi");
                 } else {
-                    alert("USB portga ulanishda xatolik: " + err.message + "\n\nMaslahat: Agar Arduino porti boshqa dasturda ochiq bo'lsa, uni yoping!");
+                    alert("USB portga ulanishda xatolik: " + err.message + " (Arduino porti boshqa dasturda ochiq bo'lsa yoping)");
                 }
                 isPulseSerialConnected = false;
                 updatePulseSerialUI(false);
@@ -687,7 +687,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 try {
                     const encoder = new TextEncoder();
                     const writer = pulseSerialPort.writable.getWriter();
-                    await writer.write(encoder.encode(cleanBpm + "\n"));
+                    await writer.write(encoder.encode(String(cleanBpm) + String.fromCharCode(10)));
                     writer.releaseLock();
                     console.log("✅ WebSerial orqali BPM yuborildi:", cleanBpm);
                 } catch(e) {

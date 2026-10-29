@@ -1,5 +1,5 @@
-// MedLife Touchscreen PWA Service Worker (V2 - Auto Cache Flush & Security Sync)
-const CACHE_NAME = 'medlife-kiosk-v2-secure';
+// MedLife Touchscreen PWA Service Worker (V3 - Auto Cache Flush & Pulse Sync)
+const CACHE_NAME = 'medlife-kiosk-v3-pulse';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
