@@ -5,7 +5,9 @@ echo   RENDER VA GITHUBGA YUBORISH
 echo ========================================================
 echo.
 git add web_app.py Render_Yangilash.bat ai_bemor_pulse_bridge.py
-git commit -m "Fix: Instant disease loading and bulletproof WebSerial pulse"
+git commit -m "Fix: Instant disease loading and bulletproof WebSerial pulse" 2>nul
+echo.
+echo GitHub va Render bulutiga yuborilmoqda...
 git push origin main
 echo.
 echo ========================================================
