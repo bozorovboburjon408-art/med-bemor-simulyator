@@ -195,6 +195,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <i class="fa-brands fa-usb text-xs"></i>
                 <span id="btn-web-serial-text">🔌 USB</span>
             </button>
+            <span id="hw-live-badge" class="hidden mono text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded-md shrink-0 shadow-xs" title="Kelayotgan datchik signali">RX: Kutilmoqda...</span>
 
             <a href="/hub" class="px-1.5 sm:px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 flex items-center gap-1 font-bold shadow-xs shrink-0" title="Tizim Hub">
                 <i class="fa-solid fa-hospital text-cyan-600"></i> <span class="hidden sm:inline">Hub</span>
@@ -2613,6 +2614,64 @@ HTML_CONTENT = """<!DOCTYPE html>
             } catch(e) {}
         }
 
+        let rxPacketCount = 0;
+
+        function parseHardwareLine(rawLine) {
+            if (!rawLine) return;
+            const line = rawLine.trim();
+            if (!line) return;
+
+            // 1. JSON format (masalan: {"force":42.1,"lung_p":1.2,...})
+            const sIdx = line.indexOf("{");
+            const eIdx = line.lastIndexOf("}");
+            if (sIdx !== -1 && eIdx > sIdx) {
+                const jsonStr = line.substring(sIdx, eIdx + 1);
+                try {
+                    const data = JSON.parse(jsonStr);
+                    handleHardwareData(data);
+                    return;
+                } catch(e) {
+                    console.warn("JSON parse error:", e, jsonStr);
+                }
+            }
+
+            // 2. Matnli ko'rsatkichlar (masalan: "KUCH: 42.1 kg", "BOSIM: 1.5 cmH2O", "RAW: ... | KUCH: 38.5")
+            let extractedForce = null;
+            let extractedLung = null;
+
+            const forceMatch = line.match(/(?:KUCH|FORCE|MASS|VAZN|VES)[:\s=]+([0-9.]+)/i);
+            if (forceMatch) {
+                extractedForce = parseFloat(forceMatch[1]);
+            }
+
+            const lungMatch = line.match(/(?:BOSIM|LUNG|PRESSURE|HAVO|O'PKA|OPKA)[:\s=]+([0-9.]+)/i);
+            if (lungMatch) {
+                extractedLung = parseFloat(lungMatch[1]);
+            }
+
+            // 3. Vergul yoki probel bilan ajratilgan sonlar: "42.1, 1.2"
+            if (extractedForce === null && extractedLung === null && line.includes(",")) {
+                const parts = line.split(/[\s,;|]+/).map(p => parseFloat(p)).filter(n => !isNaN(n));
+                if (parts.length >= 2) {
+                    extractedForce = parts[0];
+                    extractedLung = parts[1];
+                }
+            }
+
+            if (extractedForce !== null || extractedLung !== null) {
+                handleHardwareData({
+                    force: extractedForce !== null ? extractedForce : lastRawMonitorForce,
+                    lung_p: extractedLung !== null ? extractedLung : 0
+                });
+                return;
+            }
+
+            // 4. Dori kodi (Shtrix-kod)
+            if (line.length >= 2 && !line.startsWith(">") && !line.startsWith("=") && !line.startsWith("[") && !line.startsWith("MEDLIFE") && !line.startsWith("BPM")) {
+                processScannedMedication(line);
+            }
+        }
+
         async function readWebSerialStream() {
             while (webSerialPort && webSerialPort.readable && isSerialConnected) {
                 try {
@@ -2626,19 +2685,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                             let lines = webSerialBuffer.split(String.fromCharCode(10));
                             webSerialBuffer = lines.pop();
                             for (let line of lines) {
-                                line = line.trim();
-                                if (line.startsWith("{") && line.endsWith("}")) {
-                                    try {
-                                        const data = JSON.parse(line);
-                                        handleHardwareData(data);
-                                    } catch(e) {}
-                                } else if (line.length >= 2) {
-                                    // Faqat haqiqiy dori kodi bo'lsa dori deb qabul qilamiz
-                                    // Arduino / vibrator xabarlarini e'tiborsiz qoldiramiz
-                                    if (!line.startsWith(">") && !line.startsWith("=") && !line.startsWith("[") && !line.startsWith("MEDLIFE") && !line.startsWith("BPM")) {
-                                        processScannedMedication(line);
-                                    }
-                                }
+                                parseHardwareLine(line);
                             }
                         }
                     }
@@ -2663,25 +2710,34 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         // ==================== PROCESS INCOMING HARDWARE JSON ====================
         function handleHardwareData(data) {
+            rxPacketCount++;
             if (data.barcode || data.med_code || data.med_id) {
                 processScannedMedication(data.barcode || data.med_code || data.med_id);
             }
 
-            const rawF = parseFloat(data.force !== undefined ? data.force : (data.f_curr !== undefined ? data.f_curr : (data.force_kg || 0)));
+            // Ko'krak massaji kuchi (har qanday kalit nomlarini qo'llab-quvvatlash)
+            const rawF = parseFloat(
+                data.force !== undefined ? data.force :
+                (data.f_curr !== undefined ? data.f_curr :
+                (data.force_kg !== undefined ? data.force_kg :
+                (data.weight !== undefined ? data.weight :
+                (data.kuch !== undefined ? data.kuch :
+                (data.f !== undefined ? data.f : 0)))))
+            );
             lastRawMonitorForce = rawF;
 
+            // Xavfsiz avto-tare
             if (!monitorTareCaptured) {
-                if (rawF < 15.0) {
+                if (rawF > 0.1 && rawF < 10.0) {
                     monitorTareSamples.push(rawF);
                     if (monitorTareSamples.length >= 4) {
                         const avg = monitorTareSamples.reduce((a, b) => a + b, 0) / monitorTareSamples.length;
-                        if (avg > 0.15) {
+                        if (avg > 0.15 && avg < 5.0) {
                             monitorForceTare = avg;
-                            try { localStorage.setItem("manikin_force_tare", monitorForceTare.toFixed(2)); } catch(e) {}
                         }
                         monitorTareCaptured = true;
                     }
-                } else {
+                } else if (rawF >= 10.0) {
                     monitorTareCaptured = true;
                 }
             }
@@ -2691,9 +2747,25 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             const posBtn = (data.pos_btn === 1 || data.pos_btn === true || data.pos_ok === true || data.pos_valid === true);
             const injBtn = (data.inj_btn === 1 || data.inj_btn === true || data.inj_ok === true);
-            const rawLungP = parseFloat(data.lung_p || 0);
-            const lungP = rawLungP * 2.5; // 2.5x sezgirlik kuchaytirgichi (shlang qochishini kompensatsiya qilish va 0.8-2.2 kPa me'yorga oson chiqishi uchun)
-            const stomachP = parseFloat(data.stomach_p || 0);
+
+            // O'pka nafas bosimi (kPa)
+            const rawLungP = parseFloat(
+                data.lung_p !== undefined ? data.lung_p :
+                (data.lung !== undefined ? data.lung :
+                (data.pressure !== undefined ? data.pressure :
+                (data.bosim !== undefined ? data.bosim :
+                (data.p !== undefined ? data.p : 0))))
+            );
+            const lungP = (rawLungP > 10.0) ? (rawLungP / 10.0) : (rawLungP * 2.5);
+            const stomachP = parseFloat(data.stomach_p || data.stomach || 0);
+
+            // JONLI RX DATCHIK STATUSI
+            const liveBadge = document.getElementById("hw-live-badge");
+            if (liveBadge) {
+                liveBadge.classList.remove("hidden");
+                liveBadge.innerText = `RX: ${fCurr.toFixed(1)}kg | ${lungP.toFixed(1)}kPa`;
+                liveBadge.className = "mono text-[10px] font-bold text-emerald-800 bg-emerald-200 border border-emerald-400 px-1.5 py-0.5 rounded-md shrink-0 shadow-xs";
+            }
 
             processCPRStroke(fCurr);
 
@@ -2704,7 +2776,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             const bpmOk = data.bpm_ok !== undefined ? Boolean(data.bpm_ok) : lastRateOk;
             const posOk = posBtn;
 
-            // 1. Force Bar va Jonli ko'rsatkich (Verdict faqat 1 ta to'liq zarba tugaganda yangilanadi)
+            // 1. Force Bar va Jonli ko'rsatkich (DARHOL EKRANDA YANGILASH)
             const forceValEl = document.getElementById("cpr-force-val");
             if (forceValEl) forceValEl.innerText = `${fCurr.toFixed(1)} kg`;
             const forcePct = Math.min(100, (fCurr / 60.0) * 100);
@@ -4222,6 +4294,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 # ==================== PYTHON BACKEND SERIAL COM PORT BRIDGE ====================
 active_serial_port = None
 serial_lock = threading.Lock()
+backend_serial_paused = False
 
 def send_serial_hw_command(cmd: str):
     global active_serial_port
@@ -4241,11 +4314,11 @@ def send_serial_hw_command(cmd: str):
     return False
 
 def auto_detect_arduino_port():
-    global active_serial_port
+    global active_serial_port, backend_serial_paused
     if not serial:
         return
     while True:
-        if not active_serial_port or not active_serial_port.is_open:
+        if not backend_serial_paused and (not active_serial_port or not active_serial_port.is_open):
             try:
                 ports = list(serial.tools.list_ports.comports())
                 for p in ports:
@@ -4298,12 +4371,13 @@ async def api_compressor(req: CompressorRequest):
 
 @app.post("/api/serial/release")
 async def api_serial_release():
-    global active_serial_port
+    global active_serial_port, backend_serial_paused
+    backend_serial_paused = True
     with serial_lock:
         if active_serial_port and active_serial_port.is_open:
             try:
                 active_serial_port.close()
-                print("Backend serial port WebSerial uchun bo'shatildi.")
+                print("Backend serial port WebSerial uchun bo'shatildi va backend pauza qilindi.")
             except:
                 pass
             active_serial_port = None
