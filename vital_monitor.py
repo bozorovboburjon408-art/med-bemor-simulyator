@@ -2519,7 +2519,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             try {
                 try { await fetch('/api/serial/release', { method: 'POST' }); } catch(e) {}
                 webSerialPort = await navigator.serial.requestPort();
-                await webSerialPort.open({ baudRate: 9600 });
+                await webSerialPort.open({ baudRate: 115200 });
                 isSerialConnected = true;
                 updateWebSerialUI(true);
                 readWebSerialStream();
@@ -4253,7 +4253,7 @@ def auto_detect_arduino_port():
                     hwid = (p.hwid or "").lower()
                     if any(k in desc or k in hwid for k in ["ch340", "cp210", "usb-serial", "arduino", "uart", "ftdi", "silicon"]):
                         try:
-                            s = serial.Serial(p.device, 9600, timeout=0.1)
+                            s = serial.Serial(p.device, 115200, timeout=0.1)
                             time.sleep(1.6)
                             active_serial_port = s
                             print(f"✅ Backend Arduino/ESP32 USB porti ulandi: {p.device}")
