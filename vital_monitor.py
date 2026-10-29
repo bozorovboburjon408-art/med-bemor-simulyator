@@ -2519,7 +2519,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             try {
                 try { await fetch('/api/serial/release', { method: 'POST' }); } catch(e) {}
                 webSerialPort = await navigator.serial.requestPort();
-                await webSerialPort.open({ baudRate: 115200 });
+                await webSerialPort.open({ baudRate: 9600 });
                 isSerialConnected = true;
                 updateWebSerialUI(true);
                 readWebSerialStream();
@@ -2576,10 +2576,13 @@ HTML_CONTENT = """<!DOCTYPE html>
         async function writeToWebSerial(cmd) {
             if (webSerialPort && webSerialPort.writable && isSerialConnected) {
                 try {
+                    const clean = String(cmd).trim();
+                    const textToSend = clean + String.fromCharCode(10);
                     const encoder = new TextEncoder();
                     const writer = webSerialPort.writable.getWriter();
-                    await writer.write(encoder.encode(cmd + "\n"));
+                    await writer.write(encoder.encode(textToSend));
                     writer.releaseLock();
+                    console.log("USB motorga yuborildi:", clean);
                 } catch(e) {
                     console.warn("WebSerial yozish xatosi:", e);
                 }
@@ -2587,12 +2590,25 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function syncHardwarePulse(cmd) {
-            writeToWebSerial(cmd);
+            let bpmToSend = 75;
+            if (typeof cmd === "number") {
+                bpmToSend = Math.round(cmd);
+            } else if (typeof cmd === "string") {
+                const s = cmd.toUpperCase().trim();
+                if (s === "NORMAL" || s === "ROSC") bpmToSend = 75;
+                else if (s === "TACH" || s === "TACHYCARDIA" || s === "TAXIKARDIYA") bpmToSend = 185;
+                else if (s === "BRAD" || s === "BRADYCARDIA" || s === "BRADIKARDIYA") bpmToSend = 28;
+                else if (s === "VFIB") bpmToSend = 230;
+                else if (s === "ASYSTOLE" || s === "DYING") bpmToSend = "S";
+                else if (!isNaN(parseInt(s, 10))) bpmToSend = parseInt(s, 10);
+                else bpmToSend = 75;
+            }
+            writeToWebSerial(bpmToSend);
             try {
                 fetch('/api/compressor', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cmd: cmd })
+                    body: JSON.stringify({ cmd: String(bpmToSend) })
                 }).catch(() => {});
             } catch(e) {}
         }
@@ -3730,6 +3746,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_brady.mp3', "Diqqat! Bemor og'ir bradikardiya va atrioventrikulyar blokada holatiga tushdi. Puls daqiqasiga 28 marta.");
             } else if (type === "hyper" || type === "gipertoniya") {
+                syncHardwarePulse(115);
                 target = { hr: 115, spo2: 95, sys: 220, dia: 130, rr: 24, temp: 36.8, mode: "hyper", rhythm: "sinus" };
                 current.mode = "hyper";
                 transitionSteps = 120; totalSteps = 120;
@@ -3737,6 +3754,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_hyper.mp3', "Bemor gipertonik kriz holatiga tushdi. Qon bosimi 220 ga 130 millimetrga yetdi.");
             } else if (type === "hypoxia" || type === "gipoksiya") {
+                syncHardwarePulse(135);
                 target = { hr: 135, spo2: 74, sys: 135, dia: 90, rr: 38, temp: 36.8, mode: "hypoxia", rhythm: "sinus" };
                 current.mode = "hypoxia";
                 transitionSteps = 120; totalSteps = 120;
@@ -3744,6 +3762,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_hypoxia.mp3', "Diqqat! Bemor o'tkir gipoksiya va bronxospazm holatiga tushdi. Kislorod saturatsiyasi 74 foizga tushib ketdi.");
             } else if (type === "opioid") {
+                syncHardwarePulse(42);
                 target = { hr: 42, spo2: 62, sys: 80, dia: 50, rr: 4, temp: 35.2, mode: "opioid", rhythm: "sinus" };
                 current.mode = "opioid";
                 transitionSteps = 120; totalSteps = 120;
@@ -3751,6 +3770,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_opioid.mp3', "Favqulodda holat! Bemor opioid komasi holatiga tushdi. Nafas chastotasi daqiqasiga 4 martagacha pasaygan.");
             } else if (type === "shock" || type === "shok") {
+                syncHardwarePulse(145);
                 target = { hr: 145, spo2: 89, sys: 65, dia: 35, rr: 28, temp: 35.8, mode: "shock", rhythm: "sinus" };
                 current.mode = "shock";
                 transitionSteps = 120; totalSteps = 120;
@@ -3758,6 +3778,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 stopAsystoleTone();
                 playVoiceAudio('/static/audio/scenario_shock.mp3', "Xavfli holat! Bemor gipovolemik shok holatiga tushdi. Qon bosimi 65 ga 35 ga tushib ketdi.");
             } else if (type === "anaphylaxis" || type === "anafilaksiya") {
+                syncHardwarePulse(140);
                 target = { hr: 140, spo2: 78, sys: 70, dia: 40, rr: 32, temp: 37.8, mode: "anaphylaxis", rhythm: "sinus" };
                 current.mode = "anaphylaxis";
                 transitionSteps = 120; totalSteps = 120;
@@ -4232,7 +4253,7 @@ def auto_detect_arduino_port():
                     hwid = (p.hwid or "").lower()
                     if any(k in desc or k in hwid for k in ["ch340", "cp210", "usb-serial", "arduino", "uart", "ftdi", "silicon"]):
                         try:
-                            s = serial.Serial(p.device, 115200, timeout=0.1)
+                            s = serial.Serial(p.device, 9600, timeout=0.1)
                             time.sleep(1.6)
                             active_serial_port = s
                             print(f"✅ Backend Arduino/ESP32 USB porti ulandi: {p.device}")
