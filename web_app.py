@@ -602,6 +602,85 @@ HTML_CONTENT = """<!DOCTYPE html>
             });
         }
 
+                // ==================== REAL HARDWARE WEB SERIAL API (9600 BOD) ====================
+        let pulseSerialPort = null;
+        let isPulseSerialConnected = false;
+
+        async function togglePulseWebSerial() {
+            if (isPulseSerialConnected && pulseSerialPort) {
+                try {
+                    await pulseSerialPort.close();
+                } catch(e) {}
+                pulseSerialPort = null;
+                isPulseSerialConnected = false;
+                updatePulseSerialUI(false);
+                return;
+            }
+
+            if (!("serial" in navigator)) {
+                alert("Brauzeringiz Web Serial API-ni qo'llab-quvvatlamaydi. Iltimos Google Chrome yoki Microsoft Edge brauzeridan foydalaning!");
+                return;
+            }
+
+            try {
+                pulseSerialPort = await navigator.serial.requestPort();
+                await pulseSerialPort.open({ baudRate: 9600 });
+                isPulseSerialConnected = true;
+                updatePulseSerialUI(true);
+
+                // Ulanishi bilan joriy kasallik BPM ni toza raqam ko'rinishida jo'natamiz
+                const currentItem = (typeof currentKey !== 'undefined' && diseases && diseases[currentKey]) ? diseases[currentKey] : null;
+                const currentBpm = (currentItem && currentItem.bpm) ? currentItem.bpm : 75;
+                await sendWebSerialPulse(currentBpm);
+            } catch(err) {
+                console.error("Pulse Serial ulanish xatosi:", err);
+                if (err.name !== "NotFoundError") {
+                    alert("USB portga ulanishda xatolik: " + err.message);
+                }
+                isPulseSerialConnected = false;
+                updatePulseSerialUI(false);
+            }
+        }
+
+        function updatePulseSerialUI(connected) {
+            const btn = document.getElementById("btn-web-serial-pulse");
+            const txt = document.getElementById("btn-web-serial-pulse-text");
+            if (connected) {
+                if (btn) {
+                    btn.className = "px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-1.5 shadow transition cursor-pointer shrink-0";
+                }
+                if (txt) txt.innerText = "🔌 USB: Ulandi (9600)";
+            } else {
+                if (btn) {
+                    btn.className = "px-2.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1.5 shadow transition cursor-pointer shrink-0 animate-pulse";
+                }
+                if (txt) txt.innerText = "🔌 USB Puls";
+            }
+        }
+
+        async function sendWebSerialPulse(bpm) {
+            if (!bpm || bpm <= 0) return;
+            if (pulseSerialPort && pulseSerialPort.writable && isPulseSerialConnected) {
+                try {
+                    const encoder = new TextEncoder();
+                    const writer = pulseSerialPort.writable.getWriter();
+                    await writer.write(encoder.encode(bpm + "\n"));
+                    writer.releaseLock();
+                    console.log("✅ WebSerial orqali BPM yuborildi:", bpm);
+                } catch(e) {
+                    console.warn("WebSerial yozish xatosi:", e);
+                }
+            }
+        }
+
+        if ("serial" in navigator) {
+            navigator.serial.addEventListener("disconnect", () => {
+                isPulseSerialConnected = false;
+                pulseSerialPort = null;
+                updatePulseSerialUI(false);
+            });
+        }
+
         // Select Disease
         function selectDisease(key) {
             if (!diseases[key]) return;
