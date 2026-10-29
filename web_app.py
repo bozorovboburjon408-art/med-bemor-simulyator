@@ -338,6 +338,17 @@ app = FastAPI(title="RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori")
 apply_system_lock_middleware(app)
 
 # HTML Content (Single Page Responsive App)
+BOOTSTRAP_DISEASES_JSON = json.dumps({
+    k: {
+        "nomi": v.get("nomi", ""),
+        "kategoriya": v.get("kategoriya", ""),
+        "tavsif": v.get("tavsif", ""),
+        "rang": v.get("rang", "#10B981"),
+        "bpm": v.get("bpm", 75),
+        "audio": v.get("audio", "")
+    } for k, v in KASALLIKLAR.items()
+}, ensure_ascii=False)
+
 HTML_CONTENT = """<!DOCTYPE html>
 <html lang="uz">
 <head>
@@ -554,28 +565,35 @@ HTML_CONTENT = """<!DOCTYPE html>
     <audio id="heart-player" class="hidden" loop></audio>
 
     <script>
+        // Global State Variables (Barcha audio va aloqa holatlari TDZ xatoliklarini oldini olish uchun boshida e'lon qilinadi)
         let currentKey = "normal";
         let isProcessing = false;
         let speakerEnabled = true;
         let isHeartPlaying = false;
         let ws = null;
-        let diseases = {};
 
-        // Fetch disease database from backend API
-        async function loadDiseases() {
-            try {
-                const res = await fetch('/api/diseases');
-                diseases = await res.json();
-                renderDiseases();
-                selectDisease("normal");
-            } catch (e) {
-                console.error("Error loading diseases:", e);
-            }
-        }
+        let outAudioCtx = null;
+        let outGainNode = null;
+        let currentVolume = 0.35; // Default comfortable 35%
+        let outNextStartTime = 0;
+        let activeSources = [];
+
+        let micStream = null;
+        let micAudioContext = null;
+        let micProcessor = null;
+        let isCallActive = false;
+        let isPatientSpeaking = false;
+
+        let pulseSerialPort = null;
+        let isPulseSerialConnected = false;
+
+        // Kasalliklar bazasi (Serverdan darhol inyeksiya qilingan - sahifa ochilishi bilan 0 soniyada yuklanadi)
+        let diseases = __BOOTSTRAP_DISEASES__;
 
         // Render Disease List
         function renderDiseases(filterText = "") {
             const listEl = document.getElementById("disease-list");
+            if (!listEl) return;
             listEl.innerHTML = "";
             
             Object.keys(diseases).forEach(key => {
@@ -602,10 +620,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             });
         }
 
-                // ==================== REAL HARDWARE WEB SERIAL API (9600 BOD) ====================
-        let pulseSerialPort = null;
-        let isPulseSerialConnected = false;
-
+        // ==================== REAL HARDWARE WEB SERIAL API (9600 BOD) ====================
         async function togglePulseWebSerial() {
             if (isPulseSerialConnected && pulseSerialPort) {
                 try {
@@ -614,28 +629,33 @@ HTML_CONTENT = """<!DOCTYPE html>
                 pulseSerialPort = null;
                 isPulseSerialConnected = false;
                 updatePulseSerialUI(false);
+                alert("🔌 Maneken USB Pulsatori uzildi.");
                 return;
             }
 
-            if (!("serial" in navigator)) {
-                alert("Brauzeringiz Web Serial API-ni qo'llab-quvvatlamaydi. Iltimos Google Chrome yoki Microsoft Edge brauzeridan foydalaning!");
+            if (typeof navigator === "undefined" || !("serial" in navigator) || !navigator.serial) {
+                alert("Brauzeringiz Web Serial API-ni qo'llab-quvvatlamaydi!\n\nIltimos, Google Chrome yoki Microsoft Edge brauzeridan kiring.");
                 return;
             }
 
             try {
+                // COM port tanlash darchasini ochish
                 pulseSerialPort = await navigator.serial.requestPort();
                 await pulseSerialPort.open({ baudRate: 9600 });
                 isPulseSerialConnected = true;
                 updatePulseSerialUI(true);
 
-                // Ulanishi bilan joriy kasallik BPM ni toza raqam ko'rinishida jo'natamiz
-                const currentItem = (typeof currentKey !== 'undefined' && diseases && diseases[currentKey]) ? diseases[currentKey] : null;
+                // Ulanishi bilan joriy kasallik BPM ni jo'natamiz
+                const currentItem = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
                 const currentBpm = (currentItem && currentItem.bpm) ? currentItem.bpm : 75;
                 await sendWebSerialPulse(currentBpm);
+                alert("✅ Arduino USB Pulsator muvaffaqiyatli ulandi (9600 bod)!\nJoriy ritm: " + currentBpm + " BPM");
             } catch(err) {
                 console.error("Pulse Serial ulanish xatosi:", err);
-                if (err.name !== "NotFoundError") {
-                    alert("USB portga ulanishda xatolik: " + err.message);
+                if (err.name === "NotFoundError") {
+                    console.log("Port tanlash bekor qilindi");
+                } else {
+                    alert("USB portga ulanishda xatolik: " + err.message + "\n\nMaslahat: Agar Arduino porti boshqa dasturda ochiq bo'lsa, uni yoping!");
                 }
                 isPulseSerialConnected = false;
                 updatePulseSerialUI(false);
@@ -660,87 +680,144 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         async function sendWebSerialPulse(bpm) {
             if (!bpm || bpm <= 0) return;
+            const cleanBpm = parseInt(bpm, 10);
+            if (isNaN(cleanBpm) || cleanBpm <= 0) return;
+
             if (pulseSerialPort && pulseSerialPort.writable && isPulseSerialConnected) {
                 try {
                     const encoder = new TextEncoder();
                     const writer = pulseSerialPort.writable.getWriter();
-                    await writer.write(encoder.encode(bpm + "\n"));
+                    await writer.write(encoder.encode(cleanBpm + "\n"));
                     writer.releaseLock();
-                    console.log("✅ WebSerial orqali BPM yuborildi:", bpm);
+                    console.log("✅ WebSerial orqali BPM yuborildi:", cleanBpm);
                 } catch(e) {
                     console.warn("WebSerial yozish xatosi:", e);
                 }
             }
         }
 
-        if ("serial" in navigator) {
-            navigator.serial.addEventListener("disconnect", () => {
-                isPulseSerialConnected = false;
-                pulseSerialPort = null;
-                updatePulseSerialUI(false);
-            });
+        try {
+            if (typeof navigator !== "undefined" && "serial" in navigator && navigator.serial && typeof navigator.serial.addEventListener === "function") {
+                navigator.serial.addEventListener("disconnect", () => {
+                    isPulseSerialConnected = false;
+                    pulseSerialPort = null;
+                    updatePulseSerialUI(false);
+                });
+            }
+        } catch(e) {
+            console.warn("Serial disconnect listener unhandled:", e);
         }
 
-        // Select Disease
+        // Select Disease (Barcha funksiyalar xavfsiz himoyalangan)
         function selectDisease(key) {
-            if (!diseases[key]) return;
+            if (!diseases || !diseases[key]) return;
             currentKey = key;
             const item = diseases[key];
             
-            document.getElementById("selected-badge").innerText = item.kategoriya;
-            document.getElementById("condition-desc").innerText = item.tavsif;
-            document.getElementById("current-disease-name").innerText = item.nomi;
-            
-            const header = document.getElementById("chat-header");
-            header.style.backgroundColor = item.rang;
-            
-            // Heart sound player check
-            const heartContainer = document.getElementById("heart-sound-container");
-            const heartPlayer = document.getElementById("heart-player");
-            heartPlayer.pause();
-            isHeartPlaying = false;
-            document.getElementById("heart-sound-btn").classList.remove("bg-rose-600", "text-white");
-            document.getElementById("heart-sound-btn").classList.add("bg-rose-50", "text-rose-700");
-            
-            if (item.audio) {
-                heartContainer.classList.remove("hidden");
-                heartPlayer.src = "/audio/" + item.audio;
-            } else {
-                heartContainer.classList.add("hidden");
+            try {
+                const badge = document.getElementById("selected-badge");
+                if (badge) badge.innerText = item.kategoriya || "Holat";
+
+                const desc = document.getElementById("condition-desc");
+                if (desc) desc.innerText = item.tavsif || "";
+
+                const curName = document.getElementById("current-disease-name");
+                if (curName) curName.innerText = item.nomi || "";
+                
+                const header = document.getElementById("chat-header");
+                if (header && item.rang) header.style.backgroundColor = item.rang;
+                
+                // Heart sound player check
+                const heartContainer = document.getElementById("heart-sound-container");
+                const heartPlayer = document.getElementById("heart-player");
+                if (heartPlayer && heartPlayer.pause) {
+                    try { heartPlayer.pause(); } catch(e) {}
+                }
+                isHeartPlaying = false;
+                const hsBtn = document.getElementById("heart-sound-btn");
+                if (hsBtn) {
+                    hsBtn.classList.remove("bg-rose-600", "text-white");
+                    hsBtn.classList.add("bg-rose-50", "text-rose-700");
+                }
+                
+                if (item.audio && heartContainer && heartPlayer) {
+                    heartContainer.classList.remove("hidden");
+                    heartPlayer.src = "/audio/" + item.audio;
+                } else if (heartContainer) {
+                    heartContainer.classList.add("hidden");
+                }
+            } catch(e) {
+                console.warn("selectDisease DOM update warning:", e);
             }
             
-            renderDiseases(document.getElementById("search-box").value);
+            try {
+                renderDiseases(document.getElementById("search-box") ? document.getElementById("search-box").value : "");
+            } catch(e) {}
             
             // 1. Avvalgi bemor ovozi va muloqot holatini to'liq tozalash
-            stopAllAudioPlayback();
-            finalizePatientText();
-            isPatientSpeaking = false;
+            try {
+                if (typeof stopAllAudioPlayback === 'function') stopAllAudioPlayback();
+                if (typeof finalizePatientText === 'function') finalizePatientText();
+                isPatientSpeaking = false;
+            } catch(e) {}
             
             // 2. AudioContext larni uyg'otish (suspended holatdan chiqarish)
-            if (micAudioContext && micAudioContext.state === 'suspended') {
-                micAudioContext.resume().catch(() => {});
-            }
-            if (outAudioCtx && outAudioCtx.state === 'suspended') {
-                outAudioCtx.resume().catch(() => {});
-            }
+            try {
+                if (micAudioContext && micAudioContext.state === 'suspended') {
+                    micAudioContext.resume().catch(() => {});
+                }
+                if (outAudioCtx && outAudioCtx.state === 'suspended') {
+                    outAudioCtx.resume().catch(() => {});
+                }
+            } catch(e) {}
             
             // 3. Yangi kasallik profiliga ulanamiz
-            connectWebSocket();
+            try {
+                if (typeof connectWebSocket === 'function') connectWebSocket();
+            } catch(e) {}
             
             // 4. Kompressor va pulsatorga yangi kasallik ritmini yuborish (WebSerial + Backend)
-            if (item.bpm) {
-                // To'g'ridan-to'g'ri brauzerdan USB ga (Render bulutida ham, mahalliy kompyuterda ham ishlaydi)
-                sendWebSerialPulse(item.bpm);
+            const bpmVal = item.bpm || 75;
+            try {
+                sendWebSerialPulse(bpmVal);
+            } catch(e) {}
 
-                // Backend orqali ham
+            try {
                 fetch("/api/compressor", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cmd: `${item.bpm}` })
+                    body: JSON.stringify({ cmd: String(bpmVal) })
                 }).catch(() => {});
-            }
+            } catch(e) {}
             
-            addSystemMessage(`🩺 Kasallik holati o'zgartirildi: <b>${item.nomi}</b>.`);
+            try {
+                if (typeof addSystemMessage === 'function') {
+                    addSystemMessage(`🩺 Kasallik holati o'zgartirildi: <b>${item.nomi}</b>.`);
+                }
+            } catch(e) {}
+        }
+
+        // Fetch disease database from backend API & Initial setup
+        async function loadDiseases() {
+            try {
+                renderDiseases();
+                selectDisease("normal");
+            } catch (e) {
+                console.error("Error initializing diseases:", e);
+            }
+
+            try {
+                const res = await fetch('/api/diseases');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+                        diseases = data;
+                        renderDiseases(document.getElementById("search-box") ? document.getElementById("search-box").value : "");
+                    }
+                }
+            } catch (e) {
+                console.warn("Background diseases sync warning:", e);
+            }
         }
 
         // Toggle Heartbeat Audio
@@ -761,11 +838,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         // Output Audio (24kHz Gemini Live Stream Player & Master Gain)
-        let outAudioCtx = null;
-        let outGainNode = null;
-        let currentVolume = 0.35; // Default comfortable 35%
-        let outNextStartTime = 0;
-        let activeSources = [];
 
         function initOutputAudio() {
             if (!outAudioCtx) {
@@ -908,11 +980,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         // Live Microphone Input (16kHz PCM Streamer for Gemini Live)
-        let micStream = null;
-        let micAudioContext = null;
-        let micProcessor = null;
-        let isCallActive = false;
-        let isPatientSpeaking = false;
 
         async function toggleLiveCall() {
             if (isCallActive) {
@@ -1353,14 +1420,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
-        // Initialize on load
-        window.onload = () => {
+        // Initialize on load (Darhol va ishonchli ishga tushirish)
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadDiseases);
+        } else {
             loadDiseases();
-        };
+        }
+        window.addEventListener('load', loadDiseases);
     </script>
 </body>
 </html>
-"""
+""".replace("__BOOTSTRAP_DISEASES__", BOOTSTRAP_DISEASES_JSON)
 
 # Static files and PWA assets
 os.makedirs("static", exist_ok=True)
