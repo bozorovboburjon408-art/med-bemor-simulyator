@@ -462,6 +462,12 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
     </header>
 
+    <!-- REAL-TIME HARDWARE SENSOR TOAST NOTIFICATION -->
+    <div id="sensor-toast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl text-white font-black text-xs shadow-2xl flex items-center gap-2 transition-all duration-300">
+        <i class="fa-solid fa-heart-pulse animate-bounce"></i>
+        <span id="sensor-toast-text"></span>
+    </div>
+
     <!-- Main Container -->
     <main class="max-w-6xl w-full mx-auto p-4 flex-1 flex flex-col md:flex-row gap-4">
         
@@ -515,6 +521,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <div>
                         <div class="font-bold text-base leading-tight" id="patient-name">Bemor: Anvar (40 yosh)</div>
                         <div class="text-xs opacity-90" id="current-disease-name">1. Normal (Sog'lom ko'rik)</div>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span id="ind-neck" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white flex items-center gap-1 transition" title="Bo'yin touch sensori">
+                                <i class="fa-solid fa-hand-dots"></i> Bo'yin pulsi
+                            </span>
+                            <span id="ind-wrist" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white flex items-center gap-1 transition" title="Qo'l touch sensori">
+                                <i class="fa-solid fa-hand"></i> Qo'l pulsi
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -606,6 +620,9 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         let pulseSerialPort = null;
         let isPulseSerialConnected = false;
+        let pulseSerialReader = null;
+        let pulseSerialBuffer = "";
+        let pulseToastTimer = null;
 
         // Kasalliklar bazasi (Serverdan darhol inyeksiya qilingan - sahifa ochilishi bilan 0 soniyada yuklanadi)
         let diseases = __BOOTSTRAP_DISEASES__;
@@ -641,15 +658,100 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         // ==================== REAL HARDWARE WEB SERIAL API (9600 BOD) ====================
+        function showPulseToast(text, bgClass = "bg-emerald-600") {
+            const toast = document.getElementById("sensor-toast");
+            const toastText = document.getElementById("sensor-toast-text");
+            if (!toast || !toastText) return;
+            toastText.innerText = text;
+            toast.className = `fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl text-white font-black text-xs shadow-2xl flex items-center gap-2 transition-all duration-300 ${bgClass}`;
+            toast.classList.remove("hidden");
+            if (pulseToastTimer) clearTimeout(pulseToastTimer);
+            pulseToastTimer = setTimeout(() => {
+                toast.classList.add("hidden");
+            }, 3000);
+        }
+
+        function animatePulseIndicator(type) {
+            const elId = (type === "neck") ? "ind-neck" : "ind-wrist";
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const originalClass = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white flex items-center gap-1 transition";
+            el.className = "px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-300 text-slate-950 flex items-center gap-1 shadow-lg ring-2 ring-white animate-pulse transition";
+            setTimeout(() => {
+                el.className = originalClass;
+            }, 2000);
+        }
+
+        function appendSensorEventToChat(message) {
+            const chatBox = document.getElementById("chat-box");
+            if (!chatBox) return;
+            const div = document.createElement("div");
+            div.className = "flex justify-center my-1";
+            div.innerHTML = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200 shadow-xs flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-medical text-amber-600"></i> ${message}</span>`;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handlePulseSensorFeedback(line) {
+            const lower = line.toLowerCase();
+            if (lower.includes("bo'yin") || lower.includes("boyin")) {
+                showPulseToast("🩺 Bo'yin sensori ushlandi (Uyqu arteriyasi - Carotid)", "bg-emerald-600");
+                animatePulseIndicator("neck");
+                appendSensorEventToChat("Talaba bemorning bo'yin (uyqu arteriyasi) pulsini ushladi va tekshirdi");
+            } else if (lower.includes("qo'l") || lower.includes("qol")) {
+                showPulseToast("🩺 Qo'l sensori ushlandi (Bilak arteriyasi - Radial)", "bg-blue-600");
+                animatePulseIndicator("wrist");
+                appendSensorEventToChat("Talaba bemorning bilak (radial arteriya) pulsini ushladi va tekshirdi");
+            } else if (lower.includes("maxsus ritm") || lower.includes("bpm")) {
+                showPulseToast("✅ " + line.replace(">>", "").trim(), "bg-indigo-600");
+            }
+        }
+
+        async function readPulseSerialStream() {
+            while (pulseSerialPort && pulseSerialPort.readable && isPulseSerialConnected) {
+                try {
+                    pulseSerialReader = pulseSerialPort.readable.getReader();
+                    const decoder = new TextDecoder();
+                    while (true) {
+                        const { value, done } = await pulseSerialReader.read();
+                        if (done) break;
+                        if (value) {
+                            pulseSerialBuffer += decoder.decode(value, { stream: true });
+                            let lines = pulseSerialBuffer.split(String.fromCharCode(10));
+                            pulseSerialBuffer = lines.pop();
+                            for (let line of lines) {
+                                line = line.trim();
+                                if (!line) continue;
+                                console.log("[Arduino Nano]:", line);
+                                handlePulseSensorFeedback(line);
+                            }
+                        }
+                    }
+                } catch(err) {
+                    console.warn("Pulse serial o'qish xatosi:", err);
+                    break;
+                } finally {
+                    if (pulseSerialReader) {
+                        try { pulseSerialReader.releaseLock(); } catch(e) {}
+                        pulseSerialReader = null;
+                    }
+                }
+            }
+        }
+
         async function togglePulseWebSerial() {
             if (isPulseSerialConnected && pulseSerialPort) {
                 try {
+                    if (pulseSerialReader) {
+                        await pulseSerialReader.cancel();
+                        pulseSerialReader = null;
+                    }
                     await pulseSerialPort.close();
                 } catch(e) {}
                 pulseSerialPort = null;
                 isPulseSerialConnected = false;
                 updatePulseSerialUI(false);
-                alert("🔌 Maneken USB Pulsatori uzildi.");
+                showPulseToast("🔌 Maneken USB Pulsatori uzildi", "bg-slate-700");
                 return;
             }
 
@@ -665,11 +767,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                 isPulseSerialConnected = true;
                 updatePulseSerialUI(true);
 
-                // Ulanishi bilan joriy kasallik BPM ni jo'natamiz
+                // Arduino dan kelayotgan touch sensor javoblarini o'qishni boshlash
+                readPulseSerialStream();
+
+                // Arduino ochilganda reset bo'ladi (1.5-2s bootloader).
+                // Shuning uchun BPM ni ketma-ket (darhol, 1.2s va 2.5s) da yuboramiz:
                 const currentItem = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
                 const currentBpm = (currentItem && currentItem.bpm) ? currentItem.bpm : 75;
+
                 await sendWebSerialPulse(currentBpm);
-                alert("✅ Arduino USB Pulsator muvaffaqiyatli ulandi (9600 bod)! Joriy ritm: " + currentBpm + " BPM");
+                setTimeout(() => sendWebSerialPulse(currentBpm), 1200);
+                setTimeout(() => sendWebSerialPulse(currentBpm), 2500);
+
+                showPulseToast("✅ Arduino Maneken Ulandi (9600 bod). Joriy ritm: " + currentBpm + " BPM", "bg-emerald-600");
             } catch(err) {
                 console.error("Pulse Serial ulanish xatosi:", err);
                 if (err.name === "NotFoundError") {
@@ -705,9 +815,10 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             if (pulseSerialPort && pulseSerialPort.writable && isPulseSerialConnected) {
                 try {
+                    const textToSend = String(cleanBpm) + String.fromCharCode(10);
                     const encoder = new TextEncoder();
                     const writer = pulseSerialPort.writable.getWriter();
-                    await writer.write(encoder.encode(String(cleanBpm) + String.fromCharCode(10)));
+                    await writer.write(encoder.encode(textToSend));
                     writer.releaseLock();
                     console.log("✅ WebSerial orqali BPM yuborildi:", cleanBpm);
                 } catch(e) {
@@ -722,6 +833,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     isPulseSerialConnected = false;
                     pulseSerialPort = null;
                     updatePulseSerialUI(false);
+                    showPulseToast("⚠️ Arduino USB uzildi", "bg-rose-600");
                 });
             }
         } catch(e) {
