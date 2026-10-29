@@ -397,7 +397,8 @@ QAT'IY QOIDALAR:
 5. Savollarga aniq, lo'nda, tabiiy va samimiy ravishda 1-2 ta jumlada javob ber. Ortiqcha cho'zma.
 6. Qavs ichida harakat nomlarini (masalan, '(yo'taladi)', '(ingraydi)') aslo yozma va aytma!
 7. Tibbiy tashxis nomini to'g'ridan-to'g'ri aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
-8. TALAFFUZ: O'zbek tilidagi eng ravon, talaffuzi oson va xalqona so'zlardan foydalan, nutqing ravon va tushunarli bo'lsin."""
+8. TALAFFUZ: O'zbek tilidagi eng ravon, talaffuzi oson va xalqona so'zlardan foydalan, nutqing ravon va tushunarli bo'lsin.
+9. TUGALLANGAN NUTQ: Har doim gaplaringni oxirigacha to'liq ayt. Gapning oxirini aslo chala yoki yarimta qoldirma, gap mantiqan to'liq tugasin!"""
 
 UMUMIY_BOLA_PROMPT = """Sen tibbiy ta'lim manikeni va KICHIK YOSHLI BOLA (PEDIATRIYA) BEMORSAN.
 Yoshing 6-8 yosh atrofidagi kichkina qizaloqsan (yoki bola). OVOZING VA SO'ZLAYIShING BOLALARGA XOS, YOQIMLI, SHIRIN, SODDA VA SAMIMIY BO'LISHI SHART!
@@ -409,7 +410,8 @@ QAT'IY QOIDALAR:
 5. Harflarni chaynab yoki duduqlanib gapirma, ravon bolalar nutqida gapir.
 6. Qavs ichida harakat nomlarini (masalan, '(yig'laydi)', '(yo'taladi)') aslo yozma va aytma!
 7. Savollarga 1-2 ta qisqa bolalarcha jumlada tabiiy javob ber.
-8. O'zingni kichkina qizaloqdek muloyim, sodda va qo'rqqan ohangda tut."""
+8. O'zingni kichkina qizaloqdek muloyim, sodda va qo'rqqan ohangda tut.
+9. TUGALLANGAN NUTQ: Aytayotgan gapingni oxirigacha yetkaz. Gapning oxirini aslo yeb qo'yma yoki chala qoldirma, to'liq ayt!"""
 
 UMUMIY_PROMPT = UMUMIY_KATTA_PROMPT
 
@@ -1121,7 +1123,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function isAudioCurrentlyPlaying() {
-            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime - 0.05));
+            // Dinamik ovozi va xona aks-sadosi (reverb) to'liq so'ngunicha mikrofonni bloklash (+350ms zaxira)
+            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime + 0.35));
         }
 
         function stopAllAudioPlayback() {
@@ -1249,10 +1252,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                 
                 micProcessor.onaudioprocess = (e) => {
                     if (!isCallActive || !ws || ws.readyState !== WebSocket.OPEN) return;
-                    // Bemor gapirayotganda dinamikdan chiqqan ovozni o'ziga qaytarib echo qilmaslik
+                    // Bemor gapirayotganda va gap tugagach 350ms davomida dinamik aks-sadosini yubormaslik (gap oxiri uzilib qolmasligi uchun)
                     if (isAudioCurrentlyPlaying()) return;
                     
                     const input = e.inputBuffer.getChannelData(0);
+                    
+                    // Shovqin / Sukunat filtri (Noise Gate): xonadagi shivir-shivir va nafas shovqinini Gemini ga yuborib gapni uzib qo'ymaslik
+                    let sum = 0;
+                    for (let i = 0; i < input.length; i++) {
+                        sum += input[i] * input[i];
+                    }
+                    const rms = Math.sqrt(sum / input.length);
+                    if (rms < 0.012) return;
+                    
                     const pcm16 = downsampleTo16k(input, micAudioContext.sampleRate);
                     if (pcm16 && pcm16.length > 0) {
                         ws.send(pcm16.buffer);
@@ -1460,25 +1472,32 @@ HTML_CONTENT = """<!DOCTYPE html>
                     appendPatientStreamText(data.text);
                     updateStatus("🗣️ Bemor javob bermoqda...", "green");
                 } else if (data.type === "turn_complete") {
-                    finalizePatientText();
                     setProcessing(false);
-                    setTimeout(() => {
+                    // Bemorning oxirgi gaplari dinamikda to'liq yangrab bo'lmaguncha mikrofonni ochmaymiz
+                    const waitAudioFinish = setInterval(() => {
+                        if (!isAudioCurrentlyPlaying()) {
+                            clearInterval(waitAudioFinish);
+                            isPatientSpeaking = false;
+                            finalizePatientText();
+                            if (isCallActive) {
+                                updateStatus("🎙️ Bemor tinglamoqda — gapiravering...", "red");
+                            } else {
+                                updateStatus("✅ Tayyor", "emerald");
+                            }
+                        }
+                    }, 80);
+                } else if (data.type === "interrupted") {
+                    // Agar dinamikda hali audio yangrayotgan bo'lsa, soxta aks-sado tufayli gapni uzib tashlamaymiz!
+                    if (!isAudioCurrentlyPlaying()) {
                         isPatientSpeaking = false;
+                        stopAllAudioPlayback();
+                        finalizePatientText();
+                        setProcessing(false);
                         if (isCallActive) {
                             updateStatus("🎙️ Bemor tinglamoqda — gapiravering...", "red");
                         } else {
                             updateStatus("✅ Tayyor", "emerald");
                         }
-                    }, 400);
-                } else if (data.type === "interrupted") {
-                    isPatientSpeaking = false;
-                    stopAllAudioPlayback();
-                    finalizePatientText();
-                    setProcessing(false);
-                    if (isCallActive) {
-                        updateStatus("🎙️ Bemor to'xtadi, siz gapiryapsiz...", "red");
-                    } else {
-                        updateStatus("✅ Tayyor", "emerald");
                     }
                 }
             };
