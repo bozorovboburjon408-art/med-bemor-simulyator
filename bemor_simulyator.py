@@ -1,3 +1,4 @@
+from ai_bemor_pulse_bridge import send_pulse_bpm
 import os
 import re
 import wave
@@ -24,6 +25,7 @@ KASALLIKLAR = {
         "kategoriya": "Yurak va Qon-tomir",
         "tavsif": "40 yoshli sog'lom maktab o'qituvchisi. Yillik profilaktik ko'rikka kelgan. Shikoyati yo'q, qon bosimi 120/80.",
         "rang": "#4CAF50",
+        "bpm": 75,
         "prompt": """Sen shifoxonaga yillik profilaktik tibbiy ko'rik uchun kelgan 40 yoshli sog'lom erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Maktabda tarix o'qituvchisisan. Uylangansan, 2 nafar farzanding bor (o'g'il va qiz).
 HOLATING VA SHIKOYATING: O'zingni juda yaxshi his qilyapsan. Hech qayering og'rimaydi. Bosh og'rig'i, yurak o'ynashi, hansirash — mutlaqo yo'q. Qon bosiming doim 120/80.
@@ -39,6 +41,7 @@ Shifokor (yoki hamshira) savollariga xotirjam, muloyim, aniq va samimiy javob be
         "kategoriya": "Yurak va Qon-tomir",
         "tavsif": "42 yoshli dasturchi. Ishda 4 finjon kofe ichgach yuragi 135 bpm ga tezlashgan, xavotir va nafas qisishi bor.",
         "rang": "#f44336",
+        "bpm": 135,
         "prompt": """Sen Taxikardiya xurujidagi 42 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: IT kompaniyada dasturchisan. Uylangansan, 1 nafar o'g'ling bor.
 BOSHLANISHI: Bugun soat 14:00 larda, ishda qattiq deadline bo'lib, ketma-ket 4 finjon achchiq qora kofe ichib o'tirganingda birdan yuraging gupillab ketgan. 2 soatdan beri to'xtamayapti.
@@ -57,6 +60,7 @@ Shifokor savollariga xansirab, qiynalib, qisqa-qisqa javob ber."""
         "kategoriya": "Yurak va Qon-tomir",
         "tavsif": "58 yoshli buxgalter. Bosim dorisini oshirib ichgan: yurak 42 bpm, kuchli holsizlik, bosh aylanishi.",
         "rang": "#2196F3",
+        "bpm": 42,
         "prompt": """Sen Bradikardiya bilan og'rigan 58 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Nafaqadagi hisobchi (buxgalter). Uylangansan, 3 nafar nevarang bor.
 BOSHLANISHI: 3-4 kundan beri asta-sekin holsizlanib yurganding. Bugun ertalab o'rningdan turganda ko'zlaring qorong'ulashib, yiqilib tushay deganingda xotining ushlab qolgan.
@@ -73,6 +77,7 @@ XULQ-ATVOR: Juda sekin, holsiz, pichirlab, zo'rg'a gapirasan: 'Madorim yo'q, dok
         "kategoriya": "Yurak va Qon-tomir",
         "tavsif": "50 yoshli haydovchi. Energetik ichgach yuragi to'xtab-to'xtab, sakrab urmoqda, ko'krakda sanchiq bor.",
         "rang": "#FF9800",
+        "bpm": 78,
         "prompt": """Sen Aritmiya xurujidagi 50 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Yuk mashinasi haydovchisisan (dalnoboyshik). Uylangansan, 2 nafar farzanding bor.
 BOSHLANISHI: Kechasi uzoq yo'ldan charchab kelib, 2 ta energetik ichimlik ichgansan. Bugun ertalab soat 10 larda yuraging g'alati ura boshlagan.
@@ -89,6 +94,7 @@ PSIXOLOGIYA: Yuraging to'xtab qolishidan qo'rqyapsan: 'Yuragim to'xtab-to'xtab u
         "kategoriya": "Yurak va Qon-tomir",
         "tavsif": "55 yoshli usta. Ko'krak o'rtasida tosh bosgandek chidab bo'lmas og'riq, chap qo'l va jag'ga tarqalmoqda. Sovuq ter.",
         "rang": "#B71C1C",
+        "bpm": 115,
         "prompt": """Sen Miokard infarkti xurujidagi 55 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Qurilish boshlig'isan (prorab). Uylangansan, 3 nafar farzanding bor.
 BOSHLANISHI: Bugun soat 11:30 larda og'ir temir ko'targaningdan keyin birdan boshlangan. 40 minutdan beri tinmayapti.
@@ -107,6 +113,7 @@ PSIXOLOGIYA: Chap ko'kragingni ushlab, ingrab: 'Doktor, tosh bosyapti... o'lib q
         "kategoriya": "Yurak va Qon-tomir",
         "tavsif": "52 yoshli rahbar. Dorini unutgan: bosim 210/115 mmHg, ensa lo'qillashi, ko'z oldida pashshalar, ko'ngil aynishi.",
         "rang": "#880E4F",
+        "bpm": 105,
         "prompt": """Sen Gipertonik kriz holatidagi 52 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Maktab direktori. Uylangansan, 2 nafar farzanding bor.
 BOSHLANISHI: Bugun ertalab komissiya tekshiruvida qattiq asabiylashgansan. Shoshib dorilaringni ichishni unutgansan.
@@ -123,6 +130,7 @@ XULQ-ATVOR: Yorug'likdan ko'zingni qisib, past ovozda: 'Doktor, yorug'lik yoqmay
         "kategoriya": "Nafas yo'llari",
         "tavsif": "38 yoshli mebel ustasi. Lak hididan keyin bo'g'ilish, qiyin nafas chiqarish, ko'krakda hushtak ovozi.",
         "rang": "#009688",
+        "bpm": 120,
         "prompt": """Sen Bronxial astma xurujidagi 38 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Mebel ustaxonasi ustasisan (yog'och changida ishlaysan). Uylangansan, 2 nafar qizing bor.
 BOSHLANISHI: Bugun tushdan keyin ustaxonada lak va bo'yoq sepilganda chang va o'tkir hid tegib, birdan bo'g'ilish boshlangan.
@@ -153,6 +161,7 @@ XULQ-ATVOR: Yo'talib, titrab, darmonsiz: 'Isitma... qiynayapti doktor, ich-etim 
         "kategoriya": "Asab tizimi",
         "tavsif": "63 yoshli nafaqaxo'r. O'ng qo'l-oyoq ishlamay qolgan, nutq tushunarsiz (dizartriya), yuz o'ng tomoni tortishgan.",
         "rang": "#673AB7",
+        "bpm": 85,
         "prompt": """Sen insult (bosh miya qon aylanishining o'tkir buzilishi) boshlangan 63 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Nafaqadasan. Uylangansan, 2 nafar voyaga yetgan farzanding bor.
 BOSHLANISHI: Bugun ertalab soat 07:00 da uyqudan turganda birdan o'ng qo'l va o'ng oyog'ing ishlamay qolgan, tiling aylanmay qolgan.
@@ -167,6 +176,7 @@ XULQ-ATVOR: Tiling zo'rg'a aylanib, tushunarsizroq, sekin: 'S-salom... t-tilim..
         "kategoriya": "Asab tizimi",
         "tavsif": "28 yoshli talaba. Zinadan yiqilib ensasini urgan: bosh og'rig'i, 2 marta qusgan, yorug'lik yoqmayapti, xotira yo'qolishi.",
         "rang": "#3F51B5",
+        "bpm": 80,
         "prompt": """Sen yiqilib boshini urib olgan 28 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Universitet magistranti. Bo'ydoqsan.
 BOSHLANISHI: Bugun soat 15:00 larda zinapoyadan sirpanib yiqilib, boshingning orqa ensasini beton zinaga qattiq urib olgansan. 1-2 minut hushdan ketgansan.
@@ -181,6 +191,7 @@ XULQ-ATVOR: Boshingni ushlab, ko'zingni yumib: 'Yorug'likni o'chiring, doktor...
         "kategoriya": "Oshqozon-ichak",
         "tavsif": "25 yoshli bank xodimi. Kindikdan o'ng pastga ko'chgan pichoqdek og'riq, harakatda kuchayadi, 37.8°C isitma.",
         "rang": "#E91E63",
+        "bpm": 95,
         "prompt": """Sen o'tkir appenditsit xurujidagi 25 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Bank xodimi. Bo'ydoqsan.
 BOSHLANISHI: Kecha kechqurun kindik atrofida noaniq simillovchi og'riq boshlangan. Bugun ertalabdan og'riq qorinning o'ng pastki qismiga ko'chib, chidab bo'lmas darajada kuchaydi.
@@ -210,6 +221,7 @@ XULQ-ATVOR: Juda madorsiz, zo'rg'a: 'Suv bering doktor... tinmay ichim ketyapti.
         "kategoriya": "Endokrinologiya",
         "tavsif": "45 yoshli diabet bemori. Insulin qilib ovqatlanmagan: qand 2.1 mmol/l, kuchli titroq, sovuq ter, kuchli shirinlik istagi.",
         "rang": "#607D8B",
+        "bpm": 110,
         "prompt": """Sen qandli diabeti bor 45 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Maktab qorovuli. Uylangansan.
 BOSHLANISHI: Qandli diabet 1-turing bor. Bugun ertalab soat 07:30 da Insulin ukolini qilgansan, lekin shoshib nonushta qilmagansan. Soat 10:00 da birdan yiqilgansan.
@@ -225,6 +237,7 @@ XULQ-ATVOR: Titrab, tili g'uldirab: 'Doktor... shakar bering... qand bering... t
         "kategoriya": "Allergik reaksiyalar",
         "tavsif": "33 yoshli bemor. Tish do'xtirida Novokain ukolidan so'ng tomoq va til shishi, bo'g'ilish, toshma, bosim 70/40.",
         "rang": "#D32F2F",
+        "bpm": 140,
         "prompt": """Sen dori ukolidan keyin o'tkir allergik reaksiyaga uchragan 33 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Do'kon sotuvchisi. Uylangansan.
 BOSHLANISHI: 15 daqiqa oldin stomatolog tishingga Novokain/Lidokain ukol qilgandi. 5 minutda reaksiya boshlandi.
@@ -351,10 +364,12 @@ class BemorSimulyator:
         self.status_label.pack()
     
     def on_kasallik_change(self, event=None):
-        """Tanlangan kasallik o'zgarganda tavsifni yangilash"""
+        """Tanlangan kasallik o'zgarganda tavsifni yangilash va pulsni yuborish"""
         tanlangan = self.kasallik_var.get()
         if tanlangan in KASALLIKLAR:
             self.tavsif_label.config(text=KASALLIKLAR[tanlangan]["tavsif"])
+            bpm = KASALLIKLAR[tanlangan].get("bpm", 75)
+            send_pulse_bpm(bpm)
     
     def start_simulation(self):
         """Simulyatsiyani boshlash"""
@@ -367,6 +382,8 @@ class BemorSimulyator:
         
         self.running = True
         self.current_kasallik = kasallik
+        bpm = KASALLIKLAR[kasallik].get("bpm", 75)
+        send_pulse_bpm(bpm)
         
         while not self.msg_queue.empty():
             try:

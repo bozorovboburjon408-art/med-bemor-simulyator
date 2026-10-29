@@ -1,3 +1,4 @@
+from ai_bemor_pulse_bridge import send_pulse_bpm
 import os
 import sys
 import io
@@ -154,6 +155,7 @@ XULQ-ATVOR: Bosh og'rig'idan shikoyat qilib: "Doktor, ensam qattiq lo'qillab og'
         "kategoriya": "Nafas yo'llari",
         "tavsif": "38 yoshli mebel ustasi. Lak hididan keyin bo'g'ilish, qiyin nafas chiqarish, ko'krakda hushtak ovozi.",
         "rang": "#0D9488",
+        "bpm": 120,
         "prompt": """Sen Bronxial astma xurujidagi 38 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Mebel ustaxonasi ustasisan (yog'och changida ishlaysan). Uylangansan, 2 nafar qizing bor.
 BOSHLANISHI: Bugun tushdan keyin ustaxonada lak va bo'yoq sepilganda chang va o'tkir hid tegib, birdan bo'g'ilish boshlangan.
@@ -169,6 +171,7 @@ XULQ-ATVOR: Nafas qisishidan shikoyat qilib: "Doktor, nafas olishim qiyinlashib 
         "kategoriya": "Nafas yo'llari",
         "tavsif": "35 yoshli yuvuvchi. 39.3°C isitma, qaltirash, sarg'ish balg'amli yo'tal, o'ng ko'krakda sanchiq.",
         "rang": "#06B6D4",
+        "bpm": 105,
         "prompt": """Sen o'tkir pnevmoniya bilan og'rigan 35 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Avtomoyka ishchisisan. Uylangansan, 1 nafar o'g'ling bor.
 BOSHLANISHI: 4 kun oldin sovuq suvda mashina yuvib, qattiq shamollagansan.
@@ -183,6 +186,7 @@ XULQ-ATVOR: Dilsiyoh va darmonsiz: "Doktor, isitma va yo'tal meni juda qiynab yu
         "kategoriya": "Asab tizimi",
         "tavsif": "63 yoshli nafaqaxo'r. O'ng qo'l-oyoq ishlamay qolgan, nutq tushunarsiz (dizartriya), yuz o'ng tomoni tortishgan.",
         "rang": "#7C3AED",
+        "bpm": 85,
         "prompt": """Sen insult (bosh miya qon aylanishining o'tkir buzilishi) boshlangan 63 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI VA OILASI: Nafaqadasan. Uylangansan, 2 nafar voyaga yetgan farzanding bor.
 BOSHLANISHI: Bugun ertalab soat 07:00 da uyqudan turganda birdan o'ng qo'l va o'ng oyog'ing ishlamay qolgan, tiling aylanmay qolgan.
@@ -197,6 +201,7 @@ XULQ-ATVOR: Qiynalib: "Doktor, o'ng qo'lim va oyog'im ishlamay qoldi, gapirishim
         "kategoriya": "Asab tizimi",
         "tavsif": "28 yoshli talaba. Zinadan yiqilib ensasini urgan: bosh og'rig'i, 2 marta qusgan, yorug'lik yoqmayapti, xotira yo'qolishi.",
         "rang": "#4F46E5",
+        "bpm": 80,
         "prompt": """Sen yiqilib boshini urib olgan 28 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Universitet magistranti. Bo'ydoqsan.
 BOSHLANISHI: Bugun soat 15:00 larda zinapoyadan sirpanib yiqilib, boshingning orqa ensasini beton zinaga qattiq urib olgansan. 1-2 minut hushdan ketgansan.
@@ -210,6 +215,7 @@ XULQ-ATVOR: Boshini ushlab: "Doktor, yiqilib tushgandim, boshim qattiq og'riyapt
         "kategoriya": "Oshqozon-ichak",
         "tavsif": "25 yoshli bank xodimi. Kindikdan o'ng pastga ko'chgan pichoqdek og'riq, harakatda kuchayadi, 37.8°C isitma.",
         "rang": "#DB2777",
+        "bpm": 95,
         "prompt": """Sen o'tkir appenditsit xurujidagi 25 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Bank xodimi. Bo'ydoqsan.
 BOSHLANISHI: Kecha kechqurun kindik atrofida noaniq simillovchi og'riq boshlangan. Bugun ertalabdan og'riq qorinning o'ng pastki qismiga ko'chib, chidab bo'lmas darajada kuchaydi.
@@ -224,6 +230,7 @@ XULQ-ATVOR: Qornini ushlab: "Doktor, qornimning o'ng tomoni pichoqdek sanchib og
         "kategoriya": "Oshqozon-ichak",
         "tavsif": "30 yoshli haydovchi. Ko'chada ovqatlangach tinimsiz qusish (5 marta), diareya (7 marta), suvsizlanish, 38.2°C isitma.",
         "rang": "#78350F",
+        "bpm": 105,
         "prompt": """Sen ovqatdan qattiq zaharlangan 30 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Haydovchi. Uylangansan.
 BOSHLANISHI: 5 soat oldin yo'ldagi oshxonada dudlangan kolbasa va kremli tort yegansan.
@@ -238,6 +245,7 @@ XULQ-ATVOR: Qornini ushlab: "Doktor, qornim burab og'riyapti, tinmay ichim ketib
         "kategoriya": "Endokrinologiya",
         "tavsif": "45 yoshli diabet bemori. Insulin qilib ovqatlanmagan: qand 2.1 mmol/l, kuchli titroq, sovuq ter, kuchli shirinlik istagi.",
         "rang": "#475569",
+        "bpm": 110,
         "prompt": """Sen qandli diabeti bor 45 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Maktab qorovuli. Uylangansan.
 BOSHLANISHI: Qandli diabet 1-turing bor. Bugun ertalab soat 07:30 da Insulin ukolini qilgansan, lekin shoshib nonushta qilmagansan. Soat 10:00 da birdan yiqilgansan.
@@ -253,6 +261,7 @@ XULQ-ATVOR: Qaltirab: "Doktor, butun tanam titrab ketyapti, ko'nglimga shirinlik
         "kategoriya": "Allergik reaksiyalar",
         "tavsif": "33 yoshli bemor. Tish do'xtirida Novokain ukolidan so'ng tomoq va til shishi, bo'g'ilish, toshma, bosim 70/40.",
         "rang": "#DC2626",
+        "bpm": 135,
         "prompt": """Sen dori ukolidan keyin o'tkir allergik reaksiyaga uchragan 33 yoshli erkak bemorsan. Isming Anvar Karimov.
 KASBI: Do'kon sotuvchisi. Uylangansan.
 BOSHLANISHI: 15 daqiqa oldin stomatolog tishingga Novokain/Lidokain ukol qilgandi. 5 minutda reaksiya boshlandi.
@@ -402,6 +411,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <i class="fa-solid fa-hand-holding-heart"></i>
                     <span>Pult & CPR</span>
                 </a>
+                <!-- USB PULSATOR CONNECT BUTTON (REAL HARDWARE) -->
+                <button id="btn-web-serial-pulse" onclick="togglePulseWebSerial()" class="px-2.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center gap-1.5 shadow transition cursor-pointer shrink-0 animate-pulse" title="Maneken pulsatorini USB orqali ulash (COM port tanlash)">
+                    <i class="fa-brands fa-usb text-sm"></i>
+                    <span id="btn-web-serial-pulse-text">🔌 USB Puls</span>
+                </button>
                 <button id="pwa-bemor-btn" onclick="installCurrentPWA()" class="hidden px-2.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1 shadow transition cursor-pointer">
                     <i class="fa-solid fa-download"></i>
                     <span>O'rnatish</span>
@@ -634,12 +648,16 @@ HTML_CONTENT = """<!DOCTYPE html>
             // 3. Yangi kasallik profiliga ulanamiz
             connectWebSocket();
             
-            // 4. Kompressor va pulsatorga yangi kasallik ritmini yuborish
+            // 4. Kompressor va pulsatorga yangi kasallik ritmini yuborish (WebSerial + Backend)
             if (item.bpm) {
+                // To'g'ridan-to'g'ri brauzerdan USB ga (Render bulutida ham, mahalliy kompyuterda ham ishlaydi)
+                sendWebSerialPulse(item.bpm);
+
+                // Backend orqali ham
                 fetch("/api/compressor", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cmd: `BPM:${item.bpm}` })
+                    body: JSON.stringify({ cmd: `${item.bpm}` })
                 }).catch(() => {});
             }
             
@@ -1214,6 +1232,15 @@ HTML_CONTENT = """<!DOCTYPE html>
         });
 
         // ==================== PWA INSTALL & FULLSCREEN (SENSORLI KIOSK) ====================
+        // Dastur ochilganda Arduinoga boshlang'ich 75 BPM yuborib tizimni faollashtiramiz
+        window.addEventListener('load', () => {
+            fetch('/api/compressor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cmd: '75' })
+            }).catch(() => {});
+        });
+
         let deferredPrompt = null;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -1302,7 +1329,7 @@ async def get_monitor():
 
 @app.post("/api/compressor")
 async def api_compressor(req: CompressorRequest):
-    send_serial_hw_command(req.cmd)
+    send_pulse_bpm(req.cmd)
     return JSONResponse(content={"status": "ok", "cmd": req.cmd})
 
 @app.get("/console", response_class=HTMLResponse)

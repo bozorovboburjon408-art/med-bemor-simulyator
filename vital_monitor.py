@@ -2517,6 +2517,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 return;
             }
             try {
+                try { await fetch('/api/serial/release', { method: 'POST' }); } catch(e) {}
                 webSerialPort = await navigator.serial.requestPort();
                 await webSerialPort.open({ baudRate: 115200 });
                 isSerialConnected = true;
@@ -2571,6 +2572,31 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        // ==================== SEND COMMANDS TO VIBRATION MOTOR HARDWARE ====================
+        async function writeToWebSerial(cmd) {
+            if (webSerialPort && webSerialPort.writable && isSerialConnected) {
+                try {
+                    const encoder = new TextEncoder();
+                    const writer = webSerialPort.writable.getWriter();
+                    await writer.write(encoder.encode(cmd + "\n"));
+                    writer.releaseLock();
+                } catch(e) {
+                    console.warn("WebSerial yozish xatosi:", e);
+                }
+            }
+        }
+
+        function syncHardwarePulse(cmd) {
+            writeToWebSerial(cmd);
+            try {
+                fetch('/api/compressor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cmd: cmd })
+                }).catch(() => {});
+            } catch(e) {}
+        }
+
         async function readWebSerialStream() {
             while (webSerialPort && webSerialPort.readable && isSerialConnected) {
                 try {
@@ -2591,8 +2617,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                                         handleHardwareData(data);
                                     } catch(e) {}
                                 } else if (line.length >= 2) {
-                                    // USB Serial orqali kelgan to'g'ridan-to'g'ri barkod
-                                    processScannedMedication(line);
+                                    // Faqat haqiqiy dori kodi bo'lsa dori deb qabul qilamiz
+                                    // Arduino / vibrator xabarlarini e'tiborsiz qoldiramiz
+                                    if (!line.startsWith(">") && !line.startsWith("=") && !line.startsWith("[") && !line.startsWith("MEDLIFE") && !line.startsWith("BPM")) {
+                                        processScannedMedication(line);
+                                    }
                                 }
                             }
                         }
@@ -3637,6 +3666,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (injBanner) injBanner.classList.add("hidden");
 
             if (type === "dying" || type === "asystole") {
+                syncHardwarePulse("ASYSTOLE");
                 target.hr = 0; target.spo2 = 0; target.sys = 0; target.dia = 0; target.rr = 0;
                 current.hr = 0; current.spo2 = 0; current.sys = 0; current.dia = 0; current.rr = 0;
                 current.rhythm = "asystole";
@@ -3655,6 +3685,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             if (type === "vfib") {
+                syncHardwarePulse("VFIB");
                 target.hr = 230; target.spo2 = 0; target.sys = 0; target.dia = 0; target.rr = 0;
                 current.hr = 230; current.spo2 = 0; current.sys = 0; current.dia = 0; current.rr = 0;
                 current.rhythm = "vfib";
@@ -3673,6 +3704,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
 
             if (type === "normal") {
+                syncHardwarePulse("NORMAL");
                 target = { hr: 75, spo2: 98, sys: 120, dia: 80, rr: 16, temp: 36.6, mode: "normal", rhythm: "sinus" };
                 current.mode = "normal";
                 transitionSteps = 120; totalSteps = 120;
@@ -3683,12 +3715,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
                 stopAsystoleTone();
             } else if (type === "attack" || type === "tachycardia" || type === "taxikardiya") {
+                syncHardwarePulse("TACH");
                 target = { hr: 185, spo2: 88, sys: 210, dia: 125, rr: 34, temp: 37.4, mode: "attack", rhythm: "vtach" };
                 current.mode = "attack";
                 transitionSteps = 120; totalSteps = 120;
                 updateBanner("⚡ XURUJ: O'TKIR TAXIKARDIYA (185 BPM)! AMIODARON YOKI METOPROLOL KERAK!", "bg-amber-100 text-amber-900 border-amber-400 alarm-blink font-black");
                 stopAsystoleTone();
             } else if (type === "brady" || type === "bradicardia" || type === "bradikardiya") {
+                syncHardwarePulse("BRAD");
                 target = { hr: 28, spo2: 91, sys: 85, dia: 50, rr: 12, temp: 36.1, mode: "brady", rhythm: "brady" };
                 current.mode = "brady";
                 transitionSteps = 120; totalSteps = 120;
@@ -3735,6 +3769,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function defibrillateShock(isRemote = false) {
+            syncHardwarePulse("SHOCK");
             if (!isRemote && telemetryWs && telemetryWs.readyState === WebSocket.OPEN) {
                 try {
                     telemetryWs.send(JSON.stringify({ type: "defibrillate" }));
@@ -3797,6 +3832,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                             stageBadge.className = "px-2.5 py-0.5 rounded-lg text-xs font-black bg-amber-100 text-amber-900 border border-amber-400 flex items-center gap-1.5 shadow-sm";
                         }
                     } else if (cprRevivalStage === 2 && Math.round(current.hr) >= 70) {
+                        syncHardwarePulse("ROSC");
                         updateBanner("🟢 2-BOSQICH MUVAFFAQIYAT: BEMOR TO'LIQ O'ZIGA KELDI (BARQAROR 75 BPM, ROSC)!", "bg-emerald-100 text-emerald-900 border-emerald-400 font-black");
                         const stageBadge = document.getElementById("cpr-stage-badge");
                         if (stageBadge) {
@@ -4236,7 +4272,21 @@ async def get_monitor():
 
 @app.post("/api/compressor")
 async def api_compressor(req: CompressorRequest):
+    send_serial_hw_command(req.cmd)
     return JSONResponse(content={"status": "ok", "cmd": req.cmd})
+
+@app.post("/api/serial/release")
+async def api_serial_release():
+    global active_serial_port
+    with serial_lock:
+        if active_serial_port and active_serial_port.is_open:
+            try:
+                active_serial_port.close()
+                print("Backend serial port WebSerial uchun bo'shatildi.")
+            except:
+                pass
+            active_serial_port = None
+    return JSONResponse(content={"status": "released"})
 
 @app.post("/api/scan_medication")
 async def api_scan_medication(req: ScanMedicationRequest):
