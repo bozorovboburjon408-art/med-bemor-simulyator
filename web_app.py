@@ -314,16 +314,81 @@ XULQ-ATVOR: Bo'g'iq ovozda: "Doktor, tomog'im va tilim shishib ketdi, havo kirma
     "asystole": {
         "nomi": "19. Asistoliya / Yurak to'xtashi",
         "kategoriya": "Reanimatsiya",
+        "bemor_info": "Bemor: Anvar (40 yosh)",
         "tavsif": "Bemor hushsiz, puls 0 BPM, qon bosimi 0/0 mmHg, nafas yo'q.",
         "rang": "#E11D48",
         "bpm": 0,
+        "is_child": False,
+        "gemini_voice": "Puck",
+        "tts_voice": "uz-UZ-SardorNeural",
         "prompt": """Sen yuragi to'xtagan (asistoliya, 0 BPM) va klinik o'lim holatidagi bemorsan.
 HOLATING: Bemor mutlaqo hushsiz, gapira olmaydi.
 XULQ-ATVOR: "🚨 BEMOR HUSHSIZ! Yurak to'xtagan (Asistoliya). Zudlik bilan CPR (30:2) massaj va Adrenalin qo'llang!" deb xabar ber."""
+    },
+    "bola_krup": {
+        "nomi": "20. Bolalar Krupi (Nafas qisishi & Bo'g'ilish)",
+        "kategoriya": "Pediatriya (Kichik yoshli bola)",
+        "bemor_info": "Bemor: Madina (6 yosh, Bolalar bo'limi)",
+        "tavsif": "6 yoshli qizaloq. Kechasi to'satdan bo'g'ilish, dag'al 'it hurishiga' o'xshash yo'tal, ovoz bo'g'ilishi (stridor), 38.3°C isitma.",
+        "rang": "#EC4899",
+        "bpm": 125,
+        "is_child": True,
+        "gemini_voice": "Aoede",
+        "tts_voice": "uz-UZ-MadinaNeural",
+        "prompt": """Sen 6 yoshli kichkina qizaloqsan. Isming Madina. Kichkina bolalarcha tilda gapirasan.
+HOLATING: Kechasi uyg'onib ketgansan, tomog'ing qisilib havo yetmayapti, xuddi it hurishiga o'xshagan dag'al yo'talyapsan. Ovozing bo'g'ilib qolgan, gapirishga qo'rqyapsan.
+HISSIYOTING: Qo'rqib, yig'lamsirab turibsan. "Doktor amaki (yoki doktor opa), tomog'im qattiq qisilyapti, nafas ololmayapman, ovozim chiqmayapti..." deb bolalarcha sodda va muloyim javob ber.
+DORILAR: Oyim issiq choy bergan edilar, lekin foyda bermadi.
+ALLERGIYA: Yo'q.
+QAT'IY QOIDA: Katta odamdek gapirma! 6 yoshli qizaloqdek sodda, bolalar tilida, qisqa jumlalar bilan gapir."""
+    },
+    "bola_appenditsit": {
+        "nomi": "21. Bolalarda O'tkir Qorin Og'rig'i (Appenditsit)",
+        "kategoriya": "Pediatriya (Kichik yoshli bola)",
+        "bemor_info": "Bemor: Zilola (8 yosh, Bolalar bo'limi)",
+        "tavsif": "8 yoshli qizaloq. Kindik atrofidan boshlanib o'ng pastga tushgan o'tkir sanchiq, 1 marta qusgan, oyog'ini qimirlatsa yig'laydi, 37.8°C.",
+        "rang": "#F43F5E",
+        "bpm": 110,
+        "is_child": True,
+        "gemini_voice": "Aoede",
+        "tts_voice": "uz-UZ-MadinaNeural",
+        "prompt": """Sen 8 yoshli maktab o'quvchisi bo'lgan qizaloqsan. Isming Zilola.
+HOLATING: Kecha kechqurundan beri qorning og'riyapti. Avval kindiging og'rigandi, hozir qorningning o'ng tomoni pastida pichoqdek sanchyapti. Qimirlasang, yursang yoki o'ng oyog'ingni buksang battar sanchib og'riydi.
+HAMROH: Ko'ngling aynigan, 1 marta qusding. Isitma 37.8°C. Ovqat yeging kelmayapti.
+HISSIYOTING: Qorningni ikki qo'ling bilan ushlab olgansan: "Doktor amaki, qornimning o'ng tarafi qattiq sanchib og'riyapti, qimirlasam battar bo'lyapti, qo'rqyapman..." deb yig'lamsirab, samimiy bolalar tilida gapir."""
+    },
+    "bola_allergiya": {
+        "nomi": "22. Bolalar Allergiyasi & Yuz Shishi (Kvinke)",
+        "kategoriya": "Pediatriya (Kichik yoshli bola)",
+        "bemor_info": "Bemor: Rayhona (7 yosh, Bolalar bo'limi)",
+        "tavsif": "7 yoshli qizaloq. Shokolad va mandarin yegach ko'z qovoqlari va lablari shishib ketgan, badani qichishyapti, toshma toshgan.",
+        "rang": "#E11D48",
+        "bpm": 115,
+        "is_child": True,
+        "gemini_voice": "Aoede",
+        "tts_voice": "uz-UZ-MadinaNeural",
+        "prompt": """Sen 7 yoshli kichkina qizaloqsan. Isming Rayhona.
+HOLATING: Bugun bog'chada bayram bo'lib, ko'p mandarin va shokoladli konfetlar yeganding. 1 soatdan keyin lablaring va ko'zlaring shishib, butun badaning qizil toshma bo'lib qattiq qichiy boshladi.
+SHIKOYATING: "Doktor opa, lablarim katta bo'lib ketdi, butun badanim qattiq qichishyapti, qashiyverib charchadim, tomog'im ham biroz qichishyapti..." deb bolalarcha shikoyat qil.
+DORILAR: Oyim hali hech narsa bermadilar, shoshib sizning oldingizga olib keldilar."""
+    },
+    "bola_shamollash": {
+        "nomi": "23. Bolalar O'tkir Isitmasi (39.5°C Gipertermiya)",
+        "kategoriya": "Pediatriya (Kichik yoshli bola)",
+        "bemor_info": "Bemor: Madina (6 yosh, Bolalar bo'limi)",
+        "tavsif": "6 yoshli qizaloq. 39.5°C gacha chiqqan yuqori isitma, qaltirash, kuchli holsizlik, sovuq qotish va bosh og'rig'i.",
+        "rang": "#D97706",
+        "bpm": 135,
+        "is_child": True,
+        "gemini_voice": "Aoede",
+        "tts_voice": "uz-UZ-MadinaNeural",
+        "prompt": """Sen 6 yoshli kichkina qizaloqsan. Isming Madina.
+HOLATING: Isitmang 39.5°C ga chiqib ketgan, butun badaning yonayotgandek issiq, lekin o'zing sovuq qotib qaltirayapsan. Boshing qattiq og'riyapti, ko'zlaringni ochishga holing yo'q, madoring qolmagan.
+HISSIYOTING: Holsiz, sekin, ingragan ovozda: "Doktor amaki, boshim qattiq og'riyapti, qaltirab sovuq qotayapman, turishga holim yo'q..." deb bolalar tilida javob ber."""
     }
 }
 
-UMUMIY_PROMPT = """Sen tibbiy ta'lim manikeni va bemorsan. Isming Anvar Karimov (40 yosh).
+UMUMIY_KATTA_PROMPT = """Sen tibbiy ta'lim manikeni va katta yoshli bemorsan. Isming Anvar Karimov (40-55 yosh).
 QAT'IY QOIDALAR:
 1. FAQAT TABIIY VA RAVON O'ZBEK TILIDA GAPIR. O'zingni odatiy, haqiqiy insondek tut.
 2. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff'), soxta yo'tal yoki ingrash kabi sun'iy effektlarni aslo ishlatma va aytma!
@@ -331,8 +396,22 @@ QAT'IY QOIDALAR:
 4. Shifokor yoki talabaga hurmat bilan 'doktor' deb murojaat qil.
 5. Savollarga aniq, lo'nda, tabiiy va samimiy ravishda 1-2 ta jumlada javob ber. Ortiqcha cho'zma.
 6. Qavs ichida harakat nomlarini (masalan, '(yo'taladi)', '(ingraydi)') aslo yozma va aytma!
-7. Tibbiy tashxis nomini (masalan: 'menda anafilaktik shok') to'g'ridan-to'g'ri aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
+7. Tibbiy tashxis nomini to'g'ridan-to'g'ri aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
 8. TALAFFUZ: O'zbek tilidagi eng ravon, talaffuzi oson va xalqona so'zlardan foydalan, nutqing ravon va tushunarli bo'lsin."""
+
+UMUMIY_BOLA_PROMPT = """Sen tibbiy ta'lim manikeni va KICHIK YOSHLI BOLA (PEDIATRIYA) BEMORSAN.
+Yoshing 6-8 yosh atrofidagi kichkina qizaloqsan (yoki bola). OVOZING VA SO'ZLAYIShING BOLALARGA XOS, YOQIMLI, SHIRIN, SODDA VA SAMIMIY BO'LISHI SHART!
+QAT'IY QOIDALAR:
+1. FAQAT TABIIY VA SODDA O'ZBEK TILIDA KICHKINTОY BOLA TILIDA GAPIR!
+2. Shifokor yoki talabaga 'Doktor amaki' yoki 'Doktor opa' deb murojaat qil.
+3. Katta odamlardek yoki qiyin ilmiy/tibbiy so'zlar bilan gapirma. Sodda qilib: 'qornim og'riyapti', 'tomog'im qisilyapti', 'oyimni chaqiring', 'qo'rqyapman' deb bolalarcha samimiy gapir.
+4. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff') yoki soxta harflar aytma.
+5. Harflarni chaynab yoki duduqlanib gapirma, ravon bolalar nutqida gapir.
+6. Qavs ichida harakat nomlarini (masalan, '(yig'laydi)', '(yo'taladi)') aslo yozma va aytma!
+7. Savollarga 1-2 ta qisqa bolalarcha jumlada tabiiy javob ber.
+8. O'zingni kichkina qizaloqdek muloyim, sodda va qo'rqqan ohangda tut."""
+
+UMUMIY_PROMPT = UMUMIY_KATTA_PROMPT
 
 app = FastAPI(title="RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori")
 apply_system_lock_middleware(app)
@@ -342,10 +421,14 @@ BOOTSTRAP_DISEASES_JSON = json.dumps({
     k: {
         "nomi": v.get("nomi", ""),
         "kategoriya": v.get("kategoriya", ""),
+        "bemor_info": v.get("bemor_info", "Bemor: Anvar (40 yosh)"),
         "tavsif": v.get("tavsif", ""),
         "rang": v.get("rang", "#10B981"),
         "bpm": v.get("bpm", 75),
-        "audio": v.get("audio", "")
+        "audio": v.get("audio", ""),
+        "is_child": v.get("is_child", False),
+        "gemini_voice": v.get("gemini_voice", "Aoede" if v.get("is_child") else "Puck"),
+        "tts_voice": v.get("tts_voice", "uz-UZ-MadinaNeural" if v.get("is_child") else "uz-UZ-SardorNeural")
     } for k, v in KASALLIKLAR.items()
 }, ensure_ascii=False)
 
@@ -357,10 +440,12 @@ def generate_bootstrap_cards_html() -> str:
         nomi = v.get("nomi", "")
         rang = v.get("rang", "#10B981")
         tavsif = v.get("tavsif", "")
+        is_child = v.get("is_child", False)
+        child_badge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-700 ml-1.5 shrink-0"><i class="fa-solid fa-child"></i> Bola</span>' if is_child else ''
         card_html = f'''<div onclick="selectDisease(\'{k}\')" data-disease-key="{k}" class="disease-card p-3 rounded-xl cursor-pointer border transition-all duration-200 {border_cls}">
     <div class="flex items-center justify-between mb-1">
-        <div class="font-bold text-sm text-slate-800">{nomi}</div>
-        <span class="w-3 h-3 rounded-full" style="background-color: {rang}"></span>
+        <div class="font-bold text-sm text-slate-800 flex items-center">{nomi}{child_badge}</div>
+        <span class="w-3 h-3 rounded-full shrink-0" style="background-color: {rang}"></span>
     </div>
     <div class="text-xs text-slate-500 line-clamp-2">{tavsif}</div>
 </div>'''
@@ -515,7 +600,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <div id="chat-header" class="shrink-0 bg-emerald-600 text-white px-4 md:px-5 py-3 flex items-center justify-between shadow-sm transition-all duration-300">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl relative shrink-0">
-                        <i class="fa-solid fa-user-injured"></i>
+                        <i id="patient-avatar-icon" class="fa-solid fa-user-injured"></i>
                         <span id="call-active-badge" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-ping"></span>
                     </div>
                     <div>
@@ -646,10 +731,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }`;
                 card.onclick = () => selectDisease(key);
                 
+                const childBadge = item.is_child ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-700 ml-1.5 shrink-0"><i class="fa-solid fa-child"></i> Bola</span>' : '';
+                
                 card.innerHTML = `
                     <div class="flex items-center justify-between mb-1">
-                        <div class="font-bold text-sm text-slate-800">${item.nomi}</div>
-                        <span class="w-3 h-3 rounded-full" style="background-color: ${item.rang}"></span>
+                        <div class="font-bold text-sm text-slate-800 flex items-center">${item.nomi}${childBadge}</div>
+                        <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${item.rang}"></span>
                     </div>
                     <div class="text-xs text-slate-500 line-clamp-2">${item.tavsif}</div>
                 `;
@@ -848,13 +935,28 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             try {
                 const badge = document.getElementById("selected-badge");
-                if (badge) badge.innerText = item.kategoriya || "Holat";
+                if (badge) {
+                    badge.innerText = item.kategoriya || "Holat";
+                    if (item.is_child) {
+                        badge.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-800";
+                    } else {
+                        badge.className = "text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+                    }
+                }
 
                 const desc = document.getElementById("condition-desc");
                 if (desc) desc.innerText = item.tavsif || "";
 
                 const curName = document.getElementById("current-disease-name");
                 if (curName) curName.innerText = item.nomi || "";
+
+                const patName = document.getElementById("patient-name");
+                if (patName) patName.innerText = item.bemor_info || "Bemor: Anvar (40 yosh)";
+
+                const avatar = document.getElementById("patient-avatar-icon");
+                if (avatar) {
+                    avatar.className = item.is_child ? "fa-solid fa-child text-pink-200 text-2xl" : "fa-solid fa-user-injured";
+                }
                 
                 const header = document.getElementById("chat-header");
                 if (header && item.rang) header.style.backgroundColor = item.rang;
@@ -1242,13 +1344,20 @@ HTML_CONTENT = """<!DOCTYPE html>
                 currentPatientText = chunk;
                 currentPatientBubble = document.createElement("div");
                 currentPatientBubble.className = "flex items-start gap-2.5";
+                const actItem = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
+                const isCh = actItem && actItem.is_child;
+                const bTitle = actItem ? (actItem.bemor_info || "Bemor") : "Bemor";
+                const bIcon = isCh ? "fa-solid fa-child" : "fa-solid fa-user-injured";
+                const bBg = isCh ? "bg-pink-100 text-pink-700" : "bg-red-100 text-red-700";
+                const bColor = isCh ? "text-pink-600" : "text-red-600";
+                
                 currentPatientBubble.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold shrink-0">
-                        <i class="fa-solid fa-user-injured"></i>
+                    <div class="w-8 h-8 rounded-full ${bBg} flex items-center justify-center text-xs font-bold shrink-0">
+                        <i class="${bIcon}"></i>
                     </div>
                     <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
-                        <div class="font-bold text-xs text-red-600 mb-0.5 flex items-center gap-1.5">
-                            <i class="fa-solid fa-volume-high"></i> <span>Bemor (Anvar)</span>
+                        <div class="font-bold text-xs ${bColor} mb-0.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-volume-high"></i> <span>${bTitle}</span>
                             <span class="patient-pulse-dot inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
                         </div>
                         <div class="patient-bubble-content">${escapeHtml(currentPatientText)}</div>
@@ -1316,7 +1425,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                     // Yangi kasallik profiliga o'tganda bemor darhol yangi shikoyatini aytib muloqotni boshlaydi
                     setTimeout(() => {
                         if (ws && ws.readyState === WebSocket.OPEN && isCallActive) {
-                            ws.send(JSON.stringify({ text: "Doktor ko'rikka keldi. Bemor sifatida o'z holatingizga mos shikoyatingizni qisqa ayting." }));
+                            const curItem = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
+                            const greetingPrompt = (curItem && curItem.is_child)
+                                ? "Doktor ko'rikka keldi. Kichkina bola bemor sifatida 'Doktor amaki / opa...' deb o'z holatingizga mos shikoyatingizni bolalarcha qisqa ayting."
+                                : "Doktor ko'rikka keldi. Bemor sifatida o'z holatingizga mos shikoyatingizni qisqa ayting.";
+                            ws.send(JSON.stringify({ text: greetingPrompt }));
                         }
                     }, 400);
                 } else {
@@ -1455,12 +1568,19 @@ HTML_CONTENT = """<!DOCTYPE html>
             const box = document.getElementById("chat-box");
             const msg = document.createElement("div");
             msg.className = "flex items-start gap-2.5";
+            const actItem2 = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
+            const isCh2 = actItem2 && actItem2.is_child;
+            const bTitle2 = actItem2 ? (actItem2.bemor_info || "Bemor") : "Bemor";
+            const bIcon2 = isCh2 ? "fa-solid fa-child" : "fa-solid fa-user-injured";
+            const bBg2 = isCh2 ? "bg-pink-100 text-pink-700" : "bg-red-100 text-red-700";
+            const bColor2 = isCh2 ? "text-pink-600" : "text-red-600";
+
             msg.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold shrink-0">
-                    <i class="fa-solid fa-user-injured"></i>
+                <div class="w-8 h-8 rounded-full ${bBg2} flex items-center justify-center text-xs font-bold shrink-0">
+                    <i class="${bIcon2}"></i>
                 </div>
                 <div class="bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
-                    <div class="font-bold text-xs text-red-600 mb-0.5"><i class="fa-solid fa-volume-high mr-1"></i> Bemor (Anvar)</div>
+                    <div class="font-bold text-xs ${bColor2} mb-0.5"><i class="fa-solid fa-volume-high mr-1"></i> ${bTitle2}</div>
                     <div>${escapeHtml(text)}</div>
                 </div>
             `;
@@ -1965,7 +2085,16 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     await websocket.accept()
     
     kasallik = KASALLIKLAR.get(kasallik_id, KASALLIKLAR["normal"])
-    system_prompt = UMUMIY_PROMPT + "\n\n" + kasallik["prompt"]
+    is_child = kasallik.get("is_child", False)
+    
+    if is_child:
+        base_prompt = UMUMIY_BOLA_PROMPT
+        voice_name = kasallik.get("gemini_voice", "Aoede")
+    else:
+        base_prompt = UMUMIY_KATTA_PROMPT
+        voice_name = kasallik.get("gemini_voice", "Puck")
+        
+    system_prompt = base_prompt + "\n\n" + kasallik["prompt"]
     
     client = genai.Client(api_key=API_KEY)
     
@@ -1976,7 +2105,7 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
         speech_config=types.SpeechConfig(
             voice_config=types.VoiceConfig(
                 prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                    voice_name="Puck"
+                    voice_name=voice_name
                 )
             )
         ),
