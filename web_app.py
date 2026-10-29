@@ -556,10 +556,10 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Messages Log (Only this area scrolls internally) -->
+            <!-- Messages Log (Faqat xabarlar maydoni ichki skroll bo'ladi) -->
             <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-0">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
-                    🟢 <b>Jonli simulyatsiya faol!</b> Pastdagi katta <b>"Jonli Qo'ng'iroq"</b> tugmasini bosib bemor bilan ovozli muloqot qiling. Mikrofonni yoqib savolingizni bering, bemor darhol javob beradi.
+                    🟢 <b>Jonli simulyatsiya faol!</b> Shifokor yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Yuqoridagi <b>"Jonli Qo'ng'iroq"</b> tugmasi orqali uzluksiz ovozli suhbat qurishingiz mumkin.
                 </div>
             </div>
 
@@ -577,42 +577,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Bottom Action Controller (Pinned permanently at bottom) -->
-            <div class="shrink-0 p-3 bg-white border-t border-slate-200 flex flex-col gap-2.5 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
-                <!-- Primary Row: Prominent Live Call Button & Volume Controls -->
-                <div class="flex items-center gap-2">
-                    <!-- Big Touchscreen Live Call Toggle Button -->
-                    <button id="bottom-call-btn" onclick="toggleLiveCall()" 
-                            class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-black text-sm md:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg transition-all cursor-pointer">
-                        <i id="bottom-call-icon" class="fa-solid fa-phone-volume text-lg"></i>
-                        <span id="bottom-call-text">JONLI QO'NG'IROQ (SUHBATNI BOSHLASH)</span>
-                    </button>
-
-                    <!-- Bottom Volume Slider & Mute Toggle -->
-                    <div class="flex items-center bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl px-3 py-2 space-x-2 shrink-0 transition" title="Bemor ovozi balandligi">
-                        <button id="bottom-speaker-btn" type="button" onclick="toggleSpeaker()" class="text-slate-600 hover:text-indigo-600 transition text-base cursor-pointer" title="Ovozni o'chirish / yoqish">
-                            <i id="bottom-speaker-icon" class="fa-solid fa-volume-low text-indigo-600"></i>
-                        </button>
-                        <input type="range" id="bottom-volume-slider" min="0" max="1" step="0.05" value="0.35"
-                               oninput="changeVolume(this.value)"
-                               class="w-16 sm:w-20 md:w-24 h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-indigo-600" title="Ovoz balandligi">
-                        <span id="bottom-volume-val" class="text-xs font-mono font-bold text-slate-700 w-8 text-right">35%</span>
-                    </div>
-
-                    <!-- Reset Chat -->
-                    <button onclick="resetChat()" title="Suhbatni boshidan boshlash / tozalash"
-                            class="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border border-slate-200 transition text-sm shrink-0 cursor-pointer">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                </div>
-
-                <!-- Secondary Row: Optional Text Form -->
+            <!-- Input area (Pastda doimiy qotib turadi) -->
+            <div class="shrink-0 p-3 bg-white border-t border-slate-200">
                 <form id="chat-form" onsubmit="sendMessage(event)" class="flex items-center gap-2">
-                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing (ixtiyoriy)..." 
+                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing..." 
                             autocomplete="off"
-                            class="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 focus:bg-white transition">
+                            class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <button type="submit" id="send-btn" 
-                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-xs md:text-sm transition flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0">
+                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                         <span>Yuborish</span>
                         <i class="fa-solid fa-paper-plane text-xs"></i>
                     </button>
@@ -1084,15 +1056,16 @@ HTML_CONTENT = """<!DOCTYPE html>
                 player.volume = effectiveVol;
             }
             
-            // Top Header Volume
             const slider = document.getElementById("volume-slider");
             if (slider && speakerEnabled) {
                 slider.value = currentVolume;
             }
+            
             const valEl = document.getElementById("volume-val");
             if (valEl) {
                 valEl.innerText = `${Math.round(effectiveVol * 100)}%`;
             }
+            
             const icon = document.getElementById("speaker-icon");
             if (icon) {
                 if (!speakerEnabled || effectiveVol === 0) {
@@ -1101,26 +1074,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     icon.className = "fa-solid fa-volume-low";
                 } else {
                     icon.className = "fa-solid fa-volume-high";
-                }
-            }
-
-            // Bottom Controller Volume
-            const bottomSlider = document.getElementById("bottom-volume-slider");
-            if (bottomSlider && speakerEnabled) {
-                bottomSlider.value = currentVolume;
-            }
-            const bottomValEl = document.getElementById("bottom-volume-val");
-            if (bottomValEl) {
-                bottomValEl.innerText = `${Math.round(effectiveVol * 100)}%`;
-            }
-            const bottomIcon = document.getElementById("bottom-speaker-icon");
-            if (bottomIcon) {
-                if (!speakerEnabled || effectiveVol === 0) {
-                    bottomIcon.className = "fa-solid fa-volume-xmark text-rose-500";
-                } else if (effectiveVol < 0.4) {
-                    bottomIcon.className = "fa-solid fa-volume-low text-indigo-600";
-                } else {
-                    bottomIcon.className = "fa-solid fa-volume-high text-indigo-600";
                 }
             }
         }
@@ -1245,9 +1198,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         function updateCallUI(active) {
             const btn = document.getElementById("live-call-btn");
             const txt = document.getElementById("live-call-text");
-            const bottomBtn = document.getElementById("bottom-call-btn");
-            const bottomIcon = document.getElementById("bottom-call-icon");
-            const bottomTxt = document.getElementById("bottom-call-text");
             const callBadge = document.getElementById("call-active-badge");
             const callIndicator = document.getElementById("call-indicator");
             const header = document.getElementById("chat-header");
@@ -1256,18 +1206,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (btn) {
                     btn.className = "px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer animate-pulse";
                 }
-                if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-slash mr-1"></i> To'xtatish`;
-                
-                if (bottomBtn) {
-                    bottomBtn.className = "flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-black text-sm md:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-red-500/30 transition-all cursor-pointer animate-pulse";
-                }
-                if (bottomIcon) {
-                    bottomIcon.className = "fa-solid fa-phone-slash text-lg animate-bounce";
-                }
-                if (bottomTxt) {
-                    bottomTxt.innerText = "SUHBATNI TO'XTATISH (MIKROFONNI O'CHIRISH)";
-                }
-
+                if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-slash mr-1"></i> Qo'ng'iroqni Tugatish`;
                 if (callBadge) callBadge.classList.remove("hidden");
                 if (callIndicator) callIndicator.classList.remove("hidden");
                 if (header) {
@@ -1280,17 +1219,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                     btn.className = "px-3.5 py-1.5 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer";
                 }
                 if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-volume text-emerald-600 mr-1"></i> Jonli Qo'ng'iroq`;
-                
-                if (bottomBtn) {
-                    bottomBtn.className = "flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-black text-sm md:text-base flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg transition-all cursor-pointer";
-                }
-                if (bottomIcon) {
-                    bottomIcon.className = "fa-solid fa-phone-volume text-lg";
-                }
-                if (bottomTxt) {
-                    bottomTxt.innerText = "JONLI QO'NG'IROQ (SUHBATNI BOSHLASH)";
-                }
-
                 if (callBadge) callBadge.classList.add("hidden");
                 if (callIndicator) callIndicator.classList.add("hidden");
                 if (header) {
