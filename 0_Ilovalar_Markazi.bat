@@ -1,22 +1,21 @@
-﻿@echo off
+@echo off
 chcp 65001 > nul
 cd /d "%~dp0"
-title MedLife - Sensorli Tibbiyot Kiosk Markazi
+title MedLife - Sensorli Ekran Ilovalar Markazi
 
 echo ====================================================================
-echo   🏥 MEDLIFE: SENSORLI TIBBIYOT KIOSK MARKAZI (BARCHA ILOLAVAR)
+echo   🏥 MEDLIFE: SENSORLI EKRAN ILOVALAR MARKAZI (KIOSK HUB)
 echo ====================================================================
 echo.
 
-:: Server ishlayotganini tekshirish yoki ishga tushirish
 netstat -ano | findstr :8000 > nul
 if %errorlevel% neq 0 (
-    echo Server ishga tushirilmoqda...
+    echo Kiosk Hub serveri ishga tushirilmoqda...
     start /b python web_app.py > nul 2>&1
     timeout /t 2 /nobreak > nul
 )
 
-echo Sensorli Kiosk Markazi ochilmoqda...
+echo Kiosk Hub ochilmoqda...
 if exist "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" (
     start "" "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --app=http://localhost:8000/hub --start-fullscreen
 ) else if exist "C:\Program Files\Microsoft\Edge\Application\msedge.exe" (

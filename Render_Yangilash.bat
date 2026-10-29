@@ -1,11 +1,14 @@
 @echo off
+chcp 65001 > nul
 cd /d "%~dp0"
+title MedLife - GitHub va Render Yangilash
+
 echo ========================================================
-echo   RENDER VA GITHUBGA YUBORISH (V3 TO'LIQ TUZATILDI)
+echo   RENDER VA GITHUBGA YUBORISH (MEDLIFE ENGINE)
 echo ========================================================
 echo.
 git add web_app.py vital_monitor.py static/sw.js Render_Yangilash.bat ai_bemor_pulse_bridge.py
-git commit -m "Auto update: clean JS and ServiceWorker v3" 2>nul
+git commit -m "Auto update: system sync and clean project files" 2>nul
 echo.
 echo GitHub va Render serveriga yuklanmoqda...
 git push origin main

@@ -1,22 +1,21 @@
-﻿@echo off
+@echo off
 chcp 65001 > nul
 cd /d "%~dp0"
-title MedLife - AI Bemor Simulyatori (Sensorli Ekran)
+title MedLife - AI Bemor Simulyatori
 
 echo ====================================================================
-echo   🩺 MEDLIFE: AI BEMOR SIMULYATORI (SENSORLI ILOVA)
+echo   🩺 MEDLIFE: 1. AI BEMOR SIMULYATORI (JONLI MULOQOT VA PULS)
 echo ====================================================================
 echo.
 
-:: Server ishlayotganini tekshirish yoki ishga tushirish
 netstat -ano | findstr :8000 > nul
 if %errorlevel% neq 0 (
-    echo Server ishga tushirilmoqda...
+    echo AI Bemor serveri ishga tushirilmoqda...
     start /b python web_app.py > nul 2>&1
     timeout /t 2 /nobreak > nul
 )
 
-echo Sensorli ekran ilovasi ochilmoqda...
+echo AI Bemor ilovasi ochilmoqda...
 if exist "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" (
     start "" "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --app=http://localhost:8000 --start-fullscreen
 ) else if exist "C:\Program Files\Microsoft\Edge\Application\msedge.exe" (
