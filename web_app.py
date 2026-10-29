@@ -349,6 +349,26 @@ BOOTSTRAP_DISEASES_JSON = json.dumps({
     } for k, v in KASALLIKLAR.items()
 }, ensure_ascii=False)
 
+def generate_bootstrap_cards_html() -> str:
+    cards = []
+    for idx, (k, v) in enumerate(KASALLIKLAR.items()):
+        is_first = (idx == 0)
+        border_cls = "border-indigo-600 bg-indigo-50/70 shadow-sm" if is_first else "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+        nomi = v.get("nomi", "")
+        rang = v.get("rang", "#10B981")
+        tavsif = v.get("tavsif", "")
+        card_html = f'''<div onclick="selectDisease(\'{k}\')" data-disease-key="{k}" class="disease-card p-3 rounded-xl cursor-pointer border transition-all duration-200 {border_cls}">
+    <div class="flex items-center justify-between mb-1">
+        <div class="font-bold text-sm text-slate-800">{nomi}</div>
+        <span class="w-3 h-3 rounded-full" style="background-color: {rang}"></span>
+    </div>
+    <div class="text-xs text-slate-500 line-clamp-2">{tavsif}</div>
+</div>'''
+        cards.append(card_html)
+    return "\n".join(cards)
+
+BOOTSTRAP_CARDS_HTML = generate_bootstrap_cards_html()
+
 HTML_CONTENT = """<!DOCTYPE html>
 <html lang="uz">
 <head>
@@ -463,13 +483,13 @@ HTML_CONTENT = """<!DOCTYPE html>
 
             <!-- Disease List -->
             <div id="disease-list" class="flex-1 overflow-y-auto chat-scroll space-y-2 pr-1 max-h-[480px]">
-                <div class="text-xs text-slate-400 p-2 text-center">Yuklanmoqda...</div>
+                __BOOTSTRAP_CARDS__
             </div>
 
             <!-- Current condition card -->
             <div id="condition-card" class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                 <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Klinik Tavsif:</div>
-                <p id="condition-desc" class="text-xs text-slate-700 leading-relaxed">Tanlangan kasallik tavsifi bu yerda ko'rinadi.</p>
+                <p id="condition-desc" class="text-xs text-slate-700 leading-relaxed">40 yoshli sog'lom maktab o'qituvchisi. Yillik profilaktik ko'rikka kelgan. Shikoyati yo'q, qon bosimi 120/80.</p>
                 
                 <!-- Heartbeat sound player if applicable -->
                 <div id="heart-sound-container" class="mt-2.5 pt-2 border-t border-slate-200 hidden">
@@ -1430,7 +1450,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     </script>
 </body>
 </html>
-""".replace("__BOOTSTRAP_DISEASES__", BOOTSTRAP_DISEASES_JSON)
+""".replace("__BOOTSTRAP_DISEASES__", BOOTSTRAP_DISEASES_JSON).replace("__BOOTSTRAP_CARDS__", BOOTSTRAP_CARDS_HTML)
 
 # Static files and PWA assets
 os.makedirs("static", exist_ok=True)
