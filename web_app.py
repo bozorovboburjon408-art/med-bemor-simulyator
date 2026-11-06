@@ -394,7 +394,7 @@ QAT'IY QOIDALAR:
 2. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff'), soxta yo'tal yoki ingrash kabi sun'iy effektlarni aslo ishlatma va aytma!
 3. Harflarni chaynab, duduqlanib (masalan: 's-salom', 't-tilim') yoki so'zlarni bo'lib-bo'lib gapirma. To'liq, ravon va to'g'ri so'zlar bilan gapir.
 4. Shifokor yoki talabaga hurmat bilan 'doktor' deb murojaat qil.
-5. Savollarga aniq, lo'nda, tabiiy va samimiy ravishda 1-2 ta jumlada javob ber. Ortiqcha cho'zma.
+5. TEZKOR VA LO'NDA JAVOB: Savollarga aniq, lo'nda va qisqa (1-2 ta jumlada) darhol javob ber. Ortiqcha cho'zma!
 6. Qavs ichida harakat nomlarini (masalan, '(yo'taladi)', '(ingraydi)') aslo yozma va aytma!
 7. Tibbiy tashxis nomini to'g'ridan-to'g'ri aytma, faqat o'zingdagi shikoyatlarni tabiiy tilda tushuntir.
 8. TALAFFUZ: O'zbek tilidagi eng ravon, talaffuzi oson va xalqona so'zlardan foydalan, nutqing ravon va tushunarli bo'lsin.
@@ -409,7 +409,7 @@ QAT'IY QOIDALAR:
 4. Hech qanday soxta undovlar ('Hff', 'Kxx', 'Ahh', 'Ohh', 'Uff') yoki soxta harflar aytma.
 5. Harflarni chaynab yoki duduqlanib gapirma, ravon bolalar nutqida gapir.
 6. Qavs ichida harakat nomlarini (masalan, '(yig'laydi)', '(yo'taladi)') aslo yozma va aytma!
-7. Savollarga 1-2 ta qisqa bolalarcha jumlada tabiiy javob ber.
+7. TEZKOR VA LO'NDA JAVOB: Savollarga 1-2 ta qisqa bolalarcha jumlada darhol javob ber.
 8. O'zingni kichkina qizaloqdek muloyim, sodda va qo'rqqan ohangda tut.
 9. TUGALLANGAN NUTQ: Aytayotgan gapingni oxirigacha yetkaz. Gapning oxirini aslo yeb qo'yma yoki chala qoldirma, to'liq ayt!"""
 
@@ -1123,8 +1123,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function isAudioCurrentlyPlaying() {
-            // Dinamik ovozi va xona aks-sadosi (reverb) to'liq so'ngunicha mikrofonni bloklash (+350ms zaxira)
-            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime + 0.35));
+            // Dinamik ovozi tugashi bilan mikrofonni tezda ochish (atigi +150ms zaxira)
+            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime + 0.15));
         }
 
         function stopAllAudioPlayback() {
@@ -1234,37 +1234,34 @@ HTML_CONTENT = """<!DOCTYPE html>
                 micStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         channelCount: 1,
+                        sampleRate: 16000,
                         echoCancellation: true,
                         noiseSuppression: true,
                         autoGainControl: true
                     }
                 });
 
-                micAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // 16kHz to'g'ridan-to'g'ri apparat oqimi (resampling kechikishini bartaraf qilish)
+                try {
+                    micAudioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                } catch(e) {
+                    micAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
                 if (micAudioContext.state === 'suspended') {
                     await micAudioContext.resume();
                 }
                 const source = micAudioContext.createMediaStreamSource(micStream);
 
-                // 2048 samples chunk
-                micProcessor = micAudioContext.createScriptProcessor(2048, 1, 1);
+                // Tezkor 1024 sample bufer (atigi 64ms paket kechikishi)
+                micProcessor = micAudioContext.createScriptProcessor(1024, 1, 1);
                 window._micProcessor = micProcessor; // Brauzer xotiradan o'chirib yubormasligi uchun
                 
                 micProcessor.onaudioprocess = (e) => {
                     if (!isCallActive || !ws || ws.readyState !== WebSocket.OPEN) return;
-                    // Bemor gapirayotganda va gap tugagach 350ms davomida dinamik aks-sadosini yubormaslik (gap oxiri uzilib qolmasligi uchun)
+                    // Bemor gapirayotgan paytda mikrofonni bloklash (aks-sado tushmasligi uchun)
                     if (isAudioCurrentlyPlaying()) return;
                     
                     const input = e.inputBuffer.getChannelData(0);
-                    
-                    // Shovqin / Sukunat filtri (Noise Gate): xonadagi shivir-shivir va nafas shovqinini Gemini ga yuborib gapni uzib qo'ymaslik
-                    let sum = 0;
-                    for (let i = 0; i < input.length; i++) {
-                        sum += input[i] * input[i];
-                    }
-                    const rms = Math.sqrt(sum / input.length);
-                    if (rms < 0.012) return;
-                    
                     const pcm16 = downsampleTo16k(input, micAudioContext.sampleRate);
                     if (pcm16 && pcm16.length > 0) {
                         ws.send(pcm16.buffer);
@@ -1485,7 +1482,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                                 updateStatus("✅ Tayyor", "emerald");
                             }
                         }
-                    }, 80);
+                    }, 35);
                 } else if (data.type === "interrupted") {
                     // Agar dinamikda hali audio yangrayotgan bo'lsa, soxta aks-sado tufayli gapni uzib tashlamaymiz!
                     if (!isAudioCurrentlyPlaying()) {
@@ -2128,7 +2125,17 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                 )
             )
         ),
-        thinking_config=types.ThinkingConfig(thinking_budget=0)
+        thinking_config=types.ThinkingConfig(thinking_budget=0),
+        temperature=0.6,
+        max_output_tokens=150,
+        realtime_input_config=types.RealtimeInputConfig(
+            automatic_activity_detection=types.AutomaticActivityDetection(
+                start_of_speech_sensitivity=types.StartSensitivity.START_SENSITIVITY_HIGH,
+                end_of_speech_sensitivity=types.EndSensitivity.END_SENSITIVITY_HIGH,
+                silence_duration_ms=450,
+                prefix_padding_ms=100
+            )
+        )
     )
     
     try:
