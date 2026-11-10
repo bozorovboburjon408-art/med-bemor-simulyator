@@ -571,7 +571,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <div class="shrink-0 relative mb-3">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
                 <input type="text" id="search-box" placeholder="Kasallikni qidirish..." 
-                       class="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="w-full pl-9 pr-3 py-2 text-base md:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
 
             <!-- Disease List (Scrolls independently) -->
@@ -650,32 +650,18 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Status bar (Pinned) -->
-            <div class="shrink-0 px-4 py-1.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                <div id="typing-status" class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span>Tayyor</span>
+            <!-- Status bar (Pastda qotirilgan zamonaviy axborot paneli) -->
+            <div class="shrink-0 px-4 py-2.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600 rounded-b-2xl">
+                <div id="typing-status" class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span class="font-medium">🟢 Tayyor — Jonli qo'ng'iroqni bosing</span>
                 </div>
                 <div class="flex items-center gap-2 text-slate-400">
                     <span id="call-indicator" class="hidden text-red-600 font-bold animate-pulse text-[11px] flex items-center gap-1">
                         <span class="w-2 h-2 rounded-full bg-red-500"></span> Jonli Efir Faol
                     </span>
-                    <span>Gemini Live Real-Time</span>
+                    <span class="hidden sm:inline">Gemini Live Real-Time Voice</span>
                 </div>
-            </div>
-
-            <!-- Input area (Pastda doimiy qotib turadi) -->
-            <div class="shrink-0 p-3 bg-white border-t border-slate-200">
-                <form id="chat-form" onsubmit="sendMessage(event)" class="flex items-center gap-2">
-                    <input type="text" id="user-input" placeholder="Shifokor / Talaba savolini yozing..." 
-                            autocomplete="off"
-                            class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button type="submit" id="send-btn" 
-                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition flex items-center gap-1.5 shadow-sm cursor-pointer">
-                        <span>Yuborish</span>
-                        <i class="fa-solid fa-paper-plane text-xs"></i>
-                    </button>
-                </form>
             </div>
         </div>
 
@@ -1007,10 +993,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
             } catch(e) {}
             
-            // 3. Yangi kasallik profiliga ulanamiz
-            try {
-                if (typeof connectWebSocket === 'function') connectWebSocket();
-            } catch(e) {}
+            // 3. Faqat jonli qo'ng'iroq faol bo'lsa yangi profilga qayta ulanamiz
+            if (isCallActive) {
+                try {
+                    if (typeof connectWebSocket === 'function') connectWebSocket();
+                } catch(e) {}
+            }
             
             // 4. Kompressor va pulsatorga yangi kasallik ritmini yuborish (WebSerial + Backend)
             const bpmVal = item.bpm || 75;
@@ -1302,7 +1290,9 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
             stopAllAudioPlayback();
             updateCallUI(false);
-            updateStatus("✅ Tayyor", "emerald");
+            const connEl = document.getElementById("conn-text");
+            if (connEl) connEl.innerText = "Tayyor";
+            updateStatus("🟢 Tayyor — Jonli qo'ng'iroqni bosing", "emerald");
             addSystemMessage("📞 <b>Jonli muloqot yakunlandi.</b>");
         }
 
@@ -1501,12 +1491,18 @@ HTML_CONTENT = """<!DOCTYPE html>
             
             ws.onclose = () => {
                 if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
-                updateStatus("🔄 Qayta ulanilmoqda...", "orange");
-                document.getElementById("conn-text").innerText = "Ulanish kutilmoqda";
-                
-                reconnectTimeout = setTimeout(() => {
-                    connectWebSocket();
-                }, 2000);
+                if (isCallActive) {
+                    updateStatus("🔄 Qayta ulanilmoqda...", "orange");
+                    const connEl = document.getElementById("conn-text");
+                    if (connEl) connEl.innerText = "Qayta ulanmoqda...";
+                    reconnectTimeout = setTimeout(() => {
+                        if (isCallActive) connectWebSocket();
+                    }, 1500);
+                } else {
+                    const connEl = document.getElementById("conn-text");
+                    if (connEl) connEl.innerText = "Tayyor";
+                    updateStatus("🟢 Tayyor — Jonli qo'ng'iroqni bosing", "emerald");
+                }
             };
             
             ws.onerror = (err) => {
@@ -1514,16 +1510,20 @@ HTML_CONTENT = """<!DOCTYPE html>
             };
         }
 
-        // Send Message (Ultra-Fast 1.5s Real-Time Gemini Live Native Voice & Text)
-        function sendMessage(e) {
-            if (e) e.preventDefault();
-            if (isProcessing) return;
+        // Send Message (Tizimli yoki ovozli so'rovlar uchun yordamchi)
+        function sendMessage(customText) {
+            let text = "";
+            if (typeof customText === 'string') {
+                text = customText.trim();
+            } else {
+                const inputEl = document.getElementById("user-input");
+                if (inputEl) {
+                    text = inputEl.value.trim();
+                    inputEl.value = "";
+                }
+            }
+            if (!text || isProcessing) return;
             
-            const inputEl = document.getElementById("user-input");
-            const text = inputEl.value.trim();
-            if (!text) return;
-            
-            inputEl.value = "";
             addNurseMessage(text);
             initOutputAudio();
             
@@ -1613,19 +1613,27 @@ HTML_CONTENT = """<!DOCTYPE html>
             box.scrollTop = box.scrollHeight;
         }
 
-        function updateStatus(text, color) {
+        function updateStatus(text, color = "emerald") {
             const el = document.getElementById("typing-status");
-            el.innerHTML = `<span class="w-2 h-2 rounded-full bg-${color}-500"></span><span>${text}</span>`;
+            if (!el) return;
+            const colors = {
+                emerald: "bg-emerald-500",
+                green: "bg-green-500",
+                red: "bg-red-500",
+                orange: "bg-amber-500"
+            };
+            const dot = colors[color] || "bg-emerald-500";
+            el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full ${dot}"></span><span class="font-medium">${text}</span>`;
         }
 
         function setProcessing(state) {
             isProcessing = state;
-            const btn = document.getElementById("send-btn");
-            if (btn) btn.disabled = state;
             if (!state) {
-                updateStatus("✅ Tayyor", "emerald");
-                const input = document.getElementById("user-input");
-                if (input) input.focus();
+                if (isCallActive) {
+                    updateStatus("🎙️ Bemor tinglamoqda — gapiravering...", "red");
+                } else {
+                    updateStatus("🟢 Tayyor — Jonli qo'ng'iroqni bosing", "emerald");
+                }
             }
         }
 
@@ -2129,6 +2137,7 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
         temperature=0.6,
         max_output_tokens=150,
         realtime_input_config=types.RealtimeInputConfig(
+            activity_handling=types.ActivityHandling.NO_INTERRUPTION,
             automatic_activity_detection=types.AutomaticActivityDetection(
                 start_of_speech_sensitivity=types.StartSensitivity.START_SENSITIVITY_HIGH,
                 end_of_speech_sensitivity=types.EndSensitivity.END_SENSITIVITY_HIGH,
@@ -2171,6 +2180,10 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                     pass
                 except Exception as e:
                     print(f"Gemini output stream error: {e}")
+                    try:
+                        await websocket.close(code=1011, reason="Gemini session closed")
+                    except Exception:
+                        pass
 
             stream_task = asyncio.create_task(gemini_stream_worker())
             
