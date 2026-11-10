@@ -2303,8 +2303,9 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     )
     
     candidate_models = [
-        "gemini-2.0-flash-exp",
-        "gemini-2.5-flash-native-audio-latest"
+        "gemini-2.5-flash-native-audio-latest",
+        "gemini-3.1-flash-live-preview",
+        "gemini-3.8-live"
     ]
     
     last_error = None
@@ -2394,9 +2395,7 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
             last_error = e
             err_str = str(e)
             print(f"Live model {live_model} connect error: {err_str}")
-            if "404" in err_str or "not found" in err_str.lower():
-                continue
-            break
+            continue
 
     if last_error:
         err_msg = str(last_error)
