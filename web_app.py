@@ -1167,8 +1167,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function isAudioCurrentlyPlaying() {
-            // Dinamik ovozi tugashi bilan mikrofonni tezda ochish (atigi +150ms zaxira)
-            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime + 0.15));
+            // Dinamik ovozi va xona aks-sadosi to'liq so'ngunicha mikrofonni bloklash (+300ms zaxira)
+            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime + 0.30));
         }
 
         function stopAllAudioPlayback() {
@@ -1314,6 +1314,15 @@ HTML_CONTENT = """<!DOCTYPE html>
                     if (isAudioCurrentlyPlaying()) return;
                     
                     const input = e.inputBuffer.getChannelData(0);
+                    
+                    // Shovqin filtri (Noise Gate): xonadagi shivir-shivir va nafas shovqini tufayli sun'iy uzilish bo'lmasligi uchun
+                    let sum = 0;
+                    for (let i = 0; i < input.length; i++) {
+                        sum += input[i] * input[i];
+                    }
+                    const rms = Math.sqrt(sum / input.length);
+                    if (rms < 0.008) return;
+                    
                     const pcm16 = downsampleTo16k(input, micAudioContext.sampleRate);
                     if (pcm16 && pcm16.length > 0) {
                         try {
@@ -2273,7 +2282,11 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
         except Exception:
             pass
 
-    client = genai.Client(api_key=API_KEY)
+    # Muhim: Gemini Live faqat 'v1alpha' endpointida ishlaydi (v1beta bo'lsa HTTP 404 beradi)
+    client = genai.Client(
+        api_key=API_KEY,
+        http_options=types.HttpOptions(api_version="v1alpha")
+    )
     
     config = types.LiveConnectConfig(
         response_modalities=["AUDIO"],
@@ -2286,102 +2299,107 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                 )
             )
         ),
-        thinking_config=types.ThinkingConfig(thinking_budget=0),
-        temperature=0.6,
-        max_output_tokens=150,
-        realtime_input_config=types.RealtimeInputConfig(
-            activity_handling=types.ActivityHandling.NO_INTERRUPTION,
-            automatic_activity_detection=types.AutomaticActivityDetection(
-                start_of_speech_sensitivity=types.StartSensitivity.START_SENSITIVITY_HIGH,
-                end_of_speech_sensitivity=types.EndSensitivity.END_SENSITIVITY_HIGH,
-                silence_duration_ms=450,
-                prefix_padding_ms=100
-            )
-        )
+        thinking_config=types.ThinkingConfig(thinking_budget=0)
     )
     
-    try:
-        async with client.aio.live.connect(
-            model="gemini-2.5-flash-native-audio-latest",
-            config=config
-        ) as session:
-            
-            # 1. Background task to stream Gemini audio & text output to browser
-            async def gemini_stream_worker():
+    candidate_models = [
+        "gemini-2.0-flash-exp",
+        "gemini-2.5-flash-native-audio-latest"
+    ]
+    
+    last_error = None
+    for live_model in candidate_models:
+        try:
+            async with client.aio.live.connect(
+                model=live_model,
+                config=config
+            ) as session:
+                
+                # 1. Background task to stream Gemini audio & text output to browser
+                async def gemini_stream_worker():
+                    try:
+                        while True:
+                            async for response in session.receive():
+                                sc = response.server_content
+                                if sc is not None:
+                                    if sc.interrupted:
+                                        await safe_send_json({"type": "interrupted"})
+                                    
+                                    if sc.output_transcription and sc.output_transcription.text:
+                                        await safe_send_json({
+                                            "type": "text_stream",
+                                            "text": sc.output_transcription.text
+                                        })
+                                    
+                                    if sc.model_turn is not None:
+                                        for part in sc.model_turn.parts:
+                                            if part.inline_data and part.inline_data.data:
+                                                await safe_send_bytes(part.inline_data.data)
+                                    
+                                    if sc.turn_complete:
+                                        await safe_send_json({"type": "turn_complete"})
+                    except asyncio.CancelledError:
+                        pass
+                    except Exception as e:
+                        print(f"Gemini output stream worker error: {e}")
+                        await safe_send_json({"type": "error", "message": f"Ovoz oqimi uzildi: {str(e)[:100]}"})
+
+                stream_task = asyncio.create_task(gemini_stream_worker())
+                
+                # 2. Receive loop from browser (streaming 16kHz PCM, text, or keepalive ping)
                 try:
                     while True:
-                        async for response in session.receive():
-                            sc = response.server_content
-                            if sc is not None:
-                                if sc.interrupted:
-                                    await safe_send_json({"type": "interrupted"})
-                                
-                                if sc.output_transcription and sc.output_transcription.text:
-                                    await safe_send_json({
-                                        "type": "text_stream",
-                                        "text": sc.output_transcription.text
-                                    })
-                                
-                                if sc.model_turn is not None:
-                                    for part in sc.model_turn.parts:
-                                        if part.inline_data and part.inline_data.data:
-                                            await safe_send_bytes(part.inline_data.data)
-                                
-                                if sc.turn_complete:
-                                    await safe_send_json({"type": "turn_complete"})
-                except asyncio.CancelledError:
-                    pass
-                except Exception as e:
-                    print(f"Gemini output stream worker error: {e}")
-                    await safe_send_json({"type": "error", "message": f"Ovoz oqimi uzildi: {str(e)[:100]}"})
-
-            stream_task = asyncio.create_task(gemini_stream_worker())
-            
-            # 2. Receive loop from browser (streaming 16kHz PCM, text, or keepalive ping)
-            try:
-                while True:
-                    msg = await websocket.receive()
-                    if msg.get("type") == "websocket.disconnect":
-                        break
-                    
-                    if "bytes" in msg and msg["bytes"]:
-                        # Realtime 16kHz PCM audio chunk from microphone
-                        pcm_bytes = msg["bytes"]
-                        try:
-                            await session.send_realtime_input(
-                                media=types.Blob(data=pcm_bytes, mime_type="audio/pcm;rate=16000")
-                            )
-                        except Exception as e:
-                            print(f"Realtime input send error: {e}")
-                    elif "text" in msg and msg["text"]:
-                        try:
-                            payload = json.loads(msg["text"])
-                            # Heartbeat keep-alive to keep Render connection open
-                            if payload.get("type") == "ping":
-                                await safe_send_json({"type": "pong"})
-                                continue
-                                
-                            user_text = payload.get("text", "").strip()
-                            if user_text:
-                                await session.send_client_content(
-                                    turns=[types.Content(
-                                        role="user",
-                                        parts=[types.Part(text=user_text)]
-                                    )],
-                                    turn_complete=True
+                        msg = await websocket.receive()
+                        if msg.get("type") == "websocket.disconnect":
+                            break
+                        
+                        if "bytes" in msg and msg["bytes"]:
+                            # Realtime 16kHz PCM audio chunk from microphone
+                            pcm_bytes = msg["bytes"]
+                            try:
+                                await session.send_realtime_input(
+                                    media=types.Blob(data=pcm_bytes, mime_type="audio/pcm;rate=16000")
                                 )
-                        except json.JSONDecodeError:
-                            pass
-                        except Exception as e:
-                            print(f"Client content send error: {e}")
-            finally:
-                stream_task.cancel()
-                await asyncio.gather(stream_task, return_exceptions=True)
+                            except Exception as e:
+                                print(f"Realtime input send error: {e}")
+                        elif "text" in msg and msg["text"]:
+                            try:
+                                payload = json.loads(msg["text"])
+                                # Heartbeat keep-alive to keep Render connection open
+                                if payload.get("type") == "ping":
+                                    await safe_send_json({"type": "pong"})
+                                    continue
+                                    
+                                user_text = payload.get("text", "").strip()
+                                if user_text:
+                                    await session.send_client_content(
+                                        turns=[types.Content(
+                                            role="user",
+                                            parts=[types.Part(text=user_text)]
+                                        )],
+                                        turn_complete=True
+                                    )
+                            except json.JSONDecodeError:
+                                pass
+                            except Exception as e:
+                                print(f"Client content send error: {e}")
+                finally:
+                    stream_task.cancel()
+                    await asyncio.gather(stream_task, return_exceptions=True)
 
-    except WebSocketDisconnect:
-        pass
-    except Exception as e:
-        err_msg = str(e)
+                return # Muvaffaqiyatli seans yakunlandi
+        except WebSocketDisconnect:
+            return
+        except Exception as e:
+            last_error = e
+            err_str = str(e)
+            print(f"Live model {live_model} connect error: {err_str}")
+            if "404" in err_str or "not found" in err_str.lower():
+                continue
+            break
+
+    if last_error:
+        err_msg = str(last_error)
         print(f"WebSocket session error: {err_msg}")
         await safe_send_json({"type": "error", "message": f"Gemini Live ulanishida xatolik: {err_msg[:120]}"})
         try:
