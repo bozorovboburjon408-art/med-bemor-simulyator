@@ -1045,11 +1045,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
             } catch(e) {}
             
-            // 3. Faqat jonli qo'ng'iroq faol bo'lsa yangi profilga qayta ulanamiz
+            // 3. Faqat jonli qo'ng'iroq faol bo'lsa yangi profilga qayta ulanamiz (Debounced 300ms)
             if (isCallActive) {
-                try {
-                    if (typeof connectWebSocket === 'function') connectWebSocket();
-                } catch(e) {}
+                if (diseaseWsDebounce) clearTimeout(diseaseWsDebounce);
+                diseaseWsDebounce = setTimeout(() => {
+                    if (isCallActive && typeof connectWebSocket === 'function') {
+                        connectWebSocket();
+                    }
+                }, 300);
             }
             
             // 4. Kompressor va pulsatorga yangi kasallik ritmini yuborish (WebSerial + Backend)
@@ -1263,7 +1266,9 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         // Live Microphone Input (16kHz PCM Streamer for Gemini Live)
 
+        let isStartingCall = false;
         async function toggleLiveCall() {
+            if (isStartingCall) return;
             if (isCallActive) {
                 stopLiveCall();
             } else {
@@ -1272,7 +1277,10 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         async function startLiveCall() {
+            if (isStartingCall || isCallActive) return;
+            isStartingCall = true;
             try {
+                updateStatus("⏳ Jonli muloqot tayyorlanmoqda...", "orange");
                 initOutputAudio();
                 
                 micStream = await navigator.mediaDevices.getUserMedia({
@@ -1328,11 +1336,17 @@ HTML_CONTENT = """<!DOCTYPE html>
             } catch(err) {
                 console.error("Live call error:", err);
                 alert("Mikrofonga ulanishda xatolik yuz berdi: " + err.message);
+                updateCallUI(false);
+                updateStatus("🟢 Tayyor — Jonli qo'ng'iroqni bosing", "emerald");
+            } finally {
+                isStartingCall = false;
             }
         }
 
         function stopLiveCall() {
             isCallActive = false;
+            isStartingCall = false;
+            if (diseaseWsDebounce) { clearTimeout(diseaseWsDebounce); diseaseWsDebounce = null; }
             closeLiveWebSocket();
             if (micProcessor) {
                 try { 
@@ -1397,10 +1411,13 @@ HTML_CONTENT = """<!DOCTYPE html>
         // Live Call & Chat WebSocket with Heartbeat Keep-Alive
         let pingInterval = null;
         let reconnectTimeout = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 3;
         let waitAudioFinishTimer = null;
         let currentPatientBubble = null;
         let currentPatientTextEl = null;
         let currentPatientText = "";
+        let diseaseWsDebounce = null;
 
         function appendPatientStreamText(chunk) {
             const box = document.getElementById("chat-box");
@@ -1452,10 +1469,13 @@ HTML_CONTENT = """<!DOCTYPE html>
             if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null; }
             if (waitAudioFinishTimer) { clearInterval(waitAudioFinishTimer); waitAudioFinishTimer = null; }
             if (ws) {
-                ws.onclose = null; // Muhim: eski soket yopilganda onclose qayta ulanishni chaqirmasligi kerak
-                ws.onerror = null;
-                try { ws.close(); } catch(e) {}
+                const oldWs = ws;
                 ws = null;
+                oldWs.onopen = null;
+                oldWs.onmessage = null;
+                oldWs.onclose = null;
+                oldWs.onerror = null;
+                try { oldWs.close(1000, "Clean close"); } catch(e) {}
             }
         }
 
@@ -1471,12 +1491,21 @@ HTML_CONTENT = """<!DOCTYPE html>
             const wsUrl = `${protocol}//${window.location.host}/ws/chat/${currentKey}`;
             
             updateStatus("⏳ Bemor ulanmoqda...", "orange");
+            const connEl = document.getElementById("conn-text");
+            if (connEl) connEl.innerText = "Ulanmoqda...";
             
-            ws = new WebSocket(wsUrl);
-            ws.binaryType = "arraybuffer";
+            try {
+                ws = new WebSocket(wsUrl);
+                ws.binaryType = "arraybuffer";
+            } catch(e) {
+                console.error("WS yaratishda xatolik:", e);
+                updateStatus("❌ Ulanib bo'lmadi", "red");
+                return;
+            }
             
             ws.onopen = () => {
-                document.getElementById("conn-text").innerText = "Live AI ulandi";
+                reconnectAttempts = 0; // Ulanish muvaffaqiyatli bo'lsa hisoblagichni nollash
+                if (connEl) connEl.innerText = "Live AI ulandi";
                 
                 // Audio kontekstlarni uyg'otish
                 if (micAudioContext && micAudioContext.state === 'suspended') {
@@ -1495,20 +1524,22 @@ HTML_CONTENT = """<!DOCTYPE html>
                             const greetingPrompt = (curItem && curItem.is_child)
                                 ? "Doktor ko'rikka keldi. Kichkina bola bemor sifatida 'Doktor opa...' deb o'z holatingizga mos shikoyatingizni bolalarcha qisqa ayting."
                                 : "Doktor ko'rikka keldi. Bemor sifatida o'z holatingizga mos shikoyatingizni qisqa ayting.";
-                            ws.send(JSON.stringify({ text: greetingPrompt }));
+                            try {
+                                ws.send(JSON.stringify({ text: greetingPrompt }));
+                            } catch(e) {}
                         }
                     }, 400);
                 } else {
                     updateStatus("✅ Tayyor", "emerald");
                 }
                 
-                // Render timeout bo'lib uzilib qolmasligi uchun har 15 sekundda heartbeat ping
+                // Render timeout bo'lib uzilib qolmasligi uchun har 12 sekundda heartbeat ping
                 if (pingInterval) clearInterval(pingInterval);
                 pingInterval = setInterval(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({ type: "ping" }));
+                        try { ws.send(JSON.stringify({ type: "ping" })); } catch(e) {}
                     }
-                }, 15000);
+                }, 12000);
             };
 
             ws.onmessage = (event) => {
@@ -1517,9 +1548,19 @@ HTML_CONTENT = """<!DOCTYPE html>
                     playStreamingPcm(event.data);
                     return;
                 }
-                const data = JSON.parse(event.data);
+                let data = null;
+                try {
+                    data = JSON.parse(event.data);
+                } catch(e) {
+                    return;
+                }
                 if (data.type === "pong") {
                     return; // Heartbeat keepalive javobi
+                }
+                if (data.type === "error") {
+                    console.warn("Server AI xabari:", data.message);
+                    addSystemMessage(`⚠️ <b>Tizim xabari:</b> ${escapeHtml(data.message || "Xatolik yuz berdi")}`);
+                    return;
                 }
                 if (data.type === "text_stream") {
                     isPatientSpeaking = true;
@@ -1566,20 +1607,37 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
             };
             
-            ws.onclose = () => {
+            ws.onclose = (event) => {
                 if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
-                if (isCallActive) {
-                    updateStatus("🔄 Qayta ulanilmoqda...", "orange");
-                    const connEl = document.getElementById("conn-text");
-                    if (connEl) connEl.innerText = "Qayta ulanmoqda...";
-                    reconnectTimeout = setTimeout(() => {
-                        if (isCallActive) connectWebSocket();
-                    }, 1500);
-                } else {
+                console.log("WebSocket yopildi:", event ? event.code : "", event ? event.reason : "");
+                
+                // Qo'ng'iroq faol bo'lmaganda yoki tizim bloklanganda (1008) qayta ulanmaymiz
+                if (!isCallActive || (event && event.code === 1008)) {
                     const connEl = document.getElementById("conn-text");
                     if (connEl) connEl.innerText = "Tayyor";
                     updateStatus("🟢 Tayyor — Jonli qo'ng'iroqni bosing", "emerald");
+                    return;
                 }
+                
+                reconnectAttempts++;
+                if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+                    // Cheksiz aylanib "eshitmoqda <-> qayta ulanmoqda" bo'lishini to'xtatamiz
+                    const connEl = document.getElementById("conn-text");
+                    if (connEl) connEl.innerText = "Aloqa uzildi";
+                    updateStatus("⚠️ Aloqa uzildi. Qo'ng'iroqni qayta bosing", "orange");
+                    addSystemMessage("⚠️ <b>Aloqa vaqtincha uzildi.</b> 'Qo'ng'iroqni Tugatish' qilib, so'ng yana 'Jonli Qo'ng'iroq' tugmasini bosing.");
+                    return;
+                }
+                
+                const connEl = document.getElementById("conn-text");
+                if (connEl) connEl.innerText = `Qayta ulanmoqda (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`;
+                updateStatus(`🔄 Qayta ulanilmoqda (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`, "orange");
+                
+                if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                const delay = Math.min(1800 * reconnectAttempts, 5000);
+                reconnectTimeout = setTimeout(() => {
+                    if (isCallActive) connectWebSocket();
+                }, delay);
             };
             
             ws.onerror = (err) => {
@@ -2200,6 +2258,21 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
         
     system_prompt = base_prompt + "\n\n" + kasallik["prompt"]
     
+    ws_send_lock = asyncio.Lock()
+    async def safe_send_json(data: dict):
+        try:
+            async with ws_send_lock:
+                await websocket.send_json(data)
+        except Exception:
+            pass
+
+    async def safe_send_bytes(data: bytes):
+        try:
+            async with ws_send_lock:
+                await websocket.send_bytes(data)
+        except Exception:
+            pass
+
     client = genai.Client(api_key=API_KEY)
     
     config = types.LiveConnectConfig(
@@ -2241,10 +2314,10 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                             sc = response.server_content
                             if sc is not None:
                                 if sc.interrupted:
-                                    await websocket.send_json({"type": "interrupted"})
+                                    await safe_send_json({"type": "interrupted"})
                                 
                                 if sc.output_transcription and sc.output_transcription.text:
-                                    await websocket.send_json({
+                                    await safe_send_json({
                                         "type": "text_stream",
                                         "text": sc.output_transcription.text
                                     })
@@ -2252,18 +2325,15 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                 if sc.model_turn is not None:
                                     for part in sc.model_turn.parts:
                                         if part.inline_data and part.inline_data.data:
-                                            await websocket.send_bytes(part.inline_data.data)
+                                            await safe_send_bytes(part.inline_data.data)
                                 
                                 if sc.turn_complete:
-                                    await websocket.send_json({"type": "turn_complete"})
+                                    await safe_send_json({"type": "turn_complete"})
                 except asyncio.CancelledError:
                     pass
                 except Exception as e:
-                    print(f"Gemini output stream error: {e}")
-                    try:
-                        await websocket.close(code=1011, reason="Gemini session closed")
-                    except Exception:
-                        pass
+                    print(f"Gemini output stream worker error: {e}")
+                    await safe_send_json({"type": "error", "message": f"Ovoz oqimi uzildi: {str(e)[:100]}"})
 
             stream_task = asyncio.create_task(gemini_stream_worker())
             
@@ -2277,15 +2347,18 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                     if "bytes" in msg and msg["bytes"]:
                         # Realtime 16kHz PCM audio chunk from microphone
                         pcm_bytes = msg["bytes"]
-                        await session.send_realtime_input(
-                            media=types.Blob(data=pcm_bytes, mime_type="audio/pcm;rate=16000")
-                        )
+                        try:
+                            await session.send_realtime_input(
+                                media=types.Blob(data=pcm_bytes, mime_type="audio/pcm;rate=16000")
+                            )
+                        except Exception as e:
+                            print(f"Realtime input send error: {e}")
                     elif "text" in msg and msg["text"]:
                         try:
                             payload = json.loads(msg["text"])
                             # Heartbeat keep-alive to keep Render connection open
                             if payload.get("type") == "ping":
-                                await websocket.send_json({"type": "pong"})
+                                await safe_send_json({"type": "pong"})
                                 continue
                                 
                             user_text = payload.get("text", "").strip()
@@ -2294,10 +2367,13 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                     turns=[types.Content(
                                         role="user",
                                         parts=[types.Part(text=user_text)]
-                                    )]
+                                    )],
+                                    turn_complete=True
                                 )
                         except json.JSONDecodeError:
                             pass
+                        except Exception as e:
+                            print(f"Client content send error: {e}")
             finally:
                 stream_task.cancel()
                 await asyncio.gather(stream_task, return_exceptions=True)
@@ -2305,7 +2381,13 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        print(f"WebSocket session error: {e}")
+        err_msg = str(e)
+        print(f"WebSocket session error: {err_msg}")
+        await safe_send_json({"type": "error", "message": f"Gemini Live ulanishida xatolik: {err_msg[:120]}"})
+        try:
+            await websocket.close(code=1011, reason=err_msg[:100])
+        except Exception:
+            pass
 
 def get_local_ip():
     """Lokal tarmoqdagi (Wi-Fi) IP manzilni aniqlash"""
