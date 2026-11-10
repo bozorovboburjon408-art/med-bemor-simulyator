@@ -619,6 +619,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <!-- Live Mic Energy Indicator (Ovoz to'lqini) -->
+                    <div id="mic-level-container" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/25 text-white text-[11px] font-mono shadow-inner transition-all" title="Mikrofoningiz ovoz sezish darajasi">
+                        <i id="mic-level-icon" class="fa-solid fa-microphone text-emerald-300"></i>
+                        <div class="w-12 h-2 bg-white/20 rounded-full overflow-hidden flex items-center p-0.5">
+                            <div id="mic-level-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-75" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
                     <button id="live-call-btn" onclick="toggleLiveCall()" title="Bemor bilan real vaqtda jonli ovozli muloqot"
                             class="px-3.5 py-1.5 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
                         <i class="fa-solid fa-phone-volume text-emerald-600"></i>
@@ -1167,8 +1175,26 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function isAudioCurrentlyPlaying() {
-            // Dinamik ovozi va xona aks-sadosi to'liq so'ngunicha mikrofonni bloklash (+300ms zaxira)
-            return outAudioCtx && (outAudioCtx.currentTime < (outNextStartTime + 0.30));
+            // Dinamik ovozi va xona aks-sadosi to'liq so'ngunicha mikrofonni bloklash
+            if (!outAudioCtx || activeSources.length === 0) return false;
+            return outAudioCtx.currentTime < (outNextStartTime + 0.10);
+        }
+
+        function updateMicEnergyUI(rms) {
+            const container = document.getElementById("mic-level-container");
+            const bar = document.getElementById("mic-level-bar");
+            const icon = document.getElementById("mic-level-icon");
+            if (!container || !bar) return;
+            
+            const pct = Math.min(100, Math.round((rms / 0.035) * 100));
+            bar.style.width = pct + "%";
+            if (pct > 12) {
+                bar.className = "h-full bg-emerald-400 rounded-full transition-all duration-75 shadow-sm";
+                if (icon) icon.className = "fa-solid fa-microphone text-emerald-300 animate-pulse";
+            } else {
+                bar.className = "h-full bg-white/40 rounded-full transition-all duration-75";
+                if (icon) icon.className = "fa-solid fa-microphone text-white/70";
+            }
         }
 
         function stopAllAudioPlayback() {
@@ -1308,26 +1334,52 @@ HTML_CONTENT = """<!DOCTYPE html>
                 micProcessor = micAudioContext.createScriptProcessor(2048, 1, 1);
                 window._micProcessor = micProcessor; // Brauzer xotiradan o'chirib yubormasligi uchun
                 
+                let userSpeakingActive = false;
+                let silenceFrameCount = 0;
+
                 micProcessor.onaudioprocess = (e) => {
                     if (!isCallActive || !ws || ws.readyState !== WebSocket.OPEN) return;
                     // Bemor gapirayotgan paytda mikrofonni bloklash (aks-sado tushmasligi uchun)
-                    if (isAudioCurrentlyPlaying()) return;
+                    if (isAudioCurrentlyPlaying()) {
+                        updateMicEnergyUI(0);
+                        return;
+                    }
                     
                     const input = e.inputBuffer.getChannelData(0);
                     
-                    // Shovqin filtri (Noise Gate): xonadagi shivir-shivir va nafas shovqini tufayli sun'iy uzilish bo'lmasligi uchun
+                    // 1. RMS hisoblash (Ovoz balandligi energiyasi)
                     let sum = 0;
                     for (let i = 0; i < input.length; i++) {
                         sum += input[i] * input[i];
                     }
                     const rms = Math.sqrt(sum / input.length);
-                    if (rms < 0.008) return;
+                    updateMicEnergyUI(rms);
                     
+                    // 2. Har doim 16kHz PCM audio yuboramiz (aslo tashlab yubormaymiz, nutq buzilmasligi shart!)
                     const pcm16 = downsampleTo16k(input, micAudioContext.sampleRate);
                     if (pcm16 && pcm16.length > 0) {
                         try {
                             ws.send(pcm16.buffer);
                         } catch(err) {}
+                    }
+
+                    // 3. Intellektual Client-side VAD (Nutq yakunini aniqlab tezkor javobni chaqirish)
+                    if (rms > 0.004) {
+                        // Inson gapirmoqda (oddiy pichirlash yoki normal ovoz)
+                        userSpeakingActive = true;
+                        silenceFrameCount = 0;
+                    } else if (userSpeakingActive) {
+                        // Inson gapirib bo'lgach sukunat boshlandi
+                        silenceFrameCount++;
+                        // 2048 sample @ 16kHz ~= 128ms. 4 ta freym = ~512ms sukunat
+                        if (silenceFrameCount >= 4) {
+                            userSpeakingActive = false;
+                            silenceFrameCount = 0;
+                            try {
+                                ws.send(JSON.stringify({ type: "speech_end" }));
+                            } catch(err) {}
+                            updateStatus("⏳ Bemor javob bermoqda...", "orange");
+                        }
                     }
                 };
 
@@ -1397,6 +1449,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-slash mr-1"></i> Qo'ng'iroqni Tugatish`;
                 if (callBadge) callBadge.classList.remove("hidden");
                 if (callIndicator) callIndicator.classList.remove("hidden");
+                const micLevelEl = document.getElementById("mic-level-container");
+                if (micLevelEl) {
+                    micLevelEl.classList.remove("hidden");
+                    micLevelEl.classList.add("flex");
+                }
                 if (header) {
                     header.classList.remove("bg-emerald-600");
                     header.classList.add("bg-rose-700");
@@ -1409,6 +1466,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if (txt) txt.innerHTML = `<i class="fa-solid fa-phone-volume text-emerald-600 mr-1"></i> Jonli Qo'ng'iroq`;
                 if (callBadge) callBadge.classList.add("hidden");
                 if (callIndicator) callIndicator.classList.add("hidden");
+                const micLevelEl = document.getElementById("mic-level-container");
+                if (micLevelEl) {
+                    micLevelEl.classList.add("hidden");
+                    micLevelEl.classList.remove("flex");
+                    updateMicEnergyUI(0);
+                }
                 if (header) {
                     header.classList.remove("bg-rose-700");
                     header.classList.add("bg-emerald-600");
@@ -2369,6 +2432,14 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                 # Heartbeat keep-alive to keep Render connection open
                                 if payload.get("type") == "ping":
                                     await safe_send_json({"type": "pong"})
+                                    continue
+                                
+                                # Client-side VAD signal: nutq tugadi, zudlik bilan javob qaytarish
+                                if payload.get("type") == "speech_end":
+                                    try:
+                                        await session.send_realtime_input(audio_stream_end=True)
+                                    except Exception as e:
+                                        print(f"Audio stream end error: {e}")
                                     continue
                                     
                                 user_text = payload.get("text", "").strip()
