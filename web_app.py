@@ -827,7 +827,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                                 if (pulseSerialBuffer.length > 2048) {
                                     pulseSerialBuffer = pulseSerialBuffer.slice(-512);
                                 }
-                                let lines = pulseSerialBuffer.split("\n");
+                                let lines = pulseSerialBuffer.split(String.fromCharCode(10));
                                 pulseSerialBuffer = lines.pop();
                                 for (let line of lines) {
                                     line = line.trim();
@@ -935,7 +935,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 isWritingSerial = true;
                 let writer = null;
                 try {
-                    const textToSend = String(cleanBpm) + "\n";
+                    const textToSend = String(cleanBpm) + String.fromCharCode(10);
                     const encoder = new TextEncoder();
                     writer = pulseSerialPort.writable.getWriter();
                     await Promise.race([
