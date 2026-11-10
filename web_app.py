@@ -753,13 +753,26 @@ HTML_CONTENT = """<!DOCTYPE html>
             const originalClass = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white flex items-center gap-1 transition";
             el.className = "px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-300 text-slate-950 flex items-center gap-1 shadow-lg ring-2 ring-white animate-pulse transition";
             setTimeout(() => {
-                el.className = originalClass;
+                if (el) el.className = originalClass;
             }, 2000);
+        }
+
+        function limitChatElements() {
+            const box = document.getElementById("chat-box");
+            if (!box) return;
+            while (box.children.length > 50) {
+                if (box.children.length > 1) {
+                    box.removeChild(box.children[1]);
+                } else {
+                    break;
+                }
+            }
         }
 
         function appendSensorEventToChat(message) {
             const chatBox = document.getElementById("chat-box");
             if (!chatBox) return;
+            limitChatElements();
             const div = document.createElement("div");
             div.className = "flex justify-center my-1";
             div.innerHTML = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200 shadow-xs flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-medical text-amber-600"></i> ${message}</span>`;
@@ -767,64 +780,93 @@ HTML_CONTENT = """<!DOCTYPE html>
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        let lastSensorEventTime = { neck: 0, wrist: 0, toast: 0 };
         function handlePulseSensorFeedback(line) {
             const lower = line.toLowerCase();
+            const now = Date.now();
             if (lower.includes("bo'yin") || lower.includes("boyin")) {
-                showPulseToast("🩺 Bo'yin sensori ushlandi (Uyqu arteriyasi - Carotid)", "bg-emerald-600");
-                animatePulseIndicator("neck");
-                appendSensorEventToChat("Talaba bemorning bo'yin (uyqu arteriyasi) pulsini ushladi va tekshirdi");
+                if (now - lastSensorEventTime.neck > 2000) {
+                    lastSensorEventTime.neck = now;
+                    showPulseToast("🩺 Bo'yin sensori ushlandi (Uyqu arteriyasi - Carotid)", "bg-emerald-600");
+                    animatePulseIndicator("neck");
+                    appendSensorEventToChat("Talaba bemorning bo'yin (uyqu arteriyasi) pulsini tekshirdi");
+                }
             } else if (lower.includes("qo'l") || lower.includes("qol")) {
-                showPulseToast("🩺 Qo'l sensori ushlandi (Bilak arteriyasi - Radial)", "bg-blue-600");
-                animatePulseIndicator("wrist");
-                appendSensorEventToChat("Talaba bemorning bilak (radial arteriya) pulsini ushladi va tekshirdi");
+                if (now - lastSensorEventTime.wrist > 2000) {
+                    lastSensorEventTime.wrist = now;
+                    showPulseToast("🩺 Qo'l sensori ushlandi (Bilak arteriyasi - Radial)", "bg-blue-600");
+                    animatePulseIndicator("wrist");
+                    appendSensorEventToChat("Talaba bemorning bilak (radial arteriya) pulsini tekshirdi");
+                }
             } else if (lower.includes("maxsus ritm") || lower.includes("bpm")) {
-                showPulseToast("✅ " + line.replace(">>", "").trim(), "bg-indigo-600");
+                if (now - lastSensorEventTime.toast > 2500) {
+                    lastSensorEventTime.toast = now;
+                    showPulseToast("✅ " + line.replace(">>", "").trim(), "bg-indigo-600");
+                }
             }
         }
 
+        let isPulseReading = false;
         async function readPulseSerialStream() {
-            while (pulseSerialPort && pulseSerialPort.readable && isPulseSerialConnected) {
-                try {
-                    pulseSerialReader = pulseSerialPort.readable.getReader();
-                    const decoder = new TextDecoder();
-                    while (true) {
-                        const { value, done } = await pulseSerialReader.read();
-                        if (done) break;
-                        if (value) {
-                            pulseSerialBuffer += decoder.decode(value, { stream: true });
-                            let lines = pulseSerialBuffer.split(String.fromCharCode(10));
-                            pulseSerialBuffer = lines.pop();
-                            for (let line of lines) {
-                                line = line.trim();
-                                if (!line) continue;
-                                console.log("[Arduino Nano]:", line);
-                                handlePulseSensorFeedback(line);
+            if (isPulseReading) return;
+            isPulseReading = true;
+            try {
+                while (pulseSerialPort && pulseSerialPort.readable && isPulseSerialConnected) {
+                    try {
+                        pulseSerialReader = pulseSerialPort.readable.getReader();
+                        const decoder = new TextDecoder();
+                        while (isPulseSerialConnected) {
+                            const { value, done } = await pulseSerialReader.read();
+                            if (done) {
+                                // Port yopildi yoki uzildi - siklni to'xtatamiz
+                                isPulseSerialConnected = false;
+                                break;
+                            }
+                            if (value) {
+                                pulseSerialBuffer += decoder.decode(value, { stream: true });
+                                if (pulseSerialBuffer.length > 2048) {
+                                    pulseSerialBuffer = pulseSerialBuffer.slice(-512);
+                                }
+                                let lines = pulseSerialBuffer.split("\n");
+                                pulseSerialBuffer = lines.pop();
+                                for (let line of lines) {
+                                    line = line.trim();
+                                    if (!line) continue;
+                                    handlePulseSensorFeedback(line);
+                                }
                             }
                         }
+                    } catch(err) {
+                        console.warn("Pulse serial o'qish xatosi:", err);
+                        isPulseSerialConnected = false;
+                        break;
+                    } finally {
+                        if (pulseSerialReader) {
+                            try { pulseSerialReader.releaseLock(); } catch(e) {}
+                            pulseSerialReader = null;
+                        }
                     }
-                } catch(err) {
-                    console.warn("Pulse serial o'qish xatosi:", err);
-                    break;
-                } finally {
-                    if (pulseSerialReader) {
-                        try { pulseSerialReader.releaseLock(); } catch(e) {}
-                        pulseSerialReader = null;
-                    }
+                    if (!isPulseSerialConnected) break;
                 }
+            } finally {
+                isPulseReading = false;
+                updatePulseSerialUI(isPulseSerialConnected);
             }
         }
 
         async function togglePulseWebSerial() {
             if (isPulseSerialConnected && pulseSerialPort) {
+                isPulseSerialConnected = false;
                 try {
                     if (pulseSerialReader) {
                         await pulseSerialReader.cancel();
                         pulseSerialReader = null;
                     }
+                } catch(e) {}
+                try {
                     await pulseSerialPort.close();
                 } catch(e) {}
                 pulseSerialPort = null;
-                isPulseSerialConnected = false;
                 updatePulseSerialUI(false);
                 showPulseToast("🔌 Maneken USB Pulsatori uzildi", "bg-slate-700");
                 return;
@@ -846,11 +888,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                 readPulseSerialStream();
 
                 // Arduino ochilganda reset bo'ladi (1.5-2s bootloader).
-                // Shuning uchun BPM ni ketma-ket (darhol, 1.2s va 2.5s) da yuboramiz:
+                // Shuning uchun BPM ni xavfsiz taymoutlar bilan yuboramiz:
                 const currentItem = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
                 const currentBpm = (currentItem && currentItem.bpm) ? currentItem.bpm : 75;
 
-                await sendWebSerialPulse(currentBpm);
+                sendWebSerialPulse(currentBpm);
                 setTimeout(() => sendWebSerialPulse(currentBpm), 1200);
                 setTimeout(() => sendWebSerialPulse(currentBpm), 2500);
 
@@ -883,21 +925,31 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        let isWritingSerial = false;
         async function sendWebSerialPulse(bpm) {
-            if (!bpm || bpm <= 0) return;
+            if (!bpm || bpm <= 0 || isWritingSerial) return;
             const cleanBpm = parseInt(bpm, 10);
             if (isNaN(cleanBpm) || cleanBpm <= 0) return;
 
             if (pulseSerialPort && pulseSerialPort.writable && isPulseSerialConnected) {
+                isWritingSerial = true;
+                let writer = null;
                 try {
-                    const textToSend = String(cleanBpm) + String.fromCharCode(10);
+                    const textToSend = String(cleanBpm) + "\n";
                     const encoder = new TextEncoder();
-                    const writer = pulseSerialPort.writable.getWriter();
-                    await writer.write(encoder.encode(textToSend));
-                    writer.releaseLock();
+                    writer = pulseSerialPort.writable.getWriter();
+                    await Promise.race([
+                        writer.write(encoder.encode(textToSend)),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error("Serial write timeout")), 800))
+                    ]);
                     console.log("✅ WebSerial orqali BPM yuborildi:", cleanBpm);
                 } catch(e) {
                     console.warn("WebSerial yozish xatosi:", e);
+                } finally {
+                    if (writer) {
+                        try { writer.releaseLock(); } catch(e) {}
+                    }
+                    isWritingSerial = false;
                 }
             }
         }
@@ -1107,6 +1159,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             src.onended = () => {
                 const idx = activeSources.indexOf(src);
                 if (idx !== -1) activeSources.splice(idx, 1);
+                try { src.disconnect(); } catch(e) {}
             };
         }
 
@@ -1117,7 +1170,10 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function stopAllAudioPlayback() {
             for (let s of activeSources) {
-                try { s.stop(); } catch(e) {}
+                try { 
+                    s.stop(); 
+                    s.disconnect();
+                } catch(e) {}
             }
             activeSources = [];
             if (outAudioCtx) {
@@ -1240,8 +1296,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                 }
                 const source = micAudioContext.createMediaStreamSource(micStream);
 
-                // Tezkor 1024 sample bufer (atigi 64ms paket kechikishi)
-                micProcessor = micAudioContext.createScriptProcessor(1024, 1, 1);
+                // Barqaror 2048 sample bufer (brauzer UI va xotirasini qotib qolishdan asraydi)
+                micProcessor = micAudioContext.createScriptProcessor(2048, 1, 1);
                 window._micProcessor = micProcessor; // Brauzer xotiradan o'chirib yubormasligi uchun
                 
                 micProcessor.onaudioprocess = (e) => {
@@ -1252,7 +1308,9 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const input = e.inputBuffer.getChannelData(0);
                     const pcm16 = downsampleTo16k(input, micAudioContext.sampleRate);
                     if (pcm16 && pcm16.length > 0) {
-                        ws.send(pcm16.buffer);
+                        try {
+                            ws.send(pcm16.buffer);
+                        } catch(err) {}
                     }
                 };
 
@@ -1277,15 +1335,21 @@ HTML_CONTENT = """<!DOCTYPE html>
             isCallActive = false;
             closeLiveWebSocket();
             if (micProcessor) {
-                try { micProcessor.disconnect(); } catch(e) {}
+                try { 
+                    micProcessor.onaudioprocess = null;
+                    micProcessor.disconnect(); 
+                } catch(e) {}
                 micProcessor = null;
             }
+            window._micProcessor = null;
             if (micAudioContext) {
                 try { micAudioContext.close(); } catch(e) {}
                 micAudioContext = null;
             }
             if (micStream) {
-                micStream.getTracks().forEach(t => t.stop());
+                try {
+                    micStream.getTracks().forEach(t => t.stop());
+                } catch(e) {}
                 micStream = null;
             }
             stopAllAudioPlayback();
@@ -1333,6 +1397,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         // Live Call & Chat WebSocket with Heartbeat Keep-Alive
         let pingInterval = null;
         let reconnectTimeout = null;
+        let waitAudioFinishTimer = null;
         let currentPatientBubble = null;
         let currentPatientTextEl = null;
         let currentPatientText = "";
@@ -1340,6 +1405,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         function appendPatientStreamText(chunk) {
             const box = document.getElementById("chat-box");
             if (!currentPatientBubble) {
+                limitChatElements();
                 currentPatientText = chunk;
                 currentPatientBubble = document.createElement("div");
                 currentPatientBubble.className = "flex items-start gap-2.5";
@@ -1384,6 +1450,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         function closeLiveWebSocket() {
             if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
             if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null; }
+            if (waitAudioFinishTimer) { clearInterval(waitAudioFinishTimer); waitAudioFinishTimer = null; }
             if (ws) {
                 ws.onclose = null; // Muhim: eski soket yopilganda onclose qayta ulanishni chaqirmasligi kerak
                 ws.onerror = null;
@@ -1460,10 +1527,17 @@ HTML_CONTENT = """<!DOCTYPE html>
                     updateStatus("🗣️ Bemor javob bermoqda...", "green");
                 } else if (data.type === "turn_complete") {
                     setProcessing(false);
-                    // Bemorning oxirgi gaplari dinamikda to'liq yangrab bo'lmaguncha mikrofonni ochmaymiz
-                    const waitAudioFinish = setInterval(() => {
-                        if (!isAudioCurrentlyPlaying()) {
-                            clearInterval(waitAudioFinish);
+                    if (waitAudioFinishTimer) {
+                        clearInterval(waitAudioFinishTimer);
+                        waitAudioFinishTimer = null;
+                    }
+                    const waitAudioStart = Date.now();
+                    waitAudioFinishTimer = setInterval(() => {
+                        const isDone = !isAudioCurrentlyPlaying();
+                        const isTimedOut = (Date.now() - waitAudioStart) > 10000;
+                        if (isDone || isTimedOut) {
+                            clearInterval(waitAudioFinishTimer);
+                            waitAudioFinishTimer = null;
                             isPatientSpeaking = false;
                             finalizePatientText();
                             if (isCallActive) {
@@ -1472,10 +1546,13 @@ HTML_CONTENT = """<!DOCTYPE html>
                                 updateStatus("✅ Tayyor", "emerald");
                             }
                         }
-                    }, 35);
+                    }, 50);
                 } else if (data.type === "interrupted") {
-                    // Agar dinamikda hali audio yangrayotgan bo'lsa, soxta aks-sado tufayli gapni uzib tashlamaymiz!
                     if (!isAudioCurrentlyPlaying()) {
+                        if (waitAudioFinishTimer) {
+                            clearInterval(waitAudioFinishTimer);
+                            waitAudioFinishTimer = null;
+                        }
                         isPatientSpeaking = false;
                         stopAllAudioPlayback();
                         finalizePatientText();
@@ -1565,6 +1642,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         // Chat UI helpers
         function addNurseMessage(text) {
             const box = document.getElementById("chat-box");
+            limitChatElements();
             const msg = document.createElement("div");
             msg.className = "flex items-start justify-end gap-2.5";
             msg.innerHTML = `
@@ -1582,6 +1660,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function addPatientMessage(text) {
             const box = document.getElementById("chat-box");
+            limitChatElements();
             const msg = document.createElement("div");
             msg.className = "flex items-start gap-2.5";
             const actItem2 = (diseases && diseases[currentKey]) ? diseases[currentKey] : null;
@@ -1606,6 +1685,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         function addSystemMessage(htmlText) {
             const box = document.getElementById("chat-box");
+            limitChatElements();
             const msg = document.createElement("div");
             msg.className = "bg-slate-100 border border-slate-200 text-slate-600 rounded-xl p-2 text-xs text-center";
             msg.innerHTML = htmlText;
