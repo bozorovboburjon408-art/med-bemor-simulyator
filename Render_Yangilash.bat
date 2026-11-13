@@ -7,7 +7,7 @@ echo ========================================================
 echo   RENDER VA GITHUBGA YUBORISH (MEDLIFE ENGINE)
 echo ========================================================
 echo.
-git add web_app.py vital_monitor.py static/sw.js Render_Yangilash.bat ai_bemor_pulse_bridge.py
+git add web_app.py diseases_db.py vital_monitor.py static/sw.js Render_Yangilash.bat ai_bemor_pulse_bridge.py
 git commit -m "Auto update: system sync and clean project files" 2>nul
 echo.
 echo GitHub va Render serveriga yuklanmoqda...
