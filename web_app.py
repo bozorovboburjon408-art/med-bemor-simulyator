@@ -323,7 +323,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Messages Log (Faqat xabarlar maydoni ichki skroll bo'ladi) -->
             <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-0">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
-                    🟢 <b>Jonli simulyatsiya faol!</b> Shifokor yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Yuqoridagi <b>"Jonli Qo'ng'iroq"</b> tugmasi orqali uzluksiz ovozli suhbat qurishingiz mumkin.
+                    🟢 <b>Jonli simulyatsiya faol!</b> Hamshira yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Yuqoridagi <b>"Jonli Qo'ng'iroq"</b> tugmasi orqali uzluksiz ovozli suhbat qurishingiz mumkin.
                 </div>
             </div>
 
@@ -1463,11 +1463,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             msg.className = "flex items-start justify-end gap-2.5";
             msg.innerHTML = `
                 <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[80%] text-sm shadow-sm">
-                    <div class="font-bold text-xs text-indigo-200 mb-0.5"><i class="fa-solid fa-user-doctor mr-1"></i> Shifokor / Talaba</div>
+                    <div class="font-bold text-xs text-indigo-200 mb-0.5"><i class="fa-solid fa-user-nurse mr-1"></i> Hamshira / Talaba</div>
                     <div>${escapeHtml(text)}</div>
                 </div>
                 <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0">
-                    <i class="fa-solid fa-user-doctor"></i>
+                    <i class="fa-solid fa-user-nurse"></i>
                 </div>
             `;
             box.appendChild(msg);
@@ -2007,14 +2007,22 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     kasallik = KASALLIKLAR.get(kasallik_id, KASALLIKLAR["normal"])
     is_child = kasallik.get("is_child", False)
     
-    if is_child:
+    bemor_info = kasallik.get("bemor_info", "")
+    tavsif = kasallik.get("tavsif", "")
+    age_match = re.search(r'(\d+)\s*yosh', bemor_info + " " + tavsif)
+    age_val = int(age_match.group(1)) if age_match else None
+    is_under_18 = is_child or (age_val is not None and age_val < 18)
+    
+    if is_under_18:
         base_prompt = UMUMIY_BOLA_PROMPT
         voice_name = kasallik.get("gemini_voice", "Kore")
+        address_reminder = "MUROJAAT QOIDASI (O'TA MUHIM): Senga savol berayotgan shaxsga FAQAT 'Hamshira opa' deb murojaat qil! Qat'iyan 'doktor' yoki 'shifokor' deb aytma!"
     else:
         base_prompt = UMUMIY_KATTA_PROMPT
         voice_name = kasallik.get("gemini_voice", "Puck")
+        address_reminder = "MUROJAAT QOIDASI (O'TA MUHIM): Senga savol berayotgan shaxsga FAQAT 'hamshira' (yoki yoshi katta qariya bo'lsang 'hamshira qizim', 'hamshira') deb murojaat qil! Qat'iyan 'doktor' yoki 'shifokor' deb aytma!"
         
-    system_prompt = base_prompt + "\n\n" + kasallik["prompt"]
+    system_prompt = base_prompt + "\n\n" + address_reminder + "\n\n" + kasallik["prompt"]
     
     ws_send_lock = asyncio.Lock()
     async def safe_send_json(data: dict):
