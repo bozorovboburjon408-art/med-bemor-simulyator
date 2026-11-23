@@ -9,6 +9,7 @@ import socket
 import json
 import re
 import hashlib
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 import edge_tts
@@ -87,6 +88,42 @@ def generate_bootstrap_cards_html() -> str:
     return "\n".join(cards)
 
 BOOTSTRAP_CARDS_HTML = generate_bootstrap_cards_html()
+
+DIALOGUE_LOG_FILE = os.path.join(os.path.dirname(__file__), "suhbatlar_tarixi.json")
+DIALOGUE_TXT_FILE = os.path.join(os.path.dirname(__file__), "suhbatlar_jurnali.txt")
+
+def log_dialogue(bemor: str, user_text: str, patient_text: str):
+    if not (user_text and user_text.strip()) and not (patient_text and patient_text.strip()):
+        return
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = {
+        "vaqt": now_str,
+        "bemor": bemor,
+        "hamshira_aytgan_gap": (user_text or "").strip(),
+        "bemor_javobi": (patient_text or "").strip()
+    }
+    try:
+        logs = []
+        if os.path.exists(DIALOGUE_LOG_FILE):
+            try:
+                with open(DIALOGUE_LOG_FILE, "r", encoding="utf-8") as f:
+                    logs = json.load(f)
+            except Exception:
+                logs = []
+        logs.append(entry)
+        if len(logs) > 100:
+            logs = logs[-100:]
+        with open(DIALOGUE_LOG_FILE, "w", encoding="utf-8") as f:
+            json.dump(logs, f, ensure_ascii=False, indent=2)
+            
+        with open(DIALOGUE_TXT_FILE, "a", encoding="utf-8") as f:
+            f.write(f"\n==================== [{now_str}] ====================\n")
+            f.write(f"🏥 Bemor: {bemor}\n")
+            f.write(f"🎤 Hamshira (Bemor eshitgan gap): {(user_text or '').strip()}\n")
+            f.write(f"🗣️ Bemor javobi: {(patient_text or '').strip()}\n")
+            f.write("----------------------------------------------------\n")
+    except Exception as e:
+        print(f"Suhbat tarixini saqlashda xatolik: {e}")
 
 HTML_CONTENT = """<!DOCTYPE html>
 <html lang="uz">
@@ -312,6 +349,12 @@ HTML_CONTENT = """<!DOCTYPE html>
                                class="w-16 md:w-20 h-1.5 bg-white/50 rounded-lg appearance-none cursor-pointer accent-white">
                         <span id="volume-val" class="text-[11px] font-mono text-white/90 w-7 text-right">35%</span>
                     </div>
+
+                    <button onclick="openDialogueHistoryModal()" title="Suhbatlar tarixi va xatolar jurnali"
+                            class="px-2.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 transition text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span class="hidden md:inline">Tarix</span>
+                    </button>
 
                     <button onclick="resetChat()" title="Suhbatni tozalash"
                             class="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm cursor-pointer">
@@ -1664,6 +1707,52 @@ HTML_CONTENT = """<!DOCTYPE html>
             }
         }
 
+        // Suhbatlar tarixi modali funksiyalari
+        async function openDialogueHistoryModal() {
+            const modal = document.getElementById("dialogue-history-modal");
+            if (modal) modal.classList.remove("hidden");
+            await loadDialogueHistory();
+        }
+        function closeDialogueHistoryModal() {
+            const modal = document.getElementById("dialogue-history-modal");
+            if (modal) modal.classList.add("hidden");
+        }
+        async function loadDialogueHistory() {
+            const list = document.getElementById("dialogue-history-list");
+            if (!list) return;
+            list.innerHTML = `<div class="text-center text-slate-400 py-10"><i class="fa-solid fa-spinner animate-spin text-lg"></i> Yuklanmoqda...</div>`;
+            try {
+                const res = await fetch("/api/dialogue_history?limit=30");
+                const data = await res.json();
+                if (!data.dialogues || data.dialogues.length === 0) {
+                    list.innerHTML = `<div class="text-center text-slate-400 py-12"><i class="fa-regular fa-comments text-3xl mb-2 block"></i> Hozircha suhbatlar jurnali bo'sh.<br>Bemor bilan gaplashsangiz, har bir so'z bu yerda saqlanadi.</div>`;
+                    return;
+                }
+                list.innerHTML = data.dialogues.slice().reverse().map(d => `
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-1.5 text-[11px]">
+                            <span class="font-bold text-indigo-700"><i class="fa-solid fa-hospital-user mr-1"></i>${escapeHtml(d.bemor || 'Nomaʼlum')}</span>
+                            <span class="text-slate-400 font-mono text-[10px]"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(d.vaqt || '')}</span>
+                        </div>
+                        <div class="bg-amber-50/70 border border-amber-200/60 rounded-lg p-2">
+                            <div class="font-bold text-[10px] text-amber-800 mb-0.5 flex items-center gap-1">
+                                <i class="fa-solid fa-ear-listen"></i> Hamshira (Bemor eshitgan gap):
+                            </div>
+                            <div class="text-slate-800 font-medium leading-relaxed">${escapeHtml(d.hamshira_aytgan_gap || '(Ovoz yozilmagan)')}</div>
+                        </div>
+                        <div class="bg-emerald-50/70 border border-emerald-200/60 rounded-lg p-2">
+                            <div class="font-bold text-[10px] text-emerald-800 mb-0.5 flex items-center gap-1">
+                                <i class="fa-solid fa-comment-medical"></i> Bemor javobi:
+                            </div>
+                            <div class="text-slate-800 leading-relaxed">${escapeHtml(d.bemor_javobi || '(Javob yozilmadi)')}</div>
+                        </div>
+                    </div>
+                `).join("");
+            } catch(e) {
+                list.innerHTML = `<div class="text-center text-rose-500 py-8">Tarixni yuklashda xatolik: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
         // Initialize on load (Darhol va ishonchli ishga tushirish)
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', loadDiseases);
@@ -1672,6 +1761,38 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
         window.addEventListener('load', loadDiseases);
     </script>
+
+    <!-- Suhbatlar Tarixi va Xatolar Jurnali Modali -->
+    <div id="dialogue-history-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+            <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm leading-tight">Suhbatlar Tarixi va Xatolar Jurnali</h3>
+                        <p class="text-[11px] text-slate-400">Bemor sizni aynan nima deb eshitgani va nima deb javob qaytargani</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="loadDialogueHistory()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-xs rounded-lg transition" title="Yangilash">
+                        <i class="fa-solid fa-arrows-rotate"></i> Yangilash
+                    </button>
+                    <button onclick="closeDialogueHistoryModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="dialogue-history-list" class="p-4 overflow-y-auto space-y-3 flex-1 bg-slate-50 min-h-[300px] text-xs">
+                <div class="text-center text-slate-400 py-10">Yuklanmoqda...</div>
+            </div>
+            <div class="px-5 py-3 bg-white border-t border-slate-200 flex items-center justify-between shrink-0 text-xs text-slate-500">
+                <span>Fayl: <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">suhbatlar_tarixi.json</code></span>
+                <button onclick="closeDialogueHistoryModal()" class="px-4 py-1.5 bg-slate-800 text-white rounded-xl font-medium hover:bg-slate-700 transition">Yopish</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 """.replace("__BOOTSTRAP_DISEASES__", BOOTSTRAP_DISEASES_JSON).replace("__BOOTSTRAP_CARDS__", BOOTSTRAP_CARDS_HTML)
@@ -1846,6 +1967,17 @@ async def websocket_telemetry(websocket: WebSocket):
 @app.get("/api/diseases")
 async def get_diseases():
     return JSONResponse(content=KASALLIKLAR)
+
+@app.get("/api/dialogue_history")
+async def get_dialogue_history(limit: int = 30):
+    try:
+        if os.path.exists(DIALOGUE_LOG_FILE):
+            with open(DIALOGUE_LOG_FILE, "r", encoding="utf-8") as f:
+                logs = json.load(f)
+                return JSONResponse({"status": "ok", "dialogues": logs[-limit:]})
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+    return JSONResponse({"status": "ok", "dialogues": []})
 
 @app.get("/manifest.json")
 async def get_manifest():
@@ -2137,6 +2269,10 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
         "gemini-3.8-live"
     ]
     
+    patient_display_name = kasallik.get("nomi", kasallik_id)
+    current_user_text_parts = []
+    current_patient_text_parts = []
+
     last_error = None
     for live_model in candidate_models:
         try:
@@ -2160,6 +2296,13 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                         u_text = sc.input_transcription.text
                                         u_fin = bool(getattr(sc.input_transcription, "finished", False))
                                         print(f"🎤 [AI Bemor eshitdi]: {u_text} (finished={u_fin})")
+                                        if u_text:
+                                            if not current_user_text_parts:
+                                                current_user_text_parts.append(u_text)
+                                            elif u_text.startswith(current_user_text_parts[-1]):
+                                                current_user_text_parts[-1] = u_text
+                                            elif not current_user_text_parts[-1].endswith(u_text):
+                                                current_user_text_parts.append(u_text)
                                         await safe_send_json({
                                             "type": "user_transcription",
                                             "text": u_text,
@@ -2168,9 +2311,12 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
 
                                     # 2. Bemorning o'zi qaytargan javob matni
                                     if sc.output_transcription and sc.output_transcription.text:
+                                        p_text = sc.output_transcription.text
+                                        if p_text:
+                                            current_patient_text_parts.append(p_text)
                                         await safe_send_json({
                                             "type": "text_stream",
-                                            "text": sc.output_transcription.text
+                                            "text": p_text
                                         })
                                     
                                     if sc.model_turn is not None:
@@ -2179,6 +2325,12 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                                 await safe_send_bytes(part.inline_data.data)
                                     
                                     if sc.turn_complete:
+                                        full_user = " ".join(current_user_text_parts).strip()
+                                        full_patient = "".join(current_patient_text_parts).strip()
+                                        if full_user or full_patient:
+                                            log_dialogue(patient_display_name, full_user, full_patient)
+                                            current_user_text_parts.clear()
+                                            current_patient_text_parts.clear()
                                         await safe_send_json({"type": "turn_complete"})
                     except asyncio.CancelledError:
                         pass
@@ -2222,6 +2374,7 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                     
                                 user_text = payload.get("text", "").strip()
                                 if user_text:
+                                    current_user_text_parts.append(user_text)
                                     await session.send_client_content(
                                         turns=[types.Content(
                                             role="user",
@@ -2236,6 +2389,12 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                 finally:
                     stream_task.cancel()
                     await asyncio.gather(stream_task, return_exceptions=True)
+                    full_user = " ".join(current_user_text_parts).strip()
+                    full_patient = "".join(current_patient_text_parts).strip()
+                    if full_user or full_patient:
+                        log_dialogue(patient_display_name, full_user, full_patient)
+                        current_user_text_parts.clear()
+                        current_patient_text_parts.clear()
 
                 return # Muvaffaqiyatli seans yakunlandi
         except WebSocketDisconnect:
