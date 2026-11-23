@@ -825,6 +825,48 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         // Output Audio (24kHz Gemini Live Stream Player & Master Gain)
 
+        let bluetoothKeepAliveNode = null;
+        let bluetoothKeepAliveActive = false;
+
+        function startBluetoothKeepAlive() {
+            if (!outAudioCtx || bluetoothKeepAliveActive) return;
+            try {
+                // 3 soniyalik inson qulog'iga mutlaqo eshitilmaydigan fon tebranishi (Bluetooth kalonka DAC uxlab qolmasligi uchun)
+                // 25Hz sub-bass (kichik Bluetooth kalonka fizik jihatdan chiqara olmaydi) + o'ta mayin pushti dither (-58dB)
+                const sr = outAudioCtx.sampleRate || 24000;
+                const bufferSize = sr * 3;
+                const noiseBuf = outAudioCtx.createBuffer(1, bufferSize, sr);
+                const data = noiseBuf.getChannelData(0);
+                
+                let b0 = 0, b1 = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = (Math.random() * 2 - 1);
+                    b0 = 0.99 * b0 + white * 0.05;
+                    b1 = 0.95 * b1 + white * 0.05;
+                    const sub = Math.sin(2 * Math.PI * 25 * (i / sr)) * 0.0015;
+                    const dither = (b0 + b1) * 0.002;
+                    data[i] = sub + dither;
+                }
+                
+                const noiseSrc = outAudioCtx.createBufferSource();
+                noiseSrc.buffer = noiseBuf;
+                noiseSrc.loop = true;
+                
+                // Master volume ga bog'liq bo'lmasligi va kalonka doim uyg'oq turishi uchun to'g'ridan-to'g'ri destination ga ulaymiz
+                const keepAliveGain = outAudioCtx.createGain();
+                keepAliveGain.gain.setValueAtTime(1.0, outAudioCtx.currentTime);
+                noiseSrc.connect(keepAliveGain);
+                keepAliveGain.connect(outAudioCtx.destination);
+                
+                noiseSrc.start();
+                bluetoothKeepAliveNode = noiseSrc;
+                bluetoothKeepAliveActive = true;
+                console.log("🔊 Bluetooth Keep-Alive faol: kalonka DAC doimiy uyg'oq, so'z boshi kesilmaydi");
+            } catch(e) {
+                console.warn("Bluetooth keep-alive error:", e);
+            }
+        }
+
         function initOutputAudio() {
             if (!outAudioCtx) {
                 outAudioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
@@ -833,7 +875,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                 outGainNode.connect(outAudioCtx.destination);
             }
             if (outAudioCtx.state === 'suspended') {
-                outAudioCtx.resume();
+                outAudioCtx.resume().then(() => {
+                    startBluetoothKeepAlive();
+                }).catch(() => {});
+            } else {
+                startBluetoothKeepAlive();
             }
         }
 
@@ -1600,6 +1646,20 @@ HTML_CONTENT = """<!DOCTYPE html>
             loadDiseases();
         }
         window.addEventListener('load', loadDiseases);
+
+        // Sahifada birinchi marta bosilganda (click/touch) Bluetooth Keep-Alive signalini darhol uyg'otish
+        function ensureAudioAwake() {
+            initOutputAudio();
+            if (outAudioCtx && outAudioCtx.state === 'suspended') {
+                outAudioCtx.resume().then(() => {
+                    startBluetoothKeepAlive();
+                }).catch(() => {});
+            } else {
+                startBluetoothKeepAlive();
+            }
+        }
+        document.addEventListener('click', ensureAudioAwake, { passive: true });
+        document.addEventListener('touchstart', ensureAudioAwake, { passive: true });
     </script>
 </body>
 </html>
@@ -2016,11 +2076,11 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     if is_under_18:
         base_prompt = UMUMIY_BOLA_PROMPT
         voice_name = kasallik.get("gemini_voice", "Kore")
-        address_reminder = "MUROJAAT QOIDASI (O'TA MUHIM): Senga savol berayotgan shaxsga FAQAT 'Hamshira opa' deb murojaat qil! Qat'iyan 'doktor' yoki 'shifokor' deb aytma!"
+        address_reminder = "MUROJAAT QOIDASI: Tibbiyot xodimiga qat'iyan 'doktor' yoki 'shifokor' deb aytma! Kerak bo'lganda 'hamshira opa' deysan. LEKIN O'TA MUHIM: Har bir gapda yoki har javobda 'hamshira opa' deb qayta-qayta takrorlama, oddiy yosh bola kabi to'g'ridan-to'g'ri tabiiy javob ber!"
     else:
         base_prompt = UMUMIY_KATTA_PROMPT
         voice_name = kasallik.get("gemini_voice", "Puck")
-        address_reminder = "MUROJAAT QOIDASI (O'TA MUHIM): Senga savol berayotgan shaxsga FAQAT 'hamshira' (yoki yoshi katta qariya bo'lsang 'hamshira qizim', 'hamshira') deb murojaat qil! Qat'iyan 'doktor' yoki 'shifokor' deb aytma!"
+        address_reminder = "MUROJAAT QOIDASI: Tibbiyot xodimiga qat'iyan 'doktor' yoki 'shifokor' deb aytma! Kerak bo'lganda 'hamshira' (yoki keksa bo'lsang 'hamshira qizim') deysan. LEKIN O'TA MUHIM: Har bir gapda yoki har javobda 'hamshira' deb tinimsiz takrorlama, haqiqiy bemordek to'g'ridan-to'g'ri ahvolingni aytib tabiiy javob ber!"
         
     system_prompt = base_prompt + "\n\n" + address_reminder + "\n\n" + kasallik["prompt"]
     
