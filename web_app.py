@@ -323,7 +323,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <!-- Messages Log (Faqat xabarlar maydoni ichki skroll bo'ladi) -->
             <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-0">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
-                    🟢 <b>Jonli simulyatsiya faol!</b> Hamshira yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Yuqoridagi <b>"Jonli Qo'ng'iroq"</b> tugmasi orqali uzluksiz ovozli suhbat qurishingiz mumkin.
+                    🟢 <b>Jonli simulyatsiya faol!</b> Hamshira yoki talaba sifatida bemordan ahvolini so'rang (masalan: <i>"Qayeringiz og'riyapti?", "Qachon boshlandi?"</i>). Bemor sizni eshitishi bilan aytgan so'zlaringiz ekranda darhol aks etadi.
                 </div>
             </div>
 
@@ -1189,7 +1189,64 @@ HTML_CONTENT = """<!DOCTYPE html>
         let currentPatientText = "";
         let diseaseWsDebounce = null;
 
+        let currentUserBubble = null;
+        let currentUserTextEl = null;
+        let currentUserText = "";
+
+        function appendUserStreamText(chunk, finished = false) {
+            const box = document.getElementById("chat-box");
+            if (!box || !chunk) return;
+            
+            if (!currentUserBubble) {
+                limitChatElements();
+                currentUserText = chunk;
+                currentUserBubble = document.createElement("div");
+                currentUserBubble.className = "flex items-start justify-end gap-2.5 user-stream-bubble";
+                currentUserBubble.innerHTML = `
+                    <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[85%] text-sm shadow-sm border border-indigo-400/40">
+                        <div class="font-bold text-xs text-indigo-200 mb-1 flex items-center justify-end gap-1.5">
+                            <span class="user-mic-pulse inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping" title="Eshitilmoqda..."></span>
+                            <i class="fa-solid fa-ear-listen text-amber-300"></i>
+                            <span>Hamshira (Bemor eshitgan gap):</span>
+                        </div>
+                        <div class="user-bubble-content font-medium leading-relaxed">${escapeHtml(currentUserText)}</div>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shrink-0 shadow-sm">
+                        <i class="fa-solid fa-user-nurse"></i>
+                    </div>
+                `;
+                box.appendChild(currentUserBubble);
+                currentUserTextEl = currentUserBubble.querySelector(".user-bubble-content");
+            } else {
+                if (currentUserText && chunk.startsWith(currentUserText)) {
+                    currentUserText = chunk;
+                } else if (currentUserText && !chunk.startsWith(" ") && !currentUserText.endsWith(" ")) {
+                    currentUserText += " " + chunk;
+                } else {
+                    currentUserText += chunk;
+                }
+                if (currentUserTextEl) {
+                    currentUserTextEl.innerText = currentUserText;
+                }
+            }
+            if (finished) {
+                finalizeUserText();
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function finalizeUserText() {
+            if (currentUserBubble) {
+                const dot = currentUserBubble.querySelector(".user-mic-pulse");
+                if (dot) dot.remove();
+            }
+            currentUserBubble = null;
+            currentUserTextEl = null;
+            currentUserText = "";
+        }
+
         function appendPatientStreamText(chunk) {
+            finalizeUserText();
             const box = document.getElementById("chat-box");
             if (!currentPatientBubble) {
                 limitChatElements();
@@ -1235,6 +1292,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         function closeLiveWebSocket() {
+            finalizeUserText();
+            finalizePatientText();
             if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
             if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null; }
             if (waitAudioFinishTimer) { clearInterval(waitAudioFinishTimer); waitAudioFinishTimer = null; }
@@ -1320,11 +1379,21 @@ HTML_CONTENT = """<!DOCTYPE html>
                     addSystemMessage(`⚠️ <b>Tizim xabari:</b> ${escapeHtml(data.message || "Xatolik yuz berdi")}`);
                     return;
                 }
+                if (data.type === "user_transcription") {
+                    appendUserStreamText(data.text, data.finished);
+                    if (data.text) {
+                        const snippet = data.text.length > 28 ? data.text.slice(0, 28) + "..." : data.text;
+                        updateStatus(`👂 Bemor eshitdi: "${snippet}"`, "blue");
+                    }
+                    return;
+                }
                 if (data.type === "text_stream") {
+                    finalizeUserText();
                     isPatientSpeaking = true;
                     appendPatientStreamText(data.text);
                     updateStatus("🗣️ Bemor javob bermoqda...", "green");
                 } else if (data.type === "turn_complete") {
+                    finalizeUserText();
                     setProcessing(false);
                     if (waitAudioFinishTimer) {
                         clearInterval(waitAudioFinishTimer);
@@ -1338,7 +1407,8 @@ HTML_CONTENT = """<!DOCTYPE html>
                             clearInterval(waitAudioFinishTimer);
                             waitAudioFinishTimer = null;
                             isPatientSpeaking = false;
-                            finalizePatientText();
+                            finalizeUserText();
+                        finalizePatientText();
                             if (isCallActive) {
                                 updateStatus("🎙️ Bemor tinglamoqda — gapiravering...", "red");
                             } else {
@@ -1354,6 +1424,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         }
                         isPatientSpeaking = false;
                         stopAllAudioPlayback();
+                        finalizeUserText();
                         finalizePatientText();
                         setProcessing(false);
                         if (isCallActive) {
@@ -2047,6 +2118,7 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     
     config = types.LiveConnectConfig(
         response_modalities=["AUDIO"],
+        input_audio_transcription=types.AudioTranscriptionConfig(),
         output_audio_transcription=types.AudioTranscriptionConfig(),
         system_instruction=system_prompt,
         speech_config=types.SpeechConfig(
@@ -2083,6 +2155,18 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
                                     if sc.interrupted:
                                         await safe_send_json({"type": "interrupted"})
                                     
+                                    # 1. Bemor eshitgan nutq (Hamshiraning mikrofondan aytgan gapi)
+                                    if sc.input_transcription and sc.input_transcription.text:
+                                        u_text = sc.input_transcription.text
+                                        u_fin = bool(getattr(sc.input_transcription, "finished", False))
+                                        print(f"🎤 [AI Bemor eshitdi]: {u_text} (finished={u_fin})")
+                                        await safe_send_json({
+                                            "type": "user_transcription",
+                                            "text": u_text,
+                                            "finished": u_fin
+                                        })
+
+                                    # 2. Bemorning o'zi qaytargan javob matni
                                     if sc.output_transcription and sc.output_transcription.text:
                                         await safe_send_json({
                                             "type": "text_stream",
