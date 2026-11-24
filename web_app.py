@@ -52,6 +52,7 @@ API_KEY = (
 
 # ==================== 100+ CHUQURLASHTIRILGAN KLINIK PROFIL (Barcha Bo'limlar) ====================
 from diseases_db import KASALLIKLAR, UMUMIY_KATTA_PROMPT, UMUMIY_BOLA_PROMPT, UMUMIY_PROMPT
+from patient_dialogue_templates import get_all_templates_dict
 
 
 app = FastAPI(title="RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori")
@@ -73,6 +74,8 @@ BOOTSTRAP_DISEASES_JSON = json.dumps({
         "tts_voice": v.get("tts_voice", "uz-UZ-MadinaNeural" if v.get("is_child") else "uz-UZ-SardorNeural")
     } for k, v in KASALLIKLAR.items()
 }, ensure_ascii=False)
+
+BOOTSTRAP_TEMPLATES_JSON = json.dumps(get_all_templates_dict(KASALLIKLAR), ensure_ascii=False)
 
 def generate_bootstrap_cards_html() -> str:
     cards = []
@@ -336,6 +339,31 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
+            <!-- Bemor bilan muloqot va yakunlash shabloni (Collapsible Template Panel) -->
+            <div id="dialogue-template-panel" class="shrink-0 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-b border-indigo-800/50 shadow-sm transition-all duration-300">
+                <!-- Panel Header / Bar -->
+                <div class="px-4 py-2 flex items-center justify-between cursor-pointer select-none hover:bg-white/5 transition" onclick="toggleDialogueTemplate()">
+                    <div class="flex items-center gap-2 text-xs min-w-0">
+                        <span class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold text-[10px] border border-cyan-500/30 flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-clipboard-list text-cyan-400"></i>
+                            <span>SUHBAT SHABLONI</span>
+                        </span>
+                        <span id="template-patient-title" class="font-semibold text-slate-200 truncate text-xs">1. Normal (Sog'lom ko'rik)</span>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" id="template-toggle-btn" onclick="toggleDialogueTemplate(event)" class="px-2.5 py-1 rounded-lg bg-indigo-600/70 hover:bg-indigo-600 text-[11px] font-bold text-white transition flex items-center gap-1.5 shadow-sm border border-indigo-400/30 cursor-pointer">
+                            <i id="template-toggle-icon" class="fa-solid fa-eye-slash"></i>
+                            <span id="template-toggle-text">Yashirish</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Collapsible Content (Bemorga xos 4 ta bo'lim) -->
+                <div id="template-content-body" class="px-4 pb-3 pt-1 space-y-2 max-h-56 overflow-y-auto chat-scroll transition-all duration-300 border-t border-white/5">
+                    <!-- JS orqali to'ldiriladi: renderDialogueTemplate(currentKey) -->
+                </div>
+            </div>
+
             <!-- Messages Log (Faqat xabarlar maydoni ichki skroll bo'ladi) -->
             <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-0">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
@@ -392,6 +420,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         // Kasalliklar bazasi (Serverdan darhol inyeksiya qilingan - sahifa ochilishi bilan 0 soniyada yuklanadi)
         let diseases = __BOOTSTRAP_DISEASES__;
+        let dialogueTemplates = __BOOTSTRAP_TEMPLATES__;
+        let isTemplateVisible = localStorage.getItem("med_template_visible") !== "false";
         let activeCategory = "all";
 
         function setCategoryFilter(category) {
@@ -689,6 +719,150 @@ HTML_CONTENT = """<!DOCTYPE html>
             console.warn("Serial disconnect listener unhandled:", e);
         }
 
+        // =========================================================================
+        // SUHBAT VA YAKUNLASH SHABLONI (DIALOGUE TEMPLATES & TOGGLE)
+        // =========================================================================
+        function toggleDialogueTemplate(e) {
+            if (e && e.stopPropagation) e.stopPropagation();
+            isTemplateVisible = !isTemplateVisible;
+            try {
+                localStorage.setItem("med_template_visible", isTemplateVisible ? "true" : "false");
+            } catch(err) {}
+            applyTemplateVisibility();
+        }
+
+        function applyTemplateVisibility() {
+            const body = document.getElementById("template-content-body");
+            const icon = document.getElementById("template-toggle-icon");
+            const text = document.getElementById("template-toggle-text");
+            if (!body || !icon || !text) return;
+            
+            if (isTemplateVisible) {
+                body.classList.remove("hidden");
+                icon.className = "fa-solid fa-eye-slash";
+                text.innerText = "Yashirish";
+            } else {
+                body.classList.add("hidden");
+                icon.className = "fa-solid fa-eye";
+                text.innerText = "Ko'rsatish";
+            }
+        }
+
+        function copyTemplateItem(key, type, idx = 0) {
+            const tpl = (dialogueTemplates && dialogueTemplates[key]) ? dialogueTemplates[key] : (dialogueTemplates ? dialogueTemplates["normal"] : null);
+            if (!tpl) return;
+            let textToCopy = "";
+            if (type === "salom" && tpl.salomlashish) {
+                textToCopy = tpl.salomlashish.matn;
+            } else if (type === "savol" && tpl.savollar && tpl.savollar[idx]) {
+                textToCopy = tpl.savollar[idx].savol;
+            } else if (type === "yakun" && tpl.yakunlash) {
+                textToCopy = tpl.yakunlash.matn;
+            }
+            if (textToCopy) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(textToCopy).catch(() => {});
+                }
+                showPulseToast("📋 Matn nusxalandi: Bemordan so'rashingiz mumkin!", "bg-cyan-600");
+            }
+        }
+
+        function renderDialogueTemplate(key) {
+            if (!dialogueTemplates) return;
+            const tpl = dialogueTemplates[key] || dialogueTemplates["normal"];
+            if (!tpl) return;
+
+            const titleEl = document.getElementById("template-patient-title");
+            if (titleEl) {
+                titleEl.innerText = tpl.nomi || "Bemor bilan suhbat shabloni";
+            }
+
+            const container = document.getElementById("template-content-body");
+            if (!container) return;
+
+            let html = '';
+
+            // 1. Salomlashish
+            if (tpl.salomlashish) {
+                html += `
+                <div class="p-2 rounded-xl bg-slate-800/80 border border-cyan-500/30 text-xs">
+                    <div class="flex items-center justify-between text-cyan-400 font-bold mb-1">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-handshake text-cyan-400"></i> 1. Salomlashish va Shaxsni Tasdiqlash</span>
+                        <span class="text-[10px] text-slate-400 font-normal italic">${tpl.salomlashish.izoh || ''}</span>
+                    </div>
+                    <div class="text-slate-100 flex items-center justify-between gap-2 bg-slate-900/60 p-2 rounded-lg cursor-pointer hover:bg-slate-900 transition border border-cyan-500/10" onclick="copyTemplateItem('${key}', 'salom')">
+                        <span class="italic font-medium">"${tpl.salomlashish.matn}"</span>
+                        <button type="button" title="Nusxalash" class="text-cyan-400 hover:text-cyan-300 shrink-0 text-xs px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/50 flex items-center gap-1"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>`;
+            }
+
+            // 2. Maxsus Klinik Savollar
+            if (tpl.savollar && tpl.savollar.length > 0) {
+                html += `
+                <div class="p-2 rounded-xl bg-slate-800/80 border border-indigo-500/30 text-xs">
+                    <div class="text-indigo-300 font-bold mb-1.5 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-indigo-400"></i> 2. Mazkur Kasallikka Xos Maxsus Savollar (${tpl.savollar.length} ta)</span>
+                        <span class="text-[10px] text-indigo-200 bg-indigo-900/60 px-2 py-0.5 rounded-full border border-indigo-700/40">Klinik Protokol</span>
+                    </div>
+                    <div class="space-y-1.5">`;
+                
+                tpl.savollar.forEach((q, idx) => {
+                    html += `
+                        <div class="flex items-start justify-between gap-2 p-2 rounded-lg bg-slate-900/60 border border-slate-700/50 hover:border-indigo-400/50 transition cursor-pointer" onclick="copyTemplateItem('${key}', 'savol', ${idx})">
+                            <div class="flex-1">
+                                <div class="text-slate-100 font-medium leading-snug"><span class="text-indigo-400 font-bold mr-1">${idx+1}.</span>"${q.savol}"</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1"><i class="fa-solid fa-bullseye text-cyan-400 text-[9px]"></i> Maqsad: ${q.maqsad}</div>
+                            </div>
+                            <button type="button" title="Nusxalash" class="text-indigo-400 hover:text-indigo-300 shrink-0 text-xs px-2 py-1 rounded bg-indigo-950/80 border border-indigo-700/50"><i class="fa-regular fa-copy"></i></button>
+                        </div>`;
+                });
+
+                html += `
+                    </div>
+                </div>`;
+            }
+
+            // 3. Hamshiralik parvarishi harakatlari
+            if (tpl.parvarish) {
+                html += `
+                <div class="p-2 rounded-xl bg-slate-800/80 border border-amber-500/30 text-xs">
+                    <div class="text-amber-300 font-bold mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-hand-holding-medical text-amber-400"></i> 3. Bemorga Dalda va Birlamchi Hamshiralik Parvarishi
+                    </div>
+                    <div class="text-slate-200 bg-slate-900/60 p-2 rounded-lg text-[11px] leading-relaxed border border-amber-500/10">
+                        ${tpl.parvarish.tavsiya}
+                    </div>
+                </div>`;
+            }
+
+            // 4. Suhbatni to'g'ri yakunlash va shifokorga hisobot
+            if (tpl.yakunlash) {
+                html += `
+                <div class="p-2 rounded-xl bg-slate-800/80 border border-emerald-500/30 text-xs">
+                    <div class="text-emerald-400 font-bold mb-1 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-flag-checkered text-emerald-400"></i> 4. Suhbatni Professional Yakunlash</span>
+                        <span class="text-[10px] text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-700/50">Tugatish qadami</span>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="p-2 rounded-lg bg-slate-900/60 border border-emerald-900/50 cursor-pointer hover:bg-slate-900 transition flex items-center justify-between gap-2" onclick="copyTemplateItem('${key}', 'yakun')">
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-semibold mb-0.5">Bemorga yakunlovchi gap:</div>
+                                <div class="text-slate-100 font-medium italic">"${tpl.yakunlash.matn}"</div>
+                            </div>
+                            <button type="button" title="Nusxalash" class="text-emerald-400 hover:text-emerald-300 shrink-0 text-xs px-2 py-1 rounded bg-emerald-950/80 border border-emerald-700/50"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                        ${tpl.yakunlash.hisobot ? `
+                        <div class="p-2 rounded-lg bg-emerald-950/40 border border-emerald-800/40 text-[10px] text-emerald-200">
+                            <span class="font-bold text-white"><i class="fa-solid fa-user-doctor mr-1"></i> Shifokorga xabar (SBAR):</span> ${tpl.yakunlash.hisobot}
+                        </div>` : ''}
+                    </div>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
         // Select Disease (Barcha funksiyalar xavfsiz himoyalangan)
         function selectDisease(key) {
             if (!diseases || !diseases[key]) return;
@@ -749,6 +923,12 @@ HTML_CONTENT = """<!DOCTYPE html>
             try {
                 renderDiseases(document.getElementById("search-box") ? document.getElementById("search-box").value : "");
             } catch(e) {}
+
+            try {
+                renderDialogueTemplate(key);
+            } catch(e) {
+                console.warn("renderDialogueTemplate warning:", e);
+            }
             
             // 1. Avvalgi bemor ovozi va muloqot holatini to'liq tozalash
             try {
@@ -804,6 +984,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 renderDiseases();
                 selectDisease("normal");
                 applyVolume();
+                applyTemplateVisibility();
             } catch (e) {
                 console.error("Error initializing diseases:", e);
             }
@@ -1679,7 +1860,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     </script>
 </body>
 </html>
-""".replace("__BOOTSTRAP_DISEASES__", BOOTSTRAP_DISEASES_JSON).replace("__BOOTSTRAP_CARDS__", BOOTSTRAP_CARDS_HTML)
+""".replace("__BOOTSTRAP_DISEASES__", BOOTSTRAP_DISEASES_JSON).replace("__BOOTSTRAP_CARDS__", BOOTSTRAP_CARDS_HTML).replace("__BOOTSTRAP_TEMPLATES__", BOOTSTRAP_TEMPLATES_JSON)
 
 # Static files and PWA assets
 os.makedirs("static", exist_ok=True)
@@ -1954,6 +2135,10 @@ async def websocket_telemetry(websocket: WebSocket):
 @app.get("/api/diseases")
 async def get_diseases():
     return JSONResponse(content=KASALLIKLAR)
+
+@app.get("/api/dialogue_templates")
+async def get_dialogue_templates_endpoint():
+    return JSONResponse(content=get_all_templates_dict(KASALLIKLAR))
 
 @app.get("/manifest.json")
 async def get_manifest():
