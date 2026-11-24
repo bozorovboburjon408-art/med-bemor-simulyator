@@ -347,7 +347,7 @@ LOGIN_PAGE_HTML = """<!DOCTYPE html>
                     </label>
                     <div class="relative">
                         <input type="email" id="email" required autocomplete="username"
-                               placeholder="malaka@gmail.com"
+                               placeholder="Email manzilingiz"
                                class="w-full bg-slate-800/90 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition shadow-inner">
                     </div>
                 </div>
@@ -366,14 +366,11 @@ LOGIN_PAGE_HTML = """<!DOCTYPE html>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+                <div class="flex items-center text-xs text-slate-400 pt-1">
                     <label class="flex items-center gap-2 cursor-pointer select-none">
                         <input type="checkbox" id="remember" checked class="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-0">
                         <span>Qurilmani eslab qolish</span>
                     </label>
-                    <span class="text-cyan-400 font-medium cursor-help" title="Foydalanuvchi: malaka@gmail.com / Admin: admin@gmail.com">
-                        <i class="fa-regular fa-circle-question mr-1"></i>Yordam
-                    </span>
                 </div>
 
                 <button type="submit" id="submit-btn" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-emerald-500 hover:from-cyan-400 hover:via-indigo-500 hover:to-emerald-400 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer mt-2">
@@ -382,30 +379,8 @@ LOGIN_PAGE_HTML = """<!DOCTYPE html>
                 </button>
             </form>
 
-            <!-- Hisoblar bo'yicha tezkor eslatma -->
-            <div class="mt-6 pt-5 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-2">
-                <div class="font-bold text-slate-300 flex items-center justify-between">
-                    <span>Kirish ma'lumotlari:</span>
-                    <span class="text-[10px] text-cyan-400 font-mono">Xavfsiz rejim</span>
-                </div>
-                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:bg-slate-800 transition" onclick="quickFill('malaka@gmail.com', 'malaka123')">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-user-nurse text-cyan-400 text-xs"></i>
-                        <span>Foydalanuvchi:</span>
-                    </div>
-                    <code class="font-mono text-cyan-300">malaka@gmail.com</code>
-                </div>
-                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 cursor-pointer hover:bg-slate-800 transition" onclick="quickFill('admin@gmail.com', 'admin123')">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-user-shield text-indigo-400 text-xs"></i>
-                        <span>Admin Panel:</span>
-                    </div>
-                    <code class="font-mono text-indigo-300">admin@gmail.com</code>
-                </div>
-            </div>
-
             <!-- Footer -->
-            <div class="text-center text-[10px] text-slate-500 mt-5 flex items-center justify-center gap-1.5">
+            <div class="text-center text-[10px] text-slate-500 mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-shield-halved text-emerald-400"></i>
                 <span>Xavfsiz sessiya va qurilmalar nazorati faol &copy; 2026</span>
             </div>
@@ -423,11 +398,6 @@ LOGIN_PAGE_HTML = """<!DOCTYPE html>
                 pass.type = "password";
                 icon.className = "fa-regular fa-eye";
             }
-        }
-
-        function quickFill(email, pass) {
-            document.getElementById("email").value = email;
-            document.getElementById("password").value = pass;
         }
 
         async function handleLogin(e) {
