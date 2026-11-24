@@ -339,31 +339,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Bemor bilan muloqot va yakunlash shabloni (Collapsible Template Panel) -->
-            <div id="dialogue-template-panel" class="shrink-0 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-b border-indigo-800/50 shadow-sm transition-all duration-300">
-                <!-- Panel Header / Bar -->
-                <div class="px-4 py-2 flex items-center justify-between cursor-pointer select-none hover:bg-white/5 transition" onclick="toggleDialogueTemplate()">
-                    <div class="flex items-center gap-2 text-xs min-w-0">
-                        <span class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold text-[10px] border border-cyan-500/30 flex items-center gap-1 shrink-0">
-                            <i class="fa-solid fa-clipboard-list text-cyan-400"></i>
-                            <span>SUHBAT SHABLONI</span>
-                        </span>
-                        <span id="template-patient-title" class="font-semibold text-slate-200 truncate text-xs">1. Normal (Sog'lom ko'rik)</span>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <button type="button" id="template-toggle-btn" onclick="toggleDialogueTemplate(event)" class="px-2.5 py-1 rounded-lg bg-indigo-600/70 hover:bg-indigo-600 text-[11px] font-bold text-white transition flex items-center gap-1.5 shadow-sm border border-indigo-400/30 cursor-pointer">
-                            <i id="template-toggle-icon" class="fa-solid fa-eye-slash"></i>
-                            <span id="template-toggle-text">Yashirish</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Collapsible Content (Bemorga xos 4 ta bo'lim) -->
-                <div id="template-content-body" class="px-4 pb-3 pt-1 space-y-2 max-h-56 overflow-y-auto chat-scroll transition-all duration-300 border-t border-white/5">
-                    <!-- JS orqali to'ldiriladi: renderDialogueTemplate(currentKey) -->
-                </div>
-            </div>
-
             <!-- Messages Log (Faqat xabarlar maydoni ichki skroll bo'ladi) -->
             <div id="chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50 min-h-0">
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs text-indigo-800 text-center">
@@ -387,6 +362,65 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
 
     </main>
+
+    <!-- Floating Side Tab / Button (< tugmacha: Asosiy ekranga xalaqit bermaydi) -->
+    <button id="template-floating-btn" onclick="toggleDialogueDrawer()"
+            class="fixed right-0 top-1/2 -translate-y-1/2 z-40 bg-gradient-to-l from-indigo-700 via-indigo-600 to-indigo-700 hover:from-indigo-600 hover:to-indigo-500 text-white pl-2.5 pr-1.5 py-4 rounded-l-2xl shadow-2xl border-y border-l border-indigo-400/40 flex items-center gap-2 cursor-pointer transition-all duration-200 group hover:pl-3"
+            title="Bemor bilan suhbat va yakunlash shablonini to'liq ochish (<)">
+        <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-cyan-300 group-hover:scale-110 group-hover:bg-cyan-400 group-hover:text-slate-950 transition">
+            <i class="fa-solid fa-chevron-left text-xs"></i>
+        </span>
+        <div class="[writing-mode:vertical-rl] rotate-180 flex items-center gap-1.5 text-xs font-bold tracking-wider select-none text-slate-100">
+            <i class="fa-solid fa-clipboard-list text-cyan-400 rotate-90 text-sm"></i>
+            <span>SUHBAT SHABLONI</span>
+        </div>
+    </button>
+
+    <!-- Side Drawer Backdrop (Yopish uchun fon) -->
+    <div id="template-drawer-backdrop" onclick="closeDialogueDrawer()"
+         class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 transition-opacity duration-300 opacity-0 cursor-pointer"></div>
+
+    <!-- Side Drawer (To'liq oynada ochiluvchi qulay panel) -->
+    <div id="template-drawer"
+         class="fixed top-0 right-0 h-full w-full sm:w-[500px] md:w-[560px] max-w-full bg-slate-900 text-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col border-l border-indigo-900/60">
+        
+        <!-- Drawer Header -->
+        <div class="shrink-0 px-5 py-4 bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 border-b border-indigo-900/50 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/30 text-lg">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-bold text-sm text-white truncate flex items-center gap-2">
+                        <span>Suhbat va Yakunlash Shabloni</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Protokol</span>
+                    </h3>
+                    <p id="template-patient-title" class="text-xs text-indigo-300 truncate font-semibold mt-0.5">1. Normal (Sog'lom ko'rik)</p>
+                </div>
+            </div>
+            
+            <button onclick="closeDialogueDrawer()" 
+                    class="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition cursor-pointer border border-slate-700 shadow-sm" 
+                    title="Yopish (Esc yoki >)">
+                <i class="fa-solid fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Body (Full height scrollable, plenty of room for all details) -->
+        <div id="template-content-body" class="flex-1 p-5 overflow-y-auto chat-scroll space-y-3.5 bg-slate-900/95">
+            <!-- Rendered via JS: renderDialogueTemplate(key) -->
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="shrink-0 px-5 py-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span class="flex items-center gap-1.5 text-[11px] text-slate-400">
+                <i class="fa-regular fa-copy text-cyan-400"></i> Matn ustiga bosib nusxalashingiz mumkin
+            </span>
+            <button onclick="closeDialogueDrawer()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition cursor-pointer shadow">
+                <i class="fa-solid fa-chevron-right mr-1"></i> Yopish
+            </button>
+        </div>
+    </div>
 
     <!-- Audio Elements (Hidden) -->
     <audio id="audio-player" class="hidden"></audio>
@@ -421,7 +455,6 @@ HTML_CONTENT = """<!DOCTYPE html>
         // Kasalliklar bazasi (Serverdan darhol inyeksiya qilingan - sahifa ochilishi bilan 0 soniyada yuklanadi)
         let diseases = __BOOTSTRAP_DISEASES__;
         let dialogueTemplates = __BOOTSTRAP_TEMPLATES__;
-        let isTemplateVisible = localStorage.getItem("med_template_visible") !== "false";
         let activeCategory = "all";
 
         function setCategoryFilter(category) {
@@ -720,33 +753,56 @@ HTML_CONTENT = """<!DOCTYPE html>
         }
 
         // =========================================================================
-        // SUHBAT VA YAKUNLASH SHABLONI (DIALOGUE TEMPLATES & TOGGLE)
+        // SUHBAT VA YAKUNLASH SHABLONI (SIDE DRAWER & MODAL MANAGEMENT)
         // =========================================================================
-        function toggleDialogueTemplate(e) {
-            if (e && e.stopPropagation) e.stopPropagation();
-            isTemplateVisible = !isTemplateVisible;
-            try {
-                localStorage.setItem("med_template_visible", isTemplateVisible ? "true" : "false");
-            } catch(err) {}
-            applyTemplateVisibility();
+        let isDrawerOpen = false;
+
+        function openDialogueDrawer() {
+            isDrawerOpen = true;
+            const drawer = document.getElementById("template-drawer");
+            const backdrop = document.getElementById("template-drawer-backdrop");
+            if (!drawer || !backdrop) return;
+            
+            backdrop.classList.remove("hidden");
+            setTimeout(() => {
+                backdrop.classList.remove("opacity-0");
+                backdrop.classList.add("opacity-100");
+                drawer.classList.remove("translate-x-full");
+                drawer.classList.add("translate-x-0");
+            }, 10);
         }
 
-        function applyTemplateVisibility() {
-            const body = document.getElementById("template-content-body");
-            const icon = document.getElementById("template-toggle-icon");
-            const text = document.getElementById("template-toggle-text");
-            if (!body || !icon || !text) return;
+        function closeDialogueDrawer() {
+            isDrawerOpen = false;
+            const drawer = document.getElementById("template-drawer");
+            const backdrop = document.getElementById("template-drawer-backdrop");
+            if (!drawer || !backdrop) return;
             
-            if (isTemplateVisible) {
-                body.classList.remove("hidden");
-                icon.className = "fa-solid fa-eye-slash";
-                text.innerText = "Yashirish";
+            drawer.classList.remove("translate-x-0");
+            drawer.classList.add("translate-x-full");
+            backdrop.classList.remove("opacity-100");
+            backdrop.classList.add("opacity-0");
+            setTimeout(() => {
+                if (!isDrawerOpen) {
+                    backdrop.classList.add("hidden");
+                }
+            }, 300);
+        }
+
+        function toggleDialogueDrawer() {
+            if (isDrawerOpen) {
+                closeDialogueDrawer();
             } else {
-                body.classList.add("hidden");
-                icon.className = "fa-solid fa-eye";
-                text.innerText = "Ko'rsatish";
+                openDialogueDrawer();
             }
         }
+
+        // Escape tugmasi bosilganda yopish
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && isDrawerOpen) {
+                closeDialogueDrawer();
+            }
+        });
 
         function copyTemplateItem(key, type, idx = 0) {
             const tpl = (dialogueTemplates && dialogueTemplates[key]) ? dialogueTemplates[key] : (dialogueTemplates ? dialogueTemplates["normal"] : null);
@@ -984,7 +1040,6 @@ HTML_CONTENT = """<!DOCTYPE html>
                 renderDiseases();
                 selectDisease("normal");
                 applyVolume();
-                applyTemplateVisibility();
             } catch (e) {
                 console.error("Error initializing diseases:", e);
             }
