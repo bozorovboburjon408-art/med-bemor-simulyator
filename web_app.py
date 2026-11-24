@@ -13,7 +13,7 @@ from typing import Optional
 from pydantic import BaseModel
 import edge_tts
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from google import genai
 from google.genai import types
@@ -25,6 +25,13 @@ from manikin_console import HTML_CONTENT as CONSOLE_HTML
 from kiosk_hub import HUB_HTML
 from intubation_simulator import INTUBATION_HTML
 from system_lock import apply_system_lock_middleware, is_system_locked, is_system_locked_simple
+from auth_manager import (
+    ACCOUNTS, COOKIE_NAME, SESSION_LIFETIME_DAYS,
+    create_session, get_session, update_session_activity,
+    terminate_session, terminate_all_except, record_ai_call,
+    get_admin_dashboard_data, get_client_ip,
+    get_login_html, get_admin_html, apply_auth_middleware
+)
 
 
 
@@ -49,6 +56,7 @@ from diseases_db import KASALLIKLAR, UMUMIY_KATTA_PROMPT, UMUMIY_BOLA_PROMPT, UM
 
 app = FastAPI(title="RO'TFMXMO va UIM Navoiy filiali — AI Bemor Simulyatori")
 apply_system_lock_middleware(app)
+apply_auth_middleware(app)
 
 # HTML Content (Single Page Responsive App)
 BOOTSTRAP_DISEASES_JSON = json.dumps({
@@ -173,6 +181,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 <button onclick="toggleFullScreen()" class="px-2 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1 cursor-pointer transition">
                     <i class="fa-solid fa-expand"></i>
                 </button>
+                <a href="/admin" title="Admin Dashboard" class="px-2 py-1.5 rounded-xl bg-indigo-900/80 hover:bg-indigo-950 text-indigo-200 border border-indigo-400/30 font-bold text-xs flex items-center gap-1 transition">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span class="hidden md:inline">Admin</span>
+                </a>
+                <a href="/logout" title="Tizimdan chiqish" class="px-2 py-1.5 rounded-xl bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-400/30 font-bold text-xs flex items-center gap-1 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="hidden md:inline">Chiqish</span>
+                </a>
                 <div id="top-status" class="flex items-center space-x-1.5 bg-indigo-800/60 px-2.5 py-1.5 rounded-full text-xs">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                     <span id="conn-text">Tayyor</span>
@@ -1669,6 +1685,105 @@ HTML_CONTENT = """<!DOCTYPE html>
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# ==============================================================================
+# XAVFSIZLIK VA AVTORIZATSIYA ROUTELARI (LOGIN / LOGOUT / ADMIN)
+# ==============================================================================
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class KickRequest(BaseModel):
+    session_id: str
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    session = get_session(token) if token else None
+    if session:
+        if session.get("role") == "admin":
+            return RedirectResponse(url="/admin", status_code=303)
+        return RedirectResponse(url="/hub", status_code=303)
+    return HTMLResponse(content=get_login_html())
+
+@app.post("/api/login")
+async def api_login(req: LoginRequest, request: Request):
+    email = req.email.strip().lower()
+    password = req.password.strip()
+
+    account = ACCOUNTS.get(email)
+    if not account or account["password"] != password:
+        return JSONResponse(status_code=401, content={"status": "error", "message": "Login yoki parol noto'g'ri kiritildi!"})
+
+    client_ip = get_client_ip(request)
+    user_agent = request.headers.get("User-Agent", "")
+    role = account["role"]
+    
+    token = create_session(email=email, role=role, ip=client_ip, user_agent=user_agent)
+    
+    redirect_url = "/admin" if role == "admin" else "/hub"
+    
+    resp = JSONResponse(content={
+        "status": "ok",
+        "message": "Muvaffaqiyatli kirildi",
+        "role": role,
+        "redirect": redirect_url
+    })
+    resp.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        max_age=SESSION_LIFETIME_DAYS * 86400,
+        httponly=True,
+        samesite="lax",
+        path="/"
+    )
+    return resp
+
+@app.get("/logout")
+@app.post("/logout")
+@app.get("/api/logout")
+async def logout_handler(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    if token:
+        terminate_session(token)
+    resp = RedirectResponse(url="/login", status_code=303)
+    resp.delete_cookie(key=COOKIE_NAME, path="/")
+    return resp
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    session = get_session(token) if token else None
+    if not session or session.get("role") != "admin":
+        return RedirectResponse(url="/login?next=/admin", status_code=303)
+    return HTMLResponse(content=get_admin_html())
+
+@app.get("/api/admin/devices")
+async def api_admin_devices(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    session = get_session(token) if token else None
+    if not session or session.get("role") != "admin":
+        return JSONResponse(status_code=403, content={"status": "error", "message": "Faqat administrator uchun ruxsat etilgan"})
+    data = get_admin_dashboard_data()
+    return JSONResponse(content=data)
+
+@app.post("/api/admin/kick_device")
+async def api_kick_device(req: KickRequest, request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    session = get_session(token) if token else None
+    if not session or session.get("role") != "admin":
+        return JSONResponse(status_code=403, content={"status": "error", "message": "Faqat administrator uchun ruxsat etilgan"})
+    success = terminate_session(req.session_id)
+    return JSONResponse(content={"status": "ok", "success": success})
+
+@app.post("/api/admin/clear_all")
+async def api_clear_all_devices(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    session = get_session(token) if token else None
+    if not session or session.get("role") != "admin":
+        return JSONResponse(status_code=403, content={"status": "error", "message": "Faqat administrator uchun ruxsat etilgan"})
+    kicked_count = terminate_all_except(token)
+    return JSONResponse(content={"status": "ok", "kicked": kicked_count})
+
 @app.get("/hub", response_class=HTMLResponse)
 @app.get("/apps", response_class=HTMLResponse)
 async def get_hub():
@@ -1816,6 +1931,10 @@ async def websocket_telemetry(websocket: WebSocket):
     if is_system_locked_simple():
         await websocket.close(code=1008, reason="Obuna muddati tugadi")
         return
+    token = websocket.cookies.get(COOKIE_NAME)
+    if not get_session(token):
+        await websocket.close(code=1008, reason="Unauthorized")
+        return
     await websocket.accept()
     monitor_websockets.append(websocket)
     try:
@@ -1960,6 +2079,7 @@ async def get_cached_tts_audio_base64(text: str, voice: str = "uz-UZ-SardorNeura
 
 @app.post("/api/chat")
 async def api_chat(req: ChatRequest):
+    record_ai_call()
     k_id = MAP_VITAL_TO_KASALLIK.get(req.kasallik_id, req.kasallik_id)
     kasallik = KASALLIKLAR.get(k_id, KASALLIKLAR.get("normal"))
     
@@ -2062,6 +2182,11 @@ async def websocket_chat(websocket: WebSocket, kasallik_id: str):
     if is_system_locked_simple():
         await websocket.close(code=1008, reason="Obuna muddati tugadi")
         return
+    token = websocket.cookies.get(COOKIE_NAME)
+    if not get_session(token):
+        await websocket.close(code=1008, reason="Unauthorized")
+        return
+    record_ai_call()
     await websocket.accept()
     
     kasallik = KASALLIKLAR.get(kasallik_id, KASALLIKLAR["normal"])

@@ -107,6 +107,17 @@ HUB_HTML = """<!DOCTYPE html>
                 <i class="fa-solid fa-expand text-cyan-400"></i>
                 <span class="hidden sm:inline">To'liq Ekran</span>
             </button>
+
+            <!-- ADMIN & LOGOUT BUTTONS -->
+            <a href="/admin" title="Admin Dashboard" class="px-3 py-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-500/40 text-xs md:text-sm font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-user-shield text-indigo-400"></i>
+                <span class="hidden sm:inline">Admin</span>
+            </a>
+
+            <a href="/logout" title="Tizimdan chiqish" class="px-3 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/40 text-xs md:text-sm font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-right-from-bracket text-rose-400"></i>
+                <span class="hidden sm:inline">Chiqish</span>
+            </a>
         </div>
     </header>
 

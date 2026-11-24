@@ -1,0 +1,10 @@
+{
+  "sessions": {},
+  "history": [],
+  "stats": {
+    "total_logins": 0,
+    "user_logins": 0,
+    "admin_logins": 0,
+    "ai_calls": 0
+  }
+}
