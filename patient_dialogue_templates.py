@@ -2856,6 +2856,1128 @@ DETAILED_TEMPLATES: Dict[str, Dict[str, Any]] = {
             "matn": "Bobomurod aka, buyragingiz orqali qoningizdagi foydali oqsil chiqib ketgani uchun tanangizga suyuqlik to'plangan. Hozir tomiringizdan albumin oqsilini quyamiz va suyuqlikni haydovchi dorilar beramiz. Shishlar tez orada qaytib, ancha yengillashasiz. Tinch dam oling.",
             "hisobot": "Bemor Bobomurod (33 yosh), o'tkir nefrotik sindrom: tarqalgan massiv shishlar (anasarka, astsit), massiv ko'pikli proteinuriya, gipoalbuminemiya (18 g/l), giperxolesterinemiya. Albumin va nefrologik terapiya boshlandi."
         }
+    },
+
+# 81. Diabetik Ketoatsidoz
+    "diabetik_ketoatsidoz": {
+        "nomi": "81. Diabetik Ketoatsidoz (DKA krizisi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Nilufarxon. Men navbatchi hamshiraman. Holsizligingizni ko'rib turibman, xavotir olmang, sizga yordam beramiz.",
+            "izoh": "1-tur qandli diabet fonida DKA, Kussmaul nafasi, atseton hidi, suvsizlanish va psevdoperitonit."
+        },
+        "savollar": [
+            {
+                "savol": "Nilufarxon, insulin inyeksiyangizni oxirgi marta qachon qabul qilgansiz? Necha kundan beri dorisiz qoldingiz?",
+                "maqsad": "Insulin yetishmovchiligi davomiyligini aniqlash"
+            },
+            {
+                "savol": "Qondagi qand miqdorini o'lchadingizmi? Taxminan qanchaga chiqib ketdi?",
+                "maqsad": "Giperglikemiya darajasini baholash (28 mmol/l)"
+            },
+            {
+                "savol": "Og'zingizda chirigan olma yoki atseton hidi borligini, qorningizda kuchli simillovchi og'riq borligini sezyapsizmi?",
+                "maqsad": "Ketoatsidoz va psevdoperitonit simptomlarini tasdiqlash"
+            },
+            {
+                "savol": "Qattiq chanqash, qusish va chuqur-chuqur shovqinli nafas olish sizda qachondan kuchaydi?",
+                "maqsad": "Kussmaul nafasi va degidratatsiya darajasini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yotqizing, boshini biroz ko'taring. Zudlik bilan venaga kateter o'rnating. Ekspress glyukometr bilan qandni tekshiring. 0.9% li NaCl (fiziologik eritma) infuziyasini boshlang. Shifokor buyurgan qisqa ta'sirli insulinni (kichik dozalarda infuzomat orqali) va kaliy nazoratini tayyorlang. Qonda ketonlar va EKG nazorati."
+        },
+        "yakunlash": {
+            "matn": "Nilufarxon, tanangizda insulin yetishmay qon qandi ko'tarilgan va kislotalilik oshgan. Hozir tomiringizdan tuzli eritma quyamiz va sekinlik bilan insulin berib, qandni tushiramiz. Kussmaul nafasingiz va qorin og'rig'ingiz tez orada bosiladi. Tinch yoting.",
+            "hisobot": "Bemor Nilufar (23 yosh), 1-tur qandli diabet asorati — diabetik ketoatsidoz (DKA): glyukoza 28 mmol/l, chuqur Kussmaul nafasi, og'izdan atseton hidi, gipovolemiya, qorin og'rig'i. Regidratatsiya va insulinoterapiya boshlandi."
+        }
+    },
+
+    # 82. Giperosmolyar Giperglikemik Holat
+    "giperosmolyar_koma": {
+        "nomi": "82. Giperosmolyar Giperglikemik Holat",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Ne'mat aka. Men navbatchi hamshiraman. Sizni eshityapman, gapirishga qiynalmasdan sekin javob beravering.",
+            "izoh": "2-tur qandli diabetda giperosmolyar nometotik kriz, o'ta og'ir suvsizlanish, qand 45 mmol/l, karaxtlik."
+        },
+        "savollar": [
+            {
+                "savol": "Ne'mat aka, og'zingiz va tilingiz juda qattiq qaqrab ketganini, ko'p peshob qilganingizni sezyapsizmi?",
+                "maqsad": "Og'ir osmotik diurez va suvsizlanishni baholash"
+            },
+            {
+                "savol": "Oxirgi kunlarda qand dorilaringizni ichmay qo'yganmidingiz yoki biron infeksiya bo'ldimi?",
+                "maqsad": "Dekompenzatsiyani qo'zg'atgan sababni aniqlash"
+            },
+            {
+                "savol": "Ko'zingiz xiralashib, boshingiz aylanayotgani va darmoningiz butunlay quriganini qachondan seza boshladingiz?",
+                "maqsad": "Ensefalopatiya va gipovolemiya chuqurligini aniqlash"
+            },
+            {
+                "savol": "Og'zingizdan atseton hidi kelmayapti, lekin tilingiz tanglayga yopishib qolyaptimi?",
+                "maqsad": "DKAdan farqlash (atseton hidi yo'qligi) va shilliq qavatlar quruqligini ko'rish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yotqizing. Zudlik bilan 2 ta periferik venaga keng kateter qo'ying. Markaziy vena bosimi va EKG nazorati. O'ta yuqori osmolallik va giperglikemiyani to'g'irlash uchun gipotonik (0.45%) yoki izotonik (0.9%) NaCl eritmasi bilan massiv regidratatsiyani shifokor ko'rsatmasi bo'yicha boshlang. Qand miqdorini har soatda tekshiring."
+        },
+        "yakunlash": {
+            "matn": "Ne'mat aka, qoningizdagi qand juda oshib ketgani sababli vujudingizdagi suv qurib qolgan. Hozir vena orqali maxsus eritmalarni quyib, tanangizni suv bilan to'yintiramiz va qandni me'yoriga keltiramiz. Ko'zingiz ochilib, kuchingiz qaytadi.",
+            "hisobot": "Bemor Ne'mat aka (68 yosh), giperosmolyar nometotik sindrom: glikemiya 45 mmol/l, o'ta og'ir degidratatsiya, teri turgori yo'qolgan, hush soporoz, atseton hidi yo'q. Shoshilinch intensiv regidratatsiya boshlandi."
+        }
+    },
+
+    # 83. Tireotoksik Kriz
+    "tireotoksik_kriz": {
+        "nomi": "83. Tireotoksik Kriz (Qalqonsimon bez bo'roni)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Feruzaxon, assalomu alaykum! Men navbatchi hamshiraman. Nafas oling, sizni tinchlantirishga va yuragingizni me'yorga solishga yordam beramiz.",
+            "izoh": "Zaharli bo'qoq krizisi: 40°C isitma, yurak 155 bpm, qattiq psixomotor qo'zg'alish, ekzoftalm, kuchli terlash."
+        },
+        "savollar": [
+            {
+                "savol": "Feruzaxon, qalqonsimon bezingiz bo'yicha tireostatik dori (Tiamazol/Merkazolil) ichardingizmi? Dorini to'xtatganmidingiz?",
+                "maqsad": "Tireotoksikoz davolash anamnezini aniqlash"
+            },
+            {
+                "savol": "Yuragingiz ko'krakdan chiqib ketgudek tez (150-160 marta) urishi va ichingizdagi kuchli titroq to'satdan boshlandimi?",
+                "maqsad": "Paroksizmal tireotoksik taxikardiyani baholash"
+            },
+            {
+                "savol": "Vujudingiz olovdek yonib, 40 daraja isitma va tinimsiz ter quyilishi qachon kuchaydi?",
+                "maqsad": "Gipertermiya va gipermetabolizm darajasini aniqlash"
+            },
+            {
+                "savol": "Ich ketishi, ko'ngil aynishi yoki qo'llaringizning qattiq qaltirashi bezovta qilyaptimi?",
+                "maqsad": "Vegetativ va dispeptik sindromni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni salqin, qorong'ilatilgan tinch xonaga yotqizing. Zudlik bilan jismoniy sovutish (peshonaga, bo'yinga muzli xalta). Beta-blokatorlar (Propranolol/Anaprilin) va tireostatiklar (Propiltiouratsil yoki Tiamazol), glyukokortikoidlar (Gidrokortizon/Prednizolon) tayyorlang. Aspirin BERMANG (u erkin tiroksinni oshiradi!). EKG va puls monitoringi."
+        },
+        "yakunlash": {
+            "matn": "Feruzaxon, qalqonsimon bezingiz birdan ortiqcha gormon chiqarib yuborgani uchun yuragingiz tez urib, isitma chiqqan. Hozir gormon blokatorlari va yurakni sekinlashtiruvchi dorilar qilamiz. Tez orada ichki olovingiz pasayadi, xotirjam bo'ling.",
+            "hisobot": "Bemor Feruza (36 yosh), o'tkir tireotoksik kriz: HR 155 bpm, harorat 40.1°C, ekzoftalm, diffuz tremor, psixomotor qo'zg'alish. Beta-blokator, tireostatik va gormonal terapiya zudlik bilan boshlandi."
+        }
+    },
+
+    # 84. Addison Krizi
+    "addison_krizi": {
+        "nomi": "84. O'tkir Buyrak Usti Bezi Yetishmovchiligi (Addison krizi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Sardorbek. Men navbatchi hamshiraman. Holsizligingizni tushunib turibman, xotirjam yoting, sizga yordam beramiz.",
+            "izoh": "Gormon to'xtatilishidan so'ng Addison krizi: BP 65/40 mmHg, vaskulyar kollaps, qorin og'rig'i, bronza rangli teri."
+        },
+        "savollar": [
+            {
+                "savol": "Sardorbek, Prednizolon gormon dorisini necha kundan beri ichmay qo'ydingiz? O'zingiz to'xtatganmidingiz?",
+                "maqsad": "O'tkir gipokortitsizm sababi (bekor qilish sindromi)ni tasdiqlash"
+            },
+            {
+                "savol": "Boshingiz aylanib, ko'zingiz qorong'ilashishi va o'rningizdan turolmay qolishingiz qachon boshlandi?",
+                "maqsad": "Ortostatik kollaps va gipotenziyani baholash"
+            },
+            {
+                "savol": "Qorningizda o'tkir og'riq, ko'ngil aynishi va qusish bormi?",
+                "maqsad": "Addison krizining abdominal sindromini aniqlash"
+            },
+            {
+                "savol": "Teringizning rangi va chandiqlaringiz to'q bronza tusiga kirib qolganini oldin payqaganmidingiz?",
+                "maqsad": "Surunkali buyrak usti yetishmovchiligi giperpigmentatsiyasini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni zudlik bilan oyoqlarini ko'tarib (Trendelenburg) yotqizing. Qon bosimi 65/40 bo'lgani sababli zudlik bilan venaga Gidrokortizon (100-200 mg) yoki Prednizolon inyeksiyasi. 0.9% NaCl va 5% Glyukoza eritmasi infuziyasi (giponatriyemiya va gipoglikemiyani bartaraf etish). Qonda elektrolitlar (K, Na) nazorati."
+        },
+        "yakunlash": {
+            "matn": "Sardorbek, gormon dorisini birdan to'xtatganingiz uchun organizmingiz quvvati va qon bosimi keskin tushib ketgan. Hozir vena orqali tanangizga zarur gormon va quvvat beruvchi eritmalarni kiritdik. Bosimingiz ko'tarilib, o'zingizga kelasiz. Dorini qaytib o'zboshimchalik bilan to'xtatmang.",
+            "hisobot": "Bemor Sardorbek (31 yosh), o'tkir addisonik kriz (gipokortitsizm): BP 65/40 mmHg, kuchli adinamiya, qorin og'rig'i, qusish, bronza tusli teri. Vena ichiga Gidrokortizon va sho'r-glyukoza infuziyasi o'tkazildi."
+        }
+    },
+
+    # 85. Tetaniya Gipokalsemiya
+    "tetaniya_gipokalsemiya": {
+        "nomi": "85. Gipoparatiroid Tetaniya (Karpopedal spazm)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Nodiraxon. Men navbatchi hamshiraman. Qo'llaringiz tortishib qolganini ko'rdim, qo'rqmang, hozir spazmni yozamiz.",
+            "izoh": "Bo'qoq operatsiyasidan keyin gipokalsemik tetaniya, 'akusher qo'li' (Trosso), Xvostek belgisi, laringospazm xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Nodiraxon, qalqonsimon bez operatsiyasi qachon o'tkazilgan edi? Kalsiy dori ichayotganmidingiz?",
+                "maqsad": "Gipoparatireoidizm operatsiyadan keyingi vaqtini aniqlash"
+            },
+            {
+                "savol": "Qo'llaringiz barmoqlari xuddi tuxum ushlagandek qattiq qisilib ('akusher qo'li'), mushaklaringiz toshdek qotib og'riyaptimi?",
+                "maqsad": "Karpopedal spazm (Trosso belgisi)ni tekshirish"
+            },
+            {
+                "savol": "Lablaringiz atrofida, tilingizda va yuzingizda chumoli o'rmalagandek uvishish bormi?",
+                "maqsad": "Paresteziyalar va yuz nervi qo'zg'aluvchanligini aniqlash"
+            },
+            {
+                "savol": "Tomog'ingiz qisilib, nafas olishingiz hushtakchalik bo'lib qolmayaptimi?",
+                "maqsad": "O'ta xavfli laringospazm belgisini erta aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni tinchlantiring. Zudlik bilan venaga 10% li Kalsiy xlorid yoki Kalsiy glyukonat eritmasidan 10-20 ml ni juda sekin (5-10 daqiqa davomida, yurak ritmini nazorat qilgan holda) yuborishga tayyorlang. Laringospazm yuzaga kelganda intubatsiya to'plamini shay qiling. Trosso va Xvostek reflekslarini tekshiring."
+        },
+        "yakunlash": {
+            "matn": "Nodiraxon, operatsiyadan keyin qoningizda kalsiy moddasi kamayib ketgani sababli qo'llaringiz tirishib qolgan. Hozir tomiringizdan kalsiy dorisini sekin kiritamiz. Bir necha daqiqada mushaklaringiz bo'shashadi va og'riq ketadi. Nafas olishingiz ham yengillashadi.",
+            "hisobot": "Bemor Nodira (37 yosh), qalqonsimon bez operatsiyasidan keyingi gipokalsemik tetaniya: karpopedal spazm, perioral paresteziya, ijobiy Trosso/Xvostek belgilari. Vena ichiga 10% Kalsiy glyukonat yuborilib, spazm to'xtatildi."
+        }
+    },
+
+    # 86. Feoxromotsitoma
+    "feoxromotsitoma": {
+        "nomi": "86. Feoxromotsitoma Gipertonik Paroksizmi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Jamshid aka, assalomu alaykum. Men navbatchi hamshiraman. Darhol yoting, harakatsiz bo'ling, hozir bosimingizni tushiramiz.",
+            "izoh": "Buyrak usti bezi o'smasi: qon bosimi 250/130 mmHg, HR 140 bpm, dahshatli bosh og'rig'i, sovuq ter, oqarish."
+        },
+        "savollar": [
+            {
+                "savol": "Jamshid aka, qon bosimingiz ilgari ham to'satdan shunday juda baland (250 ga) otilib chiqarmidi?",
+                "maqsad": "Paroksizmal gipertenziv feoxromotsitoma xurujlari anamnezini aniqlash"
+            },
+            {
+                "savol": "Boshingizda bolg'a urgandek kuchli lo'qillash, yurakning qattiq gursillab urishi va ko'z xiralashishi bormi?",
+                "maqsad": "O'tkir gipertonik kriz va ensefalopatiya belgilarini baholash"
+            },
+            {
+                "savol": "Xuruj paytida butun vujudingiz qaltirab, tanangizdan sovuq yopishqoq ter quyilayotganini sezyapsizmi?",
+                "maqsad": "Massiv simpatik-adrenal otilish simptomlarini tekshirish"
+            },
+            {
+                "savol": "Yuzingiz birdan oppoq oqarib ketgani yoki ko'krak qafasingizda kuchli ezilish hissi bormi?",
+                "maqsad": "Periferik vazospazm va miokard ishemiyasi xavfini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni mutlaq jismoniy va ruhiy oromga qo'ying. Zudlik bilan alfa-adrenoblokatorlar (Fentolamin, Urapidil yoki Doxazozin) va magniy sulfat tayyorlang. DIQQAT: Faqat alfa-blokadadan KEYINgina beta-blokator berish mumkin (aks holda qon bosimi yana ko'tarilib ketadi!). Doimiy tonometr va EKG nazorati."
+        },
+        "yakunlash": {
+            "matn": "Jamshid aka, buyrak usti bezingizdan to'satdan ortiqcha adrenalin ajralgani sababli bosimingiz 250 ga ko'tarilgan. Hozir tomiringizdan qon tomirlarni kengaytiruvchi dori yuborib, bosimni xavfsiz darajaga tushiramiz. Bosh og'rig'ingiz tezda bosiladi. Tinch yoting.",
+            "hisobot": "Bemor Jamshid (41 yosh), feoxromotsitoma gipertonik paroksizmi: BP 250/130 mmHg, HR 140 bpm, portlovchi bosh og'rig'i, profuz terlash, rangparlik. Alfa-adrenoblokator terapiyasi o'tkazilmoqda."
+        }
+    },
+
+    # 87. Gipotireoz Koma
+    "gipotireoz_koma": {
+        "nomi": "87. Miksedema Komasi Oldi Holati",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Salomat xola, assalomu alaykum. Men navbatchi hamshiraman. Sovuq qotyapsizmi? Hozir sizni iliq o'rab, isitamiz.",
+            "izoh": "Og'ir dekompensatsiyalangan gipotireoz (miksedema): 35.0°C gipotermiya, HR 48 bpm, til shishi, chuqur lanjlik."
+        },
+        "savollar": [
+            {
+                "savol": "Salomat xola, qalqonsimon bez uchun ichadigan L-Tiroksin dorinizni necha oydan beri ichmay qo'ydingiz?",
+                "maqsad": "Gormon qabul qilinmagan muddatni aniqlash"
+            },
+            {
+                "savol": "Doim qattiq sovuq qotishingiz, issiq kiyimda ham isiy olmasligingiz qachondan kuchaydi?",
+                "maqsad": "O'tkir gipotermiya dinamikasini baholash"
+            },
+            {
+                "savol": "Tilingiz shishib og'zingizga sig'may qolgani, gapirishingiz juda sekinlashib ketgani sezilyaptimi?",
+                "maqsad": "Miksedematoz shilliq shish va dizartriyani aniqlash"
+            },
+            {
+                "savol": "Ko'zingiz o'z-o'zidan yumilib, doim uxlab qolyapsizmi, ichingiz qotib qolganmi?",
+                "maqsad": "Sopor, gipoventilyatsiya va peristaltika pasayishini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni sekin-asta isitish (passiv isitish: jun adyol, xona harorati 24-25°C; agressiv faol isitish vazodilatatsiya va kollaps chaqiradi!). Vena orqali L-Tiroksin (Levotiroksin) yoki L-Triyodtironin va bir vaqtda Gidrokortizon (buyrak usti yetishmovchiligini oldini olish uchun). EKG monitoringi (bradikardiya, past voltaj)."
+        },
+        "yakunlash": {
+            "matn": "Salomat xola, qalqonsimon bez dorisini ichmay qo'yganingiz uchun tanangizda harorat tushib, quvvatingiz kamaygan. Hozir sizni iliq o'raymiz va tomiringizdan yetishmayotgan tiroksin gormonini kiritamiz. Sekin-asta isib, tetiklashib olasiz.",
+            "hisobot": "Bemor Salomat xola (64 yosh), miksedematoz komaoldi holati: tana harorati 35.0°C, bradikardiya 48 bpm, periorbital va til shishi, sopor, gipotenziya. Passiv isitish, gormonal va glyukokortikoid terapiya boshlandi."
+        }
+    },
+
+    # 88. Son Sinishi
+    "son_sinishi": {
+        "nomi": "88. Son Suyagi Yopiq Sinishi va Travmatik Shok",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Otabek, og'riq juda kuchli ekanini bilaman, qimirlamang! Men navbatchi hamshiraman, hozir zudlik bilan oyog'ingizni fiksatsiya qilib, kuchli og'riq qoldiruvchi qilamiz.",
+            "izoh": "Yopiq son sinishi, oyoq deformatsiyasi, kaltalashish, krepitatsiya, travmatik shok va massiv ichki qon yo'qotish."
+        },
+        "savollar": [
+            {
+                "savol": "Otabek, avariya qanday bo'ldi? Boshqa joyingiz, boshingiz yoki qorningiz ham urildimi?",
+                "maqsad": "Kombinatsiyalangan shikastlanishlarni istisno qilish"
+            },
+            {
+                "savol": "O'ng soningiz qarsillab ketganda oyoq barmoqlaringizni qimirlata olyapsizmi? Barmoqlaringizda sezgi bormi?",
+                "maqsad": "Periferik nerv va qon tomir (a. femoralis) butunligini tekshirish"
+            },
+            {
+                "savol": "Boshingiz aylanib, ko'zingiz qorong'ilashayotgani va chanqash hissi bormi?",
+                "maqsad": "Ichki massiv gematoma (1-1.5 litr qon yo'qotish) va shok darajasini aniqlash"
+            },
+            {
+                "savol": "Ilgari biron dori vositasiga allergiyangiz bo'lganmi?",
+                "maqsad": "Shoshilinch analgetiklar xavfsizligini ta'minlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Zararlangan oyoqni MUTLAQO qimirlatmang! Diterixs yoki Krammer shinasi yordamida 3 ta bo'g'imni (chanoq-son, tizza, to'piq) qamragan holda zudlik bilan transport immobilizatsiyasi qiling. Shokni bartaraf etish uchun narkotik analgetik (shifokor ko'rsatmasi bilan), venoz kateter o'rnatib kristalloidlar infuziyasini o'tkazing. Oyoq qon aylanishini tekshiring."
+        },
+        "yakunlash": {
+            "matn": "Otabek, oyog'ingizni maxsus shina bilan mustahkamlab qo'ydik, suyaklar boshqa qimirlamaydi. Hozir tomiringizdan kuchli og'riq qoldiruvchi dorilar va yo'qotilgan qon o'rnini bosuvchi eritma yubordik. Og'riq darhol pasayadi, rentgen va travmatolog ko'rigiga olib boramiz.",
+            "hisobot": "Bemor Otabek (28 yosh), o'ng son suyagi diafizar yopiq sinishi, I-II darajali travmatik shok: oyoq tashqi rotatsiyasi, 3 sm kaltalashish, kuchli og'riq. Shinalash, analgeziya va antishok infuziya o'tkazildi."
+        }
+    },
+
+    # 89. Qovurg'a Sinishi
+    "qovurga_sinishi": {
+        "nomi": "89. Ko'p Qovurg'a Sinishi va Ko'krak Flotatsiyasi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Alimardon aka, xotirjam bo'ling. Men navbatchi hamshiraman. Chuqur nafas olishga urinmang, yuzaki nafas oling, hozir og'riqni qoldiramiz.",
+            "izoh": "4-5-6-qovurg'alar sinishi, ko'krak qafasi beqarorligi, plevral sanchiq, gemotoraks/pnevmotoraks xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Alimardon aka, balandlikdan qulaganingizda ko'kragingiz qaysi qismi bilan urildi? Bosh aylanishi bo'ldimi?",
+                "maqsad": "Travma mexanizmi va gemodinamikani baholash"
+            },
+            {
+                "savol": "Nafas olayotganingizda qovurg'alaringiz bir-biriga ishqalanib qisirlayotganini va pichoq tiqilgandek sanchayotganini sezyapsizmi?",
+                "maqsad": "Suyak krepitatsiyasi va plevral og'riqni aniqlash"
+            },
+            {
+                "savol": "Yo'talganda og'zingizdan qonli tupuk yoki qonli balg'am kelyaptimi?",
+                "maqsad": "O'pka to'qimasi yirtilishi (gemoptizis) bor-yo'qligini tekshirish"
+            },
+            {
+                "savol": "Nafas olayotganingizda ko'kragingizning o'ng tomoni ichkariga botib, nafas chiqarganda bo'rtib chiqyaptimi?",
+                "maqsad": "Qovurg'a klapanining paradoksal harakati (flotatsiya)ni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yarim o'tirgan holatda joylashtiring. Ko'krak qafasini qisuvchi elastik bog'lam bilan mahkam bog'lash (flotatsiyani cheklash uchun). Nafas yetishmovchiligini bartaraf etish uchun burun kateteri orqali namlangan kislorod bering. Shoshilinch novokainli qovurg'alararo blokada yoki analgetiklar tayyorlang. Pnevmotoraks belgilarini kuzating."
+        },
+        "yakunlash": {
+            "matn": "Alimardon aka, singan qovurg'alaringiz o'pkangizga botmasligi uchun ko'kragingizni maxsus fiksatsiya qildik va kislorod ulab berdik. Hozir kuchli og'riq qoldiruvchi qildik, nafas olishingiz ancha yengillashadi. Rentgenga tayyorlaymiz.",
+            "hisobot": "Bemor Alimardon (52 yosh), o'ng tomonlama 4-5-6-qovurg'alarning yopiq sinishi, ko'krak qafasi beqarorligi, o'tkir plevral og'riq, gipoksiya (SpO2 91%). Ko'krak immobilizatsiyasi, analgeziya va O2 terapiya berildi."
+        }
+    },
+
+    # 90. Yelka Chiqishi
+    "yelka_chiqishi": {
+        "nomi": "90. Yelka Bo'g'imining O'tkir Chiqishi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Sanjar, salom! Men navbatchi hamshiraman. Qo'lingizni qimirlatmang, tirsagingizdan ushlab turing, hozir og'riqni yengillatamiz.",
+            "izoh": "O'ng yelka bo'g'imi oldingi chiqishi, elastik qarshilik, 'epaulet' belgisi, kuchli og'riq."
+        },
+        "savollar": [
+            {
+                "savol": "Sanjar, yelka bo'g'imingiz birinchi marta chiqyaptimi yoki oldin ham odatiy chiqish bo'lganmi?",
+                "maqsad": "Birlamchi travmatik yoki odatiy chiqish ekanini aniqlash"
+            },
+            {
+                "savol": "Qo'l panjangizda va barmoqlaringizda uvishish, 'chumoli o'rmalash' yoki sovuqlik bormi?",
+                "maqsad": "Qo'ltiq osti nervi (n. axillaris) va tomirlar siqilishini tekshirish"
+            },
+            {
+                "savol": "Yelka sohangizda bo'shliq hosil bo'lib, suyak boshchasi oldinga va pastga siljib qolganini sezyapsizmi?",
+                "maqsad": "Oldingi yelka dislokatsiyasi anatomik belgisini tasdiqlash"
+            },
+            {
+                "savol": "Qo'lingizni o'zingiz tushirishga yoki ko'tarishga uringaningizda prujinadek qarshilik va o'tkir og'riq beryaptimi?",
+                "maqsad": "Bo'g'im chiqishiga xos elastik fiksatsiyani baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bo'g'imni o'zboshimchalik bilan joyiga solishga URINMANG! Qo'lni dastro'mol (kosinka) yoki Dezo bog'lami yordamida gavdaga fiksatsiya qiling. Bo'g'im ustiga muzli xalta qo'ying. Zudlik bilan analgetiklar va spazmolitiklar (mushak relaksantlari) yuboring. Bilak arteriyasida pulsni tekshiring. Travmatologga rentgen bilan yuboring."
+        },
+        "yakunlash": {
+            "matn": "Sanjar, qo'lingizni qimirlamaydigan qilib kosinka bog'lami bilan osib qo'ydik va muz qo'ydik. Kuchli og'riq qoldiruvchi dori qildik. Hozir travmatolog shifokor rentgen qilib, bo'g'imni og'riqsiz joyiga solib beradi. Qo'lingizni bo'sh qo'ying.",
+            "hisobot": "Bemor Sanjar (24 yosh), o'ng yelka bo'g'imining o'tkir oldingi chiqishi: 'epaulet' deformatsiyasi, elastik qarshilik, n. axillaris zararlanmagan (puls va sezgi saqlangan). Kosinka bog'lami, analgeziya berildi."
+        }
+    },
+
+    # 91. Elektrotravma
+    "elektrotravma": {
+        "nomi": "91. Elektr Toki Urishi (Elektrotravma va kuyish)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Rustam, assalomu alaykum. Men navbatchi hamshiraman. Yotib turing, ko'kragingizni tekshirib, darhol EKG qilamiz.",
+            "izoh": "220V elektr toki urishi, kirish va chiqish belgilari, aritmiya va qorinchalar fibrillyatsiyasi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Rustam, tok manbaiga necha soniya yopishib qoldingiz? Tok kuchlanishi 220 volt edimi?",
+                "maqsad": "Elektr toki parametri va ta'sir davomiyligini aniqlash"
+            },
+            {
+                "savol": "Tok urgan paytda hushdan ketdingizmi? O'zingizga qachon keldingiz?",
+                "maqsad": "Miya shikastlanishi va hush yo'qotish vaqtini baholash"
+            },
+            {
+                "savol": "Hozir yuragingiz to'xtab-to'xtab, tartibsiz urayotganini yoki ko'kragingizda qisilishni sezyapsizmi?",
+                "maqsad": "Elektr ta'siridagi ritm buzilishlari (aritmiya)ni aniqlash"
+            },
+            {
+                "savol": "Qo'lingizda va oyog'ingizda tok kirgan hamda chiqqan joyida qoraygan kuyish jarohatlari bormi?",
+                "maqsad": "Elektr 'tamg'alari' va to'qimalar kuyish darajasini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni qat'iy yotoq rejimiga oling (hatto o'zini yaxshi his qilsa ham, kechki fibrillyatsiya xavfi bor!). Zudlik bilan 12 tarmoqli EKG yozing va doimiy kardio-monitoringga ulang. Tok 'tamg'alari' ustiga aseptik quruq bog'lam qo'ying. Vena orqali infuzion terapiya (miogloburiya va buyrak zararlanishini oldini olish). Defibrillyatorni tayyor tuting."
+        },
+        "yakunlash": {
+            "matn": "Rustam, tok butun tanangiz orqali yuragingizga ta'sir qilgani uchun hozir ritmingizni doimiy apparatda kuzatamiz va kuygan joylaringizga steril bog'lam qo'yamiz. Xavfli ritm buzilishlarining oldini olish uchun yotib dam oling.",
+            "hisobot": "Bemor Rustam (29 yosh), 220V elektrotravma: qo'l va oyoqda elektr kuyish tamg'alari, qisqa hush yo'qotish, ko'krakda noqulaylik, sinus taxikardiyasi/ekstrasistoliya. Doimiy EKG monitoringi va infuziya boshlandi."
+        }
+    },
+
+    # 92. Termik Kuyish
+    "termik_kuyish": {
+        "nomi": "92. Keng Ko'lamli Termik Kuyish (Kuyish shoki)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Nodir, chidang! Men navbatchi hamshiraman. Sizga hozir kuchli og'riq qoldiruvchi qilamiz va steril bog'laymiz, xavotir olmang.",
+            "izoh": "25% II-III darajali termik kuyish (qaynoq yog'), pufaklar, plazma yo'qotish, og'ir kuyish shoki."
+        },
+        "savollar": [
+            {
+                "savol": "Nodir, kuyish qachon yuz berdi? Kuygan joylarga biron narsa (yog', un, pasta) surtmadingizmi?",
+                "maqsad": "Birlamchi noto'g'ri muolajalarni aniqlash va bartaraf etish"
+            },
+            {
+                "savol": "Ko'kragingizdan tashqari yuzingizga yoki bo'yningizga ham sachradimi? Tomog'ingizda achishish bormi?",
+                "maqsad": "Yuqori nafas yo'llari kuyishi va asfiksiya xavfini istisno qilish"
+            },
+            {
+                "savol": "Qattiq titrab-qaqshab, sovqotayotganingizni va chanqayotganingizni sezyapsizmi?",
+                "maqsad": "Gipovolemik va travmatik kuyish shoki simptomlarini baholash"
+            },
+            {
+                "savol": "Kuygan joylaringizda og'riq kuchlimi yoki ba'zi sohalarda umuman sezgi yo'qolganmi?",
+                "maqsad": "II darajali (giperesteziya) va III darajali (anesteziya/chuqur nekroz) differensiatsiyasi"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Kuygan kiyimlarni yirtib olmang, ehtiyotkorlik bilan qirqing. Pufaklarni MUTLAQO yormang! Kuygan yuzalarga quruq steril kuyishga qarshi choyshab/bog'lam yoping. Bemorni isiting (issiqlik yo'qotilishiga qarshi). Zudlik bilan markaziy yoki 2 ta keng periferik venaga kateter qo'yib, Parklend formulasi bo'yicha kristalloidlar (Ringer laktat) infuziyasini boshlang. Narkotik analgetiklar."
+        },
+        "yakunlash": {
+            "matn": "Nodir, kuygan sohalaringizni toza steril mato bilan yopdik va venangizdan suyuqlik hamda kuchli og'riqsizlantiruvchi yubordik. Olovdek yonish hissi tezda kamayadi. Kuyish bo'limiga maxsus davoga yo'naltiramiz.",
+            "hisobot": "Bemor Nodir (30 yosh), tananing 25% yuzasi II-III darajali termik kuyishi (ko'krak, ikkala qo'l), I-II darajali kuyish shoki. Steril bog'lam, Parklend bo'yicha infuziya va analgeziya boshlandi."
+        }
+    },
+
+    # 93. Gipotermiya
+    "gipotermiya": {
+        "nomi": "93. Umumiy Gipotermiya va Sovuq Urishi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Botirali aka, eshityapsizmi? Men navbatchi hamshiraman. Qo'rqmang, xavfsiz joydasiz, sizni sekin-asta isitamiz.",
+            "izoh": "Tana harorati 32.5°C, bradikardiya 46 bpm, qaltirash yo'qolgan, apatiya, sovuq urishi."
+        },
+        "savollar": [
+            {
+                "savol": "Botirali aka, qorda qancha vaqt qolib ketdingiz? Uxlab qolmadingizmi?",
+                "maqsad": "Sovuq ta'siri davomiyligi va gipotermiya bosqichini aniqlash"
+            },
+            {
+                "savol": "Qo'l va oyoq barmoqlaringizni sezyapsizmi? Ular toshdek qotib qolganmi?",
+                "maqsad": "Periferik to'qimalarning mahalliy muzlashi (sovuq urishi) darajasini baholash"
+            },
+            {
+                "savol": "Ko'zingiz yumilib, uxlashga tortayotganini va ichki sovuqni sezyapsizmi?",
+                "maqsad": "Markaziy asab tizimi tormozlanishi va gipotermik koma xavfini tekshirish"
+            },
+            {
+                "savol": "Yuragingiz juda sekin urayotganini va nafas olishingiz sustlashganini payqayapsizmi?",
+                "maqsad": "Bradikardiya va bradipnoeni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Nam yoki sovuq kiyimlarni darhol yeching. Bemorni quruq iliq adyolga o'rang. DIQQAT: Faol tez isitish (issiq vanna) QAT'IYAN MAN ETILADI (periferik vazodilatatsiya 'afterdrop' hodisasi va yurak to'xtashini chaqiradi!). Sekin passiv isitish. Vena orqali 37-40°C gacha ilitilgan izotonik eritmalar infuziyasi. EKG monitoringi (Osborn to'lqini)."
+        },
+        "yakunlash": {
+            "matn": "Botirali aka, ustingizdagi ho'l kiyimlarni almashtirib, maxsus iliq adyolga o'radik va ilitilgan dori eritmalarini tomiringizdan quyapmiz. Uxlab qolmaslikka harakat qiling, sekin-asta qoningiz ilib, o'zingizga kelasiz.",
+            "hisobot": "Bemor Botirali (45 yosh), o'rtacha og'irlikdagi gipotermiya (tana harorati 32.5°C), bradikardiya 46 bpm, apatiya, oyoq-qo'l barmoqlari II darajali sovuq urishi. Passiv tashqi va faol ichki ilitilgan infuzion reanimatsiya olib borilmoqda."
+        }
+    },
+
+    # 94. Issiq Urishi
+    "issiq_urishi": {
+        "nomi": "94. Issiq Urishi (Termik zarba va hush xiralashishi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Dilshodbek, assalomu alaykum. Men navbatchi hamshiraman. Hozir sizni salqinlaymiz, muz qo'yamiz, xavotir olmang.",
+            "izoh": "Tana harorati 40.5°C, quruq issiq teri (angidroz), alaxlash, sopor, termik zarba."
+        },
+        "savollar": [
+            {
+                "savol": "Dilshodbek, oftob ostida qancha vaqt bosh kiyimsiz ishladiniz? Suv ichganmidingiz?",
+                "maqsad": "Keltirib chiqargan omil va degidratatsiyani aniqlash"
+            },
+            {
+                "savol": "Boshingizda portlab ketgudek og'riq, ko'z oldingiz qorong'ilashishi va qusish qachon boshlandi?",
+                "maqsad": "Gipertermiya va miya shishi simptomlarini baholash"
+            },
+            {
+                "savol": "Teringiz terlamay quruq va olovdek qizib ketganini sezyapsizmi?",
+                "maqsad": "Termoregulyatsiya markazi falajligi (klassik termik zarba) belgisini tasdiqlash"
+            },
+            {
+                "savol": "Ko'zingizga turli narsalar ko'rinib, qayerda ekanligingizni anglash qiyinlashdimi?",
+                "maqsad": "Deliriy va ong buzilishi darajasini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni zudlik bilan salqin xonaga yoki soyaga oling, kiyimlarini yeching. Zudlik bilan faol jismoniy sovutish: boshga, bo'yinga, qo'ltiq osti va chov sohalariga muzli xaltachalar qo'ying, terisini salqin suv bilan arting va ventilyator bilan puflang. Tana haroratini 38.5°C gacha tushiring (undan pastga emas!). Salqin tuzli eritmalar infuziyasi."
+        },
+        "yakunlash": {
+            "matn": "Dilshodbek, quyoshda uzoq qolib ketganingiz uchun tanangiz haddan tashqari qizib ketgan. Bo'yingiz va boshingizga muzlar qo'ydik, salqin eritma quyapmiz. Miyangizdagi olov pasayib, boshingiz tiniqlashadi. Tinch nafas oling.",
+            "hisobot": "Bemor Dilshodbek (27 yosh), o'tkir termik zarba (issiq urishi): tana harorati 40.5°C, angidroz (quruq giperemiya), gallyutsinoz va sopor, taxikardiya 130 bpm. Faol fizik sovutish va infuzion regidratatsiya o'tkazilmoqda."
+        }
+    },
+
+    # 95. Ko'krak Kontuziyasi
+    "kokrak_kontuziyasi": {
+        "nomi": "95. Ko'krak Qafasi Yopiq Lat Yeyishi (Yurak kontuziyasi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Bobur aka, assalomu alaykum. Men navbatchi hamshiraman. Sekin nafas oling, ko'kragingizni va yurak uringini darhol tekshiramiz.",
+            "izoh": "Rulga to'sh suyagi urilishi, miokard kontuziyasi, paroksizmal ekstrasistoliya, eziluvchi og'riq."
+        },
+        "savollar": [
+            {
+                "savol": "Bobur aka, avariyada ko'kragingiz rulga qattiq urildimi? Xavfsizlik kamari taqilganmidi?",
+                "maqsad": "Zarba kuchi va to'g'ridan-to'g'ri to'sh travmasini aniqlash"
+            },
+            {
+                "savol": "To'sh suyagingiz orqasida kuchli ezuvchi og'riq va chuqur nafas olganda qattiq botish bormi?",
+                "maqsad": "Ko'krak qafasi lat yeyishi va to'sh suyagi travmasini baholash"
+            },
+            {
+                "savol": "Zarbadan keyin yuragingiz notekis, to'xtab-to'xtab yoki gupillab urayotganini sezyapsizmi?",
+                "maqsad": "Miokard kontuziyasi chaqirgan aritmiyani aniqlash"
+            },
+            {
+                "savol": "Nafasingiz qisishi yoki yo'talganda qon aralash balg'am chiqishi bezovta qilyaptimi?",
+                "maqsad": "O'pka kontuziyasi va gemotoraksni istisno qilish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yarim o'tirgan holda yotqizing. Zudlik bilan EKG yozing (miokard infarktiga o'xshash ST o'zgarishlari va aritmiyalarni aniqlash). Ko'krakka sovuq kompress qo'ying. Troponin va CK-MB fermentlariga qon oling. Kislorodoterapiya bering. Antianginal dorilar va antiaritmik vositalarni shifokor ko'rsatmasi bilan tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Bobur aka, rul zarbasidan ko'kragingiz lat yeb, yurak devori biroz qisilgandek bo'lgan. Hozir yurak ritmingizni apparatda nazoratga oldik, kislorod ulab, og'riq qoldiruvchi dorilar qildik. Yuragingiz tezda bir maromga tushadi.",
+            "hisobot": "Bemor Bobur (34 yosh), to'sh sohasi yopiq lat yeyishi va miokard kontuziyasi: to'sh orqasida og'riq, taxikardiya, qorinchalar ekstrasistoliyasi, SpO2 93%. EKG monitoringi, analgeziya va O2 terapiya boshlandi."
+        }
+    },
+
+    # 96. Is Gazi
+    "is_gazi": {
+        "nomi": "96. Is Gazidan O'tkir Zaharlanish (Uglerod oksidi intoksikatsiyasi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Anoraxon, assalomu alaykum. Men navbatchi hamshiraman. Hozir sizga toza kislorod ulaymiz, chuqur nafas oling.",
+            "izoh": "Is gazi (CO): karboksihemoglobinemiya, alvon-qizil yuz, lo'qillovchi bosh og'rig'i, qusish, mushaklar holsizligi."
+        },
+        "savollar": [
+            {
+                "savol": "Anoraxon, is gazi chiqqan xonada qancha vaqt qolib ketdingiz? Hushdan ketganingizni eslaysizmi?",
+                "maqsad": "CO intoksikatsiyasi og'irlik darajasini aniqlash"
+            },
+            {
+                "savol": "Boshingizda temir chambarak qisgandek qattiq lo'qillash va quloqlaringizda shang'illash bormi?",
+                "maqsad": "Gipoksik ensefalopatiya belgilarini baholash"
+            },
+            {
+                "savol": "Tinimsiz ko'nglingiz aynishi, qusishingiz va oyoqlaringizda kuch yo'qligini sezyapsizmi?",
+                "maqsad": "Miyachka va motor neyronlar gipoksiyasini baholash"
+            },
+            {
+                "savol": "Yuzingiz va lablaringiz gilosdek qizarganini ko'rdingizmi?",
+                "maqsad": "Karboksihemoglobinemiyaning xarakterli alvon rangini tasdiqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorga zudlik bilan 100% toza kislorod niqobini (rezervuar qopchali) taqing (yuqori oqimli O2 karboksihemoglobinning yarim parchalanish davrini 5 soatdan 40 daqiqaga qisqartiradi!). Zarur bo'lsa giperbarik oksigenatsiya (barokamera). Venaga glyukoza, vitamin C, kardiomonitoring."
+        },
+        "yakunlash": {
+            "matn": "Anoraxon, nafas yo'lingizga kirgan is gazi qoningizdagi kislorodni quvib chiqargan. Hozir sizga 100% toza kislorod ulab berdik. Har bir nafasda boshingiz yengillashib, ko'ngil aynishi to'xtaydi. Xotirjam nafas oling.",
+            "hisobot": "Bemor Anora (25 yosh), is gazi (uglerod oksidi)dan o'tkir zaharlanish: pulslovchi sefalgiyasi, qusish, alvon-qizil teri, mushak gipotoniyasi, gipoksiya. Yuqori oqimli 100% kislorodoterapiya va detoksikatsiya o'tkazilmoqda."
+        }
+    },
+
+    # 97. FOB Zaharlanish
+    "fob_zaharlanish": {
+        "nomi": "97. Fosfororganik Birikmalardan (FOB) Zaharlanish",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Mansur aka, men navbatchi hamshiraman! Darhol yordam beryapmiz, og'zingizdagi so'laklarni tozalab, zudlik bilan atropin qilamiz.",
+            "izoh": "Fosfororganik zahar (xlorofos): xolinergik kriz, mioz (ignadek qorachiq), profuz so'lak, bronxoreya, bradikardiya. Antidot: Atropin."
+        },
+        "savollar": [
+            {
+                "savol": "Mansur aka, bog'da qaysi zaharli dori (Xlorofos, Bi-58, Malation) bilan ishlayotgan edingiz? Niqob taqqanmidingiz?",
+                "maqsad": "FOB turi va intoksikatsiya yo'lini aniqlash"
+            },
+            {
+                "savol": "Og'zingizdan tinimsiz so'lak va ko'zingizdan yosh oqishi, ko'kragingiz balg'amga to'lib nafas qisishi qachon boshlandi?",
+                "maqsad": "Muskarinomimetik sindrom (bronxoreya, gipersalivatsiya)ni baholash"
+            },
+            {
+                "savol": "Qorningiz burab og'riyaptimi, qusish va ich ketishi bormi?",
+                "maqsad": "Oshqozon-ichak giperperistaltikasini aniqlash"
+            },
+            {
+                "savol": "Ko'z qorachiqlaringiz nuqtadek torayib ketgani va butun mushaklaringiz titrayotganini sezyapsizmi?",
+                "maqsad": "Mioz va nikotinomimetik fasikulatsiyalarni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Zudlik bilan bemorning kiyimlarini yeching va terisini sovunli suv bilan yuving (teridan so'rilishni to'xtatish). ANTIDOT TERAPIYA: Zudlik bilan venaga 0.1% li Atropin sulfat (2-4 mg dan har 5-10 daqiqada qorachiqlar kengayguncha va o'pkadagi xirillash yo'qolguncha atropinizatsiya). Xolinesteraza reaktivatori (Dipiroksim/Oksimlar). Nafas yo'llarini so'lakdan elektrosos bilan tozalash."
+        },
+        "yakunlash": {
+            "matn": "Mansur aka, bog'dagi zaharli moddaga qarshi hozir tomiringizdan Atropin antidotini yubordik va og'zingizdagi ortiqcha so'laklarni so'rib tozaladik. Nafas yo'llaringiz ochiladi, ko'kragingizdagi xirillash to'xtaydi. Hammasi yaxshi bo'ladi.",
+            "hisobot": "Bemor Mansur (46 yosh), fosfororganik moddadan (xlorofos) o'tkir og'ir zaharlanish, xolinergik kriz: tarqalgan mioz, profuz so'lak va bronxoreya, bradikardiya 52 bpm, bronxospazm. Terini dekontaminatsiya qilish va Atropinizatsiya boshlandi."
+        }
+    },
+
+    # 98. Alkogol Surrogat
+    "alkogol_surrogat": {
+        "nomi": "98. Surrogat Alkogol va Metanol bilan Zaharlanish",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Sobit aka, xotirjam bo'ling! Men navbatchi hamshiraman. Ko'zingizni asrab qolish uchun darhol maxsus antidot choralarni ko'ramiz.",
+            "izoh": "Metanol zaharlanishi: ko'z oldida 'qor bo'roni' (ko'rlik xavfi), qorin og'rig'i, qusish, metabolik atsidoz. Antidot: 40% tibbiy etanol."
+        },
+        "savollar": [
+            {
+                "savol": "Sobit aka, qanday ichimlik ichgandingiz? Texnik spirt, antifiz yoki qo'lbola aroq edimi?",
+                "maqsad": "Metanol yoki etilenglikol manbasini aniqlash"
+            },
+            {
+                "savol": "Ko'zingiz oldida qor bo'roni ko'rinishi, oq tuman yoki xiralashish qachon paydo bo'ldi?",
+                "maqsad": "Ko'rish nervining toksik shikastlanish darajasini baholash"
+            },
+            {
+                "savol": "Qorningizda kuchli burab og'rish va to'xtovsiz qusish bormi?",
+                "maqsad": "Pankreatit va gastrit simptomlarini tekshirish"
+            },
+            {
+                "savol": "Nafas olishingiz og'irlashib, boshingiz aylanayotganini sezyapsizmi?",
+                "maqsad": "Metabolik kislotali atsidoz belgilarini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Zudlik bilan oshqozonni natriy gidrokarbonatli (ichimlik sodali) suv bilan yuvish. ANTIDOT TERAPIYA: Metanolning formiatga aylanishini bloklash uchun zudlik bilan raqobatchi antidot — Etanol (40% li toza etil spirti 100 ml ichishga yoki 5% li steril eritma venaga) beriladi. Og'ir atsidozni to'g'irlash uchun 4% Natriy gidrokarbonat infuziyasi. Fomepizol bo'lsa beriladi. Shoshilinch gemodializga tayyorgarlik."
+        },
+        "yakunlash": {
+            "matn": "Sobit aka, ichgan soxta spirtingiz ko'rish asabiga zahar bo'lib ta'sir qilgan. Zahar kuchini kesish uchun hozir maxsus tibbiy spirt antidotini va sodali eritmani yuboryapmiz. Ko'zingiz tumanini qaytarish uchun shifokorlar bilan barcha choralarni ko'ramiz.",
+            "hisobot": "Bemor Sobit (48 yosh), surrogat spirt (metanol) bilan o'tkir zaharlanish: o'tkir optik neyropatiya ('qor bo'roni' simptomi), qusish, og'ir dekompensatsiyalangan metabolik atsidoz. Etanol antidototerapiyasi va oshqozon yuvish o'tkazildi."
+        }
+    },
+
+    # 99. Paratsetamol Intoksikatsiya
+    "paratsetamol_intoksikatsiya": {
+        "nomi": "99. Paratsetamolning Toksik Dozasi (Gepatotoksiklik)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Kamola, assalomu alaykum. Men navbatchi hamshiraman. Hamma narsani to'g'ri ayting, sizni asrab qolish uchun jigar antidotini darhol boshlaymiz.",
+            "izoh": "10 gramm paratsetamol (20 tabletka), o'tkir gepatotsellyulyar nekroz xavfi, o'ng qovurg'a osti og'rig'i. Antidot: Asetilsistein."
+        },
+        "savollar": [
+            {
+                "savol": "Kamola, paratsetamol tabletkasini jami nechta va soat nechida ichib yubordingiz?",
+                "maqsad": "Umumiy toksik dozani (10g) va o'tgan vaqtni (Nomogramma uchun) aniqlash"
+            },
+            {
+                "savol": "O'ng biqiningizda, qovurg'angiz tagida og'riq yoki bosganda og'rish bormi?",
+                "maqsad": "O'tkir jigar parenximasi zararlanishi simptomlarini aniqlash"
+            },
+            {
+                "savol": "Tinimsiz ko'nglingiz aynab qusyapsizmi? Ishtahangiz butunlay yo'qoldimi?",
+                "maqsad": "Toksik dispepsiya darajasini baholash"
+            },
+            {
+                "savol": "Ko'zingiz oqida yoki teringizda sarg'ayish borligini sezdingizmi?",
+                "maqsad": "Toksik gepatit va giperbilirubinemiya alomatini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Agar qabul qilinganiga 1-2 soat bo'lgan bo'lsa, zudlik bilan oshqozonni yuvish va faollashtirilgan ko'mir berish. SPETSIFIK ANTIDOT: N-Asetilsistein (Atsetilsistein / ACC) infuziyasini darhol Rumak-Metyu nomogrammasini kutmasdan boshlang (birinchi dozasi 150 mg/kg 60 daqiqada). Qonda ALT, AST, bilirubin va koagulogrammani tekshiring."
+        },
+        "yakunlash": {
+            "matn": "Kamola, juda ko'p paratsetamol ichganingiz jigar hujayralariga og'ir yuk bo'lgan. Hozir sizga jigarni himoya qiluvchi va zaharni parchalovchi maxsus Asetilsistein dori eritmasini tomiringizdan quyapmiz. Jigar shikastlanishining oldi olinadi, xotirjam bo'ling.",
+            "hisobot": "Bemor Kamola (21 yosh), paratsetamolning toksik dozasi (10 g / 20 tab) bilan zaharlanish, o'tkir gepatotoksiklik xavfi: ko'ngil aynishi, o'ng qovurg'a ostida og'riq. Shoshilinch N-Asetilsistein antidot protokoli boshlandi."
+        }
+    },
+
+    # 100. Uyqu Dorisi Zaharlanish
+    "uyqu_dorisi_zaharlanish": {
+        "nomi": "100. Trankvilizator va Uyqu Dorilaridan Zaharlanish",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Mahbuba opa, eshityapsizmi? Men navbatchi hamshiraman. Ko'zingizni oching, uxlab qolmang, sizga yordam beryapmiz.",
+            "izoh": "Fenazepam (benzodiazepin) intoksikatsiyasi: sopor, bradipnoe (8/min), gipotenziya (80/50 mmHg), ataksiya. Antidot: Flumazenil."
+        },
+        "savollar": [
+            {
+                "savol": "Mahbuba opa, qaysi uyqu dorisini va nechta ichgandingiz? Boshqa dori yoki spirtli ichimlik qo'shmadingizmi?",
+                "maqsad": "Benzodiazepin preparati va kombinatsiyalangan intoksikatsiyani aniqlash"
+            },
+            {
+                "savol": "Ko'zingiz ochilmay chuqur uyquga tortayotganini va boshingiz aylanayotganini sezyapsizmi?",
+                "maqsad": "Sedatsiya chuqurligi (sopor/koma)ni baholash"
+            },
+            {
+                "savol": "Nafas olishingiz juda sekinlashib, havoga to'ymayotgandek tuyulyaptimi?",
+                "maqsad": "Nafas markazi tormozlanishi (bradipnoe) darajasini tekshirish"
+            },
+            {
+                "savol": "Qo'llaringiz va oyoqlaringiz bo'shashib, qimirlatishga majolingiz yetmayaptimi?",
+                "maqsad": "Markaziy miorelaksatsiya darajasini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Nafas yo'llari o'tkazuvchanligini ta'minlang (til orqaga ketishining oldini olish, havo o'tkazgich). Agar hushida bo'lsa yoki intubatsiya qilingan bo'lsa, oshqozonni yuvish va enterosorbent berish. SPETSIFIK ANTIDOT: Flumazenil (Aneksat) 0.2-0.5 mg venaga sekin yuborish. Kislorodoterapiya, BP va SpO2 nazorati."
+        },
+        "yakunlash": {
+            "matn": "Mahbuba opa, ko'p uyqu dorisi miyangizni va nafasingizni uxlatib qo'ygan. Hozir tomiringizdan dorining ta'sirini bekor qiluvchi maxsus dori (antidot) yubordik va kislorod ulab berdik. Sekin-asta uyqudan uyg'onib, hushli bo'lasiz.",
+            "hisobot": "Bemor Mahbuba (43 yosh), benzodiazepin (fenazepam) bilan o'tkir zaharlanish: sopor, bradipnoe (8 nafas/min), gipotenziya (80/50 mmHg), mushak atoniyasi. Kislorodoterapiya va Flumazenil antidototerapiyasi o'tkazildi."
+        }
+    },
+
+    # --- BATCH 6 (101-112) ---
+
+    # 101. Oshqozon-Ichakning Kimyoviy Kuyishi (Kislota ichish)
+    "kislota_ishqor_kuyish": {
+        "nomi": "101. Oshqozon-Ichakning Kimyoviy Kuyishi (Kislota ichish)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Faxriddin aka, chidang! Men navbatchi hamshiraman. Qimirlamang, gapirishga urinmang, hozir o'tkir kuyish og'rig'ini to'xtatamiz.",
+            "izoh": "70% sirka essensiyasi ichilishi: og'iz, tomoq, qizilo'ngach kimyoviy kuyishi, gemoliz, o'tkir kuyish shoki, qonli so'lak."
+        },
+        "savollar": [
+            {
+                "savol": "Faxriddin aka, sirka kislotasidan (uksusdan) taxminan qancha ichib yubordingiz? Bir qultummi yoki ko'proqmi?",
+                "maqsad": "Kimyoviy modda miqdori va konsentratsiyasini aniqlash"
+            },
+            {
+                "savol": "Tomog'ingiz va oshqozoningiz xuddi cho'g' tushgandek yonib og'riyaptimi? Yutina olyapsizmi?",
+                "maqsad": "Qizilo'ngach shilliq qavati nekrozi va disfagiya darajasini baholash"
+            },
+            {
+                "savol": "Nafas olishingiz qisib, bo'g'ilish yoki xirillash paydo bo'ldimi?",
+                "maqsad": "Kislota bug'laridan hiqildoq shishi (asfiksiya) xavfini aniqlash"
+            },
+            {
+                "savol": "Og'zingizdan qon aralash so'lak oqishi yoki qoramtir qusish bo'ldimi?",
+                "maqsad": "Oshqozon va qizilo'ngachdan qon ketish belgisini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "DIQQAT: Qusish chaqirish QAT'IYAN MAN ETILADI (qizilo'ngach qayta kuyadi va yirtilishi mumkin!). Oshqozonni sun'iy zondlashsiz quruq soda bilan neytrallash MUMKIN EMAS (karbonat angidrid ajralib, oshqozon teshilishi xavfi bor!). Zudlik bilan narkotik analgetiklar va spazmolitiklar bilan shokni bartaraf eting. Muz parchalarini yutishni tavsiya qiling. Hiqildoq shishida traxeostomiyaga tayyor turing."
+        },
+        "yakunlash": {
+            "matn": "Faxriddin aka, ichki a'zolaringizni asrab qolish uchun kuchli og'riq qoldiruvchi qildik va tomiringizdan himoyalovchi eritmalarni quyyapmiz. Yutinishga urinmang, so'lagangizni yutmang. Mutaxassis xirurglar ko'rigiga olib boramiz.",
+            "hisobot": "Bemor Faxriddin (39 yosh), 70% sirka essensiyasi bilan o'tkir kimyoviy kuyish: og'iz, furingeal va qizilo'ngach III darajali kuyishi, disfagiya, qonli gipersalivatsiya, o'tkir og'riq shoki. Analgeziya, antishok terapiya o'tkazildi."
+        }
+    },
+
+    # 102. O'tkir Angionevrotik Kvinke Shishi
+    "kvinke_shishi_katta": {
+        "nomi": "102. O'tkir Angionevrotik Kvinke Shishi (Hiqildoq stenozi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Zilolaxon, qo'rqmang! Men navbatchi hamshiraman. Hozir zudlik bilan tomog'ingizdagi shishni qaytaruvchi ukollarni qilamiz, nafas olishingiz ochiladi.",
+            "izoh": "Allergik Kvinke shishi, lab, til va hiqildoq stenozi, stridor (hushtakli nafas), o'tkir asfiksiya xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Zilolaxon, allergen narsa (yong'oq, asal, dori, hasharot chaqishi) ta'sir qilganiga qancha vaqt bo'ldi?",
+                "maqsad": "Allergik reaksiyaning rivojlanish tezligini aniqlash"
+            },
+            {
+                "savol": "Lablaringiz va tilingiz og'zingizga sig'may qolganini sezyapsizmi?",
+                "maqsad": "Yuz va og'iz bo'shlig'i angioedemasi darajasini baholash"
+            },
+            {
+                "savol": "Tomog'ingiz ichkarisidan qisilib, nafas olayotganda g'iyqillagan hushtak tovushi chiqyaptimi?",
+                "maqsad": "Hiqildoq stenozi (stridor) va havo yo'li torayishini aniqlash"
+            },
+            {
+                "savol": "Badaningizda qattiq qichishadigan qizil bo'rtma toshmalar (eshakemi) bormi?",
+                "maqsad": "Generalizatsiyalangan allergik reaksiyani tasdiqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni zudlik bilan o'tirgan holatga keltiring. Shoshilinch ravishda sonning old-yon qismiga mushak ichiga Adrenalin (0.3-0.5 ml 0.1%) yuboring! Venaga Prednizolon (90-120 mg) yoki Deksametazon (8-16 mg) va antigistamin (Suprastin/Dimedrol) inyeksiyasi. Yuqori oqimli namlangan kislorod bering. Asfiksiya xavfida konikotomiya/intubatsiya to'plami shay bo'lsin."
+        },
+        "yakunlash": {
+            "matn": "Zilolaxon, allergiyaga qarshi eng kuchli dori (adrenalin va gormon) qildik. Hozir bir-ikki daqiqada tomog'ingizdagi shish qaytib, keng nafas ola boshlaysiz. Xotirjam bo'ling, nafas chiqarishga e'tibor bering.",
+            "hisobot": "Bemor Zilola (32 yosh), o'tkir angionevrotik Kvinke shishi, II darajali hiqildoq stenozi: perioral va til angioedemasi, stridoroz nafas, taxipnoe, eshakemi. Mushak ichiga Adrenalin, venaga Prednizolon va Suprastin yuborildi."
+        }
+    },
+
+    # 103. Bolalarda Qizamiq
+    "bola_qizamiq": {
+        "nomi": "103. Bolalarda Qizamiq (Morbilli infeksiyasi)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Madinaxon, shirin qizim. Men navbatchi hamshira opangman. Ko'zlaring og'riyaptimi, xafa bo'lma, hozir senga yordam beraman.",
+            "izoh": "6 yoshli qizaloq. Qizamiq: 39°C isitma, quruq yo'tal, konyunktivit, fotofobiya, bosqichma-bosqich makulopapulyoz toshma."
+        },
+        "savollar": [
+            {
+                "savol": "Madinaxon, qizil toshmalar dastlab qayeringdan boshlab toshdi? Qulog'ing orqasi va yuzingdan boshlandimi?",
+                "maqsad": "Qizamiq toshmasining bosqichma-bosqich tarqalishini aniqlash"
+            },
+            {
+                "savol": "Ko'zlaring qizarib, yorug'likka qarash qiyin bo'lyaptimi? Ko'zingdan yosh oqyaptimi?",
+                "maqsad": "Qizamiq konyunktiviti va fotofobiyani aniqlash"
+            },
+            {
+                "savol": "Tomog'ing og'rib, qattiq yo'tal tutyaptimi? Isitmang baland ko'tarildimi?",
+                "maqsad": "Kataral davr simptomlari va gipertermiyani baholash"
+            },
+            {
+                "savol": "Og'zingning ichida, yonoqlaringda oppoq mayda dog'chalar (Filatov-Koplik dog'lari) paydo bo'lganini onang ko'rdilarmi?",
+                "maqsad": "Qizamiqning patognomonik belgisi (Belskiy-Filatov-Koplik)ni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bolani xiralashtirilgan, qulay, toza xonaga yotqizing (yorug'lik ko'zni og'ritmasligi uchun). Mo'l miqdorda iliq suyuqlik (mors, kompot, choy). Isitmani tushirish uchun Paratsetamol yoki Ibuprofen (bolalar dozasida). Ko'zlarni furatsilin eritmasi bilan yuvish. A vitamini kursi (asoratlarni oldini olish uchun)."
+        },
+        "yakunlash": {
+            "matn": "Madinaxon, xonangdagi chiroqni o'chirib, ko'zlaring dam oladigan qilib berdik. Mazali iliq choy ichib, doringni qabul qilsang, isitmang tushadi va toshmalaring tezda yo'qolib ketadi. Sen juda aqlli qizaloqsan!",
+            "hisobot": "Bemor Madinaxon (6 yosh), qizamiq (morbilli) toshma davri: tana harorati 39.0°C, yuz va tanada makulopapulyoz toshmalar, fotofobiya, konyunktivit, kataral yo'tal. Izolyatsiya, simptomatik va dezintoksikatsion parvarish."
+        }
+    },
+
+    # 104. Bolalarda Suvchechak
+    "bola_suvchechak": {
+        "nomi": "104. Bolalarda Suvchechak (Varitsella toshmasi)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Jasminaxon, salom asal qizaloq! Men navbatchi hamshira opangman. Toshmalaring qichishyaptimi? Hozir ularni qichishmaydigan qilamiz.",
+            "izoh": "5 yoshli qizaloq. Suvchechak: polimorf vezikulyar toshmalar (hatto boshning sochli qismida), qattiq qichishish, 38.2°C isitma."
+        },
+        "savollar": [
+            {
+                "savol": "Jasminaxon, pufakchalar boshlaringda, sochlaring orasida ham bormi? Qayerlaringda ko'proq toshdi?",
+                "maqsad": "Suvchechakka xos sochli qismdagi toshmalarni tasdiqlash"
+            },
+            {
+                "savol": "Toshmalaring juda qattiq qichishyaptimi? Qashilab qo'ymayapsanmi?",
+                "maqsad": "Ikkilamchi infeksiya (bakterial asorat) xavfini baholash"
+            },
+            {
+                "savol": "Isitmang bormi, holsizlanib qoldingmi?",
+                "maqsad": "Umumiy intoksikatsiya darajasini aniqlash"
+            },
+            {
+                "savol": "Bog'changizda boshqa bolalarga ham suvchechak chiqqanmidi?",
+                "maqsad": "Epidemiologik kontaktni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bolaning tirnoqlarini qisqa qilib oling (qashib yaralarni yiringlatmasligi uchun). Pufakchalar ustiga antiseptik (Kalamin losyoni yoki brifilliat ko'ki) surting. Qichishishni qoldirish uchun antigistamin sirop (Fenistil/Zodak). Isitma tushiruvchi (Ibuprofen/Paratsetamol). DIQQAT: Suvchechakda Aspirin QAT'IYAN MAN ETILADI (Reye sindromi xavfi!)."
+        },
+        "yakunlash": {
+            "matn": "Jasminaxon, toshmalaringga sovituvchi maxsus losyon surtib berdik, endi ular umuman qichishmaydi. Sal sabr qilsang, hamma pufakchalar qurib, tushib ketadi va tering oppoq bo'lib qoladi. Yaxshi dam ol, asalim.",
+            "hisobot": "Bemor Jasmina (5 yosh), suvchechak (varitsella) toshma bosqichi: butun tanada polimorf pufakchali (vezikulyar) toshmalar, qichishish, tana harorati 38.2°C. Mahalliy antiseptik, Kalamin va antigistamin parvarishi."
+        }
+    },
+
+    # 105. Bolalarda Rotavirus
+    "bola_rotavirus": {
+        "nomi": "105. Bolalarda Rotavirus Gastroenteriti (Og'ir suvsizlanish)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Rayhonaxon. Men navbatchi hamshira opangman. Qorning og'riyaptimi, qo'rqma, hozir qusishingni to'xtatib, darmon beramiz.",
+            "izoh": "4 yoshli qizaloq. Rotavirus gastroenteriti: suvdek ich ketish (10 marta), to'xtovsiz qusish, 38.8°C isitma, quruq lablar, degidratatsiya."
+        },
+        "savollar": [
+            {
+                "savol": "Rayhonaxon, bugun necha marta qusding? Suv ichganingda ham qayt qilyapsanmi?",
+                "maqsad": "Qusish chastotasi va peroral regidratatsiya imkoniyatini baholash"
+            },
+            {
+                "savol": "Qorning burab og'rib, hojatxonaga ko'p marta bordingmi? Kichik hojating (peshobing) kamayib qoldimi?",
+                "maqsad": "Suvsizlanish darajasi va oliguriyani aniqlash"
+            },
+            {
+                "savol": "Og'zing va lablaring qurib, darmoning qurib yotib qoldingmi?",
+                "maqsad": "Degidratatsiya (teri turgori, shilliq qavatlar)ni baholash"
+            },
+            {
+                "savol": "Isitmang juda baland ko'tarildimi?",
+                "maqsad": "Infeksion-toksik sindromni baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qayta qusishni to'xtatish uchun qusishga qarshi dori (Ondansetron bolalar dozasida). Oral regidratatsiya: Regidron yoki Humana elektrolit eritmasini har 5 daqiqada 1 choy qoshiqdan fraksion ichirish. Agar bola icha olmasa yoki suvsizlanish II-III daraja bo'lsa, zudlik bilan venaga tomchilab Ringer/Glukosol eritmasini infuziya qilish. Probiotiklar va qat'iy parhez."
+        },
+        "yakunlash": {
+            "matn": "Rayhonaxon, qorningdagi og'riq va qusishni to'xtatdik. Hozir qoshiqcha bilan mazali sho'r-shirin suvdan ichiraman. Vujudingga suv yetib borsa, darrov kuchga to'lib, o'ynab ketasan. Juda aqlli qizaloqsan!",
+            "hisobot": "Bemor Rayhonaxon (4 yosh), o'tkir rotavirusli gastroenterit, II darajali suvsizlanish: tinimsiz qusish, profuz suvli ich ketishi, oliguriya, quruq shilliq qavatlar, tana harorati 38.8°C. Fraksion regidratatsiya va infuzion terapiya boshlandi."
+        }
+    },
+
+    # 106. Bolalarda Yot Jism
+    "bola_yot_jism": {
+        "nomi": "106. Bolalarda Nafas Yo'liga Yot Jism Tiqilishi (Asfiksiya)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Javohir, qo'rqma! Men hamshira opangman, nafas olishingga hozir yordam beramiz, ochib beramiz!",
+            "izoh": "3 yoshli bola. Nafas yo'liga yong'oq tiqilishi: to'satdan bo'g'ilish, stridor, lablar ko'karishi, afoniya. Shoshilinch Geymlix / ko'krak zarbalari."
+        },
+        "savollar": [
+            {
+                "savol": "Javohir yong'oq yoki o'yinchoq yeb o'tirgan edimi? Birdaniga tiqilib bo'g'ildimi?",
+                "maqsad": "Yot jism turini onasidan zudlik bilan aniqlash"
+            },
+            {
+                "savol": "Bola yo'tala olyaptimi yoki ovozi chiqmay nafasi butunlay qisilib qoldimi?",
+                "maqsad": "Nafas yo'lining qisman yoki to'liq berkilishini farqlash"
+            },
+            {
+                "savol": "Lablari va yuzi ko'karib ketdimi?",
+                "maqsad": "O'tkir gipoksiya va asfiksiya darajasini baholash"
+            },
+            {
+                "savol": "Hushini yo'qotib qo'ymayaptimi?",
+                "maqsad": "Gipoksik koma va CPR zarurligini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "ZUDLIK BILAN SHOSHILINCH YORDAM: Agar bola hushida bo'lsa va 1-3 yoshda bo'lsa, bolani oldinga egib, kuraklari orasiga kaft asosi bilan 5 marta siltovchi zarba bering, so'ngra ko'krak suyagiga 5 marta bosim o'tkazing (Geymlix modifikatsiyasi). Yot jism ko'rinsa, barmoq bilan oling (ko'rinmasa ko'r-ko'rona tiqmang!). Agar hushini yo'qotsa — zudlik bilan CPR (yurak-o'pka reanimatsiyasi) va traxeyani tozalash."
+        },
+        "yakunlash": {
+            "matn": "Javohir, bo'ldi, qo'rqma asalim! Tomog'ingga tiqilib qolgan yong'oqni chiqarib oldik, mana keng nafas olyapsan. Onajonisi, bolangiz xavfdan qutuldi, tinchgina nafas olsin.",
+            "hisobot": "Bemor Javohir (3 yosh), yuqori nafas yo'liga yot jism (yong'oq bo'lagi) tiqilishi oqibatidagi o'tkir asfiksiya: sianoz, afoniya, stridor. Ko'krak-kurak manipulyatsiyasi (Geymlix usuli) orqali yot jism chiqarildi, nafas to'liq tiklandi."
+        }
+    },
+
+    # 107. Bolalarda Skarlatina
+    "bola_skarlatina": {
+        "nomi": "107. Bolalarda Skarlatina (A guruhi streptokokki)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Umidaxon! Men navbatchi hamshira opangman. Tomog'ing og'riyaptimi, og'zingni sekin ochib ko'rsat-chi, qaraymiz.",
+            "izoh": "7 yoshli qizaloq. Skarlatina: malinasimon til, lakunar angina, oq burun-lab uchburchagi (Filatov), mayda nuqtali toshma, 39°C."
+        },
+        "savollar": [
+            {
+                "savol": "Umidaxon, tomog'ing yutinganingda juda qattiq sanchib og'riyaptimi? Ovqat yeyolmay qoldingmi?",
+                "maqsad": "Streptokokkli o'tkir tonzillit (angina)ni aniqlash"
+            },
+            {
+                "savol": "Tiling qip-qizil bo'rtib, xuddi pishgan malinadek bo'lib qolganini sezyapsanmi?",
+                "maqsad": "Skarlatinaga xos 'malinasimon til' simptomini tekshirish"
+            },
+            {
+                "savol": "Badaningga mayda qizil qumdek toshmalar toshib, burning va labing atrofida oq dog' qolganini ko'rdingmi?",
+                "maqsad": "Filatov belgisi (oq nazolabial uchburchak) va mayda nuqtali toshmani baholash"
+            },
+            {
+                "savol": "Isitmang 39 darajaga chiqib, boshing og'riyaptimi?",
+                "maqsad": "O'tkir bakterial intoksikatsiyani baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qat'iy yotoq tartibi. ETIOTROP TERAPIYA: Streptokokkga qarshi penitsillin qatori antibiotiklari (Amoksitsillin/Flemoksin) shifokor ko'rsatmasi bo'yicha 10 kunlik to'liq kurs. Tomoqni antiseptik eritmalar (Furatsilin, Romazulan) bilan chayish. Isitma tushiruvchi (Paratsetamol/Ibuprofen). Mo'l vitaminli iliq suyuqlik."
+        },
+        "yakunlash": {
+            "matn": "Umidaxon, tomog'ingdagi mikroblarni yo'qotish uchun dorilar berdik va tomog'ingni chaydik. Bir-ikki kunda tomog'ingdagi og'riq yo'qoladi, tilingdagi qizillik ketib, toshmalar ham to'kilib ketadi. Yaxshi dam ol!",
+            "hisobot": "Bemor Umidaxon (7 yosh), skarlatina, o'rta og'ir shakli: o'tkir lakunar angina, 'malinasimon til', mayda nuqtali toshma, Filatov simptomi, harorat 39.0°C. Antibiotikoterapiya va antiseptik mahalliy davo boshlandi."
+        }
+    },
+
+    # 108. Bolalarda Ko'kyo'tal
+    "bola_kokyotal": {
+        "nomi": "108. Bolalarda Ko'kyo'tal (Spazmatik yo'tal xurujlari)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Zuxraxon, salom asal qizaloq! Men navbatchi hamshira opangman. Xavotir olma, yo'talingni yengillatib, tinch uxlashingga yordam beramiz.",
+            "izoh": "6 yoshli qizaloq. Ko'kyo'tal (Bordetella pertussis): ketma-ket 15-20 marta yo'tal zarbasi, hushtakli chuqur nafas (reprise), shilimshiq qusish."
+        },
+        "savollar": [
+            {
+                "savol": "Zuxraxon, yo'tal tutganda ketma-ket to'xtamay yo'talib, nafasing tiqilib qolyaptimi?",
+                "maqsad": "Spazmatik paroksizmal yo'tal xarakterini aniqlash"
+            },
+            {
+                "savol": "Yo'taldan keyin 'g'iyq' etib hushtak chalib chuqur nafas olasanmi (reprise)?",
+                "maqsad": "Ko'kyo'talning reprise belgisini tasdiqlash"
+            },
+            {
+                "savol": "Yo'tal oxirida shilimshiq balg'am qusib yuboryapsanmi?",
+                "maqsad": "Yo'tal xurujining tugash belgisini aniqlash"
+            },
+            {
+                "savol": "Ayniqsa kechalari yo'tal xurujlari ko'payib, uxlashingga qo'ymayaptimi?",
+                "maqsad": "Tungi paroksizmlar soni va gipoksiya xavfini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Xonani doimiy toza, salqin va nam havo bilan ta'minlang (namlantirgich ishlating). Bolani emotsional qo'zg'alish va qo'rqishdan asrang (har qanday qo'zg'alish yo'tal xurujini chaqiradi). Makrolid antibiotiklar (Azitromitsin/Klaritromitsin). Yo'tal xuruji paytida bolani oldinga egib, nafas yo'lini balg'amdan tozalang. Zarur bo'lsa kislorodoterapiya."
+        },
+        "yakunlash": {
+            "matn": "Zuxraxon, xonang havosini toza va nam qilib berdik, nafas olishing ancha oson bo'ladi. Maxsus doringni ichsang, kechasi yo'tal tutmay shirin uxlaysan. Sen juda sabrli qizaloqsan!",
+            "hisobot": "Bemor Zuxraxon (6 yosh), ko'kyo'tal (pertussis) spazmatik davri: odatiy reprisal yo'tal xurujlari (15-20 zarba), sianoz, yopishqoq balg'am qusishi, tungi paroksizmlar. Havoni namlash, makrolid terapiyasi va sedativ parvarish tayinlandi."
+        }
+    },
+
+    # 109. Bolalarda O'tkir O'rta Otit
+    "bola_otit": {
+        "nomi": "109. Bolalarda O'tkir O'rta Otit (Quloq sanchishi)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Fotimaxon, assalomu alaykum asalim. Men navbatchi hamshira opangman. Qulog'ing qattiq og'riyaptimi, yig'lama, hozir og'riqni darrov to'xtatamiz.",
+            "izoh": "5 yoshli qizaloq. O'tkir o'rta otit: quloqda pichoq sanchigandek o'tkir og'riq, tragusni bosganda baqirib yig'lash, 38.5°C isitma."
+        },
+        "savollar": [
+            {
+                "savol": "Fotimaxon, o'ng qulog'ingning ichi sanchib, xuddi igna tiqilgandek og'riyaptimi?",
+                "maqsad": "O'tkir otalgiya (quloq og'rig'i) xarakterini aniqlash"
+            },
+            {
+                "savol": "Qulog'ing oldidagi do'ngchani (dahan/tragusni) sal bosganda og'riq juda kuchayib ketyaptimi?",
+                "maqsad": "Tragus simptomini tasdiqlash"
+            },
+            {
+                "savol": "Bir necha kun oldin burning oqib shamollaganmiding?",
+                "maqsad": "Yevstaxiy nayi orqali o'rta quloqqa infeksiya o'tganini aniqlash"
+            },
+            {
+                "savol": "Qulog'ingdan biron suyuqlik yoki sariq yiring oqib chiqqanini ko'rmadingizmi?",
+                "maqsad": "Nog'ora parda perforatsiyasi bor-yo'qligini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Zudlik bilan tizimli analgetik (Ibuprofen yoki Paratsetamol bolalar dozasida) berib, quloq og'rig'ini qoldiring. Agar nog'ora parda butun bo'lsa (yiring oqmayotgan bo'lsa) — og'riq qoldiruvchi quloq tomchilari (Otipaks). Burun yo'llariga tomir toraytiruvchi tomchilar (Nazivin/Oksimetazolin) — Yevstaxiy nayini ochish uchun. Quloqqa o'zboshimchalik bilan issiq kompress QILMANG."
+        },
+        "yakunlash": {
+            "matn": "Fotimaxon, og'riq qoldiruvchi doringni ichirdim va burningga maxsus tomchi tomizib qo'ydim. 10-15 daqiqada qulog'ingdagi sanchiq butunlay bosiladi, bemalol uxlab dam olasan. Yig'lama, asalim!",
+            "hisobot": "Bemor Fotimaxon (5 yosh), o'tkir kataral o'rta otit: kuchli o'ng tomonlama otalgiya, musbat tragus simptomi, harorat 38.5°C, rinofaringit fonida. Tizimli analgetik, intranazal dekongestant va Otipaks tomchilari berildi."
+        }
+    },
+
+    # 110. Bolalarda O'tkir Bronxiolit
+    "bola_bronxiolit": {
+        "nomi": "110. O'tkir Bolalar Bronxioliti (Xirillash va hansirash)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Samiraxon, jajji qizim! Men navbatchi hamshira opangman. Nafas olishing qiyin bo'lyaptimi, qo'rqma, hozir senga kislorod ulab, yordam beramiz.",
+            "izoh": "3 yoshli qizaloq. RSV bronxioliti: uzoqdan eshitiluvchi hushtakli xirillash, hansirash (RR 48/min), qovurg'alararo tortilish, gipoksiya."
+        },
+        "savollar": [
+            {
+                "savol": "Samiraxon, ko'kragang xirillab hushtak chalyaptimi? Nafas olishing tezlashib ketdimi?",
+                "maqsad": "Mayda bronxiolalarning obstruksiyasi va ekspiratuar hansirashni aniqlash"
+            },
+            {
+                "savol": "Nafas olayotganda burningning teshiklari kengayib, qovurg'alaring osti ichkariga tortilyaptimi?",
+                "maqsad": "Yordamchi nafas mushaklari ishtiroki va nafas yetishmovchiligi darajasini baholash"
+            },
+            {
+                "savol": "Yo'taling quruq va qiynovchimi? Emish yoki suv ichishga nafasing yetmayaptimi?",
+                "maqsad": "Gipoksiya tufayli oziqlanish qiyinlashuvini aniqlash"
+            },
+            {
+                "savol": "Lablaring atrofida ko'karish sezildimi?",
+                "maqsad": "Perioral sianoz va to'qima gipoksiyasini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bolani 30-40 gradus burchak ostida ko'tarib yotqizing. Burun yo'llarini shilimshiqdan ehtiyotkorlik bilan tozalang. Namlangan kislorodoterapiya (burun kanyulasi orqali, SpO2 >92% bo'lishi kerak). Nebulayzer orqali gipertonik 3% li NaCl eritmasi (shilliq qavat shishini kamaytirish uchun) yoki Berodual ingalyatsiyasi. Dehidratsiyaning oldini olish uchun fraksion suyuqlik."
+        },
+        "yakunlash": {
+            "matn": "Samiraxon, burnigni tozalab, mazali toza kislorod niqobchasini taqdik. Endi ko'kragingdagi xirillash kamayib, nafas olishing ancha yengil bo'ladi. Onasi bag'rida bemalol uxlab olgin, jajji qizim.",
+            "hisobot": "Bemor Samira (3 yosh), o'tkir obstruktiv bronxiolit (RSV infeksiyasi), II darajali nafas yetishmovchiligi: taxipnoe (RR 48/min), uzoqdan eshitiluvchi xirillash, qovurg'alararo retraksiya, SpO2 90%. O2 terapiya va ingalyatsiya boshlandi."
+        }
+    },
+
+    # 111. Bolalar Raxit Tetaniya
+    "bola_rakhit_tetaniya": {
+        "nomi": "111. Bolalar Spazmofiliyasi va Gipokalsemik Tortishish",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Asalxon, shirin qizaloq! Men navbatchi hamshira opangman. Qo'llaring qotib qoldimi, qo'rqma, hozir ularni bo'shatib, nafas yo'lingni ochamiz.",
+            "izoh": "4 yoshli qizaloq. Spazmofiliya (gipokalsemiya): laringospazm (nafas tiqilishi), karpopedal spazm, titrash, raxit asorati."
+        },
+        "savollar": [
+            {
+                "savol": "Asalxon ozgina yig'lasa yoki qo'rqsa birdan ovozi chiqmay nafasi to'xtab qoladimi (laringospazm)?",
+                "maqsad": "Spazmofiliyaning laringospazm xurujini onasidan aniqlash"
+            },
+            {
+                "savol": "Qo'lchalari va oyoqchalari o'z-o'zidan tortishib, barmoqlari buklanib qotyaptimi?",
+                "maqsad": "Karpopedal spazm va periferik tetaniyani aniqlash"
+            },
+            {
+                "savol": "Qizaloqqa D vitamini berilmaganmidi yoki yaqinda katta dozada berildimi?",
+                "maqsad": "Raxit va kalsiy-fosfor almashinuvi buzilish sababini aniqlash"
+            },
+            {
+                "savol": "Yuziga yoki labining burchagiga qo'l tekkizganda yuzi pirpirab tortishyaptimi (Xvostek)?",
+                "maqsad": "Nerv-mushak qo'zg'aluvchanligi belgilarini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Laringospazm paytida zudlik bilan toza havo oqimini ta'minlang, yuziga sovuq suv seping yoki til ildizini qoshiqcha bilan bosing (nafas refleksini qo'zg'atish). SHOSHILINCH ETIOTROP YORDAM: Venaga sekin 10% li Kalsiy glyukonat eritmasi (yoshiga qarab 0.5-1.0 ml/kg) yuborish. Talvasada Seduksen (Diazepam). Keyinchalik kalsiy preparatlari va D vitamini."
+        },
+        "yakunlash": {
+            "matn": "Asalxon, tomiringdan maxsus kalsiy dori berdik. Mana, qo'lchalaringdagi tortishish butunlay yozildi, nafasing keng va erkin bo'ldi. Endi xohlagancha kulib o'ynashing mumkin, aqlli qizim!",
+            "hisobot": "Bemor Asalxon (4 yosh), raxit fonidagi spazmofiliya, latent va manifest tetaniya: o'tkir laringospazm epizodi, karpopedal spazm, musbat Xvostek va Trosso belgilari. Vena ichiga 10% Kalsiy glyukonat yuborilib, spazm to'xtatildi."
+        }
+    },
+
+    # 112. Bolalarda Febril Talvasa
+    "bola_febril_talvasa": {
+        "nomi": "112. Bolalarda Febril Talvasa Xuruji",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Muslimaxon, assalomu alaykum asal qizim. Men navbatchi hamshira opangman. O'zingga kelding, qo'rqma, sen bilan birgamiz.",
+            "izoh": "5 yoshli qizaloq. Febril talvasa: 39.8°C isitma ko'tarilganda butun tanada titroq va hush yo'qotish, postiktal holsizlik."
+        },
+        "savollar": [
+            {
+                "savol": "Isitmasi birdan 39-40 darajaga chiqqanda talvasa necha daqiqa davom etdi?",
+                "maqsad": "Febril talvasa davomiyligini (oddiy <15 min yoki murakkab) onasidan aniqlash"
+            },
+            {
+                "savol": "Xuruj paytida ko'zlari tepaga qarab ketib, butun tanasi qaltiradimi?",
+                "maqsad": "Generalizatsiyalangan tonik-klonik talvasa xarakterini tasdiqlash"
+            },
+            {
+                "savol": "Hozir o'ziga kelgach boshi aylanib, qattiq uxlab qolyaptimi?",
+                "maqsad": "Postiktal tormozlanish holatini baholash"
+            },
+            {
+                "savol": "Ilgari ham yuqori isitmada shunday talvasa tutganmidi?",
+                "maqsad": "Febril talvasalar qaytalanish anamnezini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bolani yonbosh holatga yotqizing (qusish sodir bo'lsa aspiratsiyani oldini olish). Og'ziga qattiq qoshiq yoki barmog'ingizni tiqmang! Nafas yo'llarini ochiq tuting. ZUDLIK BILAN ISITMANI TUSHIRISH: Mushak ichiga analgetik aralashma yoki rektal Paratsetamol/Ibuprofen shamchasi. Jismoniy sovutish (peshona va bo'yinga iliq-salqin latta). Agar talvasa 5 daqiqadan oshsa — Diazepam (rektal yoki v/i)."
+        },
+        "yakunlash": {
+            "matn": "Muslimaxon, isitmangni tushiruvchi dori qildik va peshonangga salqin sochiqcha qo'ydik. Isitmang tushib, butun tanang dam olyapti. Hech qayering qaltiramaydi, onang yonida shirin uxlab olgin.",
+            "hisobot": "Bemor Muslimaxon (5 yosh), yuqori gipertermiya fonidagi oddiy febril talvasa xuruji: harorat 39.8°C, 3 daqiqalik generalizatsiyalangan talvasa, postiktal uyquchanlik. Yonbosh yotqizildi, antipiretik terapiya va jismoniy sovutish o'tkazildi."
+        }
     }
 }
 
