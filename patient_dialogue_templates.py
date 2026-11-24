@@ -712,6 +712,738 @@ DETAILED_TEMPLATES: Dict[str, Dict[str, Any]] = {
             "matn": "Madinaxon, sen juda aqlli qizaloqsan! Qara, hozir mana bu sehrli apparat (nebulayzer) orqali salqin tuman bilan nafas olamiz, tomog'ing ochilib, oson nafas olasan. Onajoning yoningda bo'ladi. Men doktor amakingni chaqirib kelyapman, tezda tuzalib ketasan!",
             "hisobot": "Bemor Madina (6 yosh), o'tkir stenozlanuvchi laringotraxeit (krup, 2-darajali stenoz): dag'al huruvchi yo'tal, stridor, inspirator nafas qisishi, T 38.3°C. Nebulayzerda Budesonid va kislorod berildi."
         }
+    },
+
+    "bola_appenditsit": {
+        "nomi": "21. Bolalarda O'tkir Qorin Og'rig'i (Appenditsit)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Salom Zilolaxon, qo'rqma jonim, men hamshira opangman. Qayering og'riyapti, ko'rsata olasanmi?",
+            "izoh": "Pediatriya bemori (8 yosh). Bolaga mehrli gapiring, 'hamshira opa' deb ayting, onasiga ham taskin bering."
+        },
+        "savollar": [
+            {
+                "savol": "Zilolaxon, qorning qayerda og'riyapti? Kindiging atrofidami yoki o'ng tomoning pastidami?",
+                "maqsad": "Lokalizatsiya va Koxer simptomi (kindikdan o'ng yonboshga ko'chish)"
+            },
+            {
+                "savol": "Og'riq pichoqdek sanchyaptimi? O'ng oyog'ingni bukkanda yoki qimirlatganda og'riq kuchayadimi?",
+                "maqsad": "Psoas-simptomi va peritoneal ta'sirlanishni aniqlash"
+            },
+            {
+                "savol": "(Onasiga): Qusish yoki ko'ngil aynishi bo'ldimi? Necha marta qayt qildi?",
+                "maqsad": "Appenditsitdagi dispeptik sindromni baholash"
+            },
+            {
+                "savol": "(Onasiga): Qorin og'rig'i boshlangandan keyin isitmasi ko'tarildimi (37.8°C)? Og'riqsizlantiruvchi dori bermadingizmi?",
+                "maqsad": "Subfebrilitet va dori anamnezini aniqlash"
+            },
+            {
+                "savol": "(Onasiga): Ich kelishi qanday bo'ldi, qotish yoki ich ketish kuzatildimi?",
+                "maqsad": "Ichak peristaltikasi va intoksikatsiyani tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qizaloqni o'ng oyog'ini tizzadan biroz bukkan holda chalqancha yotqizing. Qoringa issiq grelka qo'yish yoki dori ichirish qat'iyan taqiqlanadi! Bolalar jarrohini zudlik bilan chaqiring."
+        },
+        "yakunlash": {
+            "matn": "Zilolaxon, sen juda sabrli va chiroyli qizsan! Qorningga qo'lingni qattiq bosma, qimirlamay yotib tur. Hozir doktor amaking keladi, birgalikda seni ko'rib og'riqni qoldiramiz, xo'pmi? Barakalla!",
+            "hisobot": "Bemor Zilola (8 yosh), o'tkir appenditsit gumoni: o'ng yonbosh sohasida o'tkir sanchiq, Koxer va psoas simptomi musbat, T 37.8°C. Bolalar jarrohi zudlik bilan chaqirildi."
+        }
+    },
+
+    "bola_allergiya": {
+        "nomi": "22. Bolalar Allergiyasi & Yuz Shishi (Kvinke)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Salom Rayhonaxon! Qo'rqma qizalog'im, men hamshira opangman. Nafas olishing qiyinlashmayaptimi?",
+            "izoh": "Pediatriya bemori (7 yosh). Kvinke shishi va bo'g'ilish xavfi bor, nafas yo'llarini tezkor nazorat qiling."
+        },
+        "savollar": [
+            {
+                "savol": "Rayhonaxon, lablaring yoki ko'zlaring qichishyaptimi? Tomog'ingda tiqilish yoki achishish bormi?",
+                "maqsad": "Halqum shishi va asfiksiya xavfini aniqlash"
+            },
+            {
+                "savol": "(Onasiga): Qizaloq bugun nimalar yegandi? Mandarin, shokolad yoki yong'oq iste'mol qildimi?",
+                "maqsad": "Allergen manbasini aniqlash"
+            },
+            {
+                "savol": "(Onasiga): Yuz va qovoqlar shishi qancha vaqt ichida paydo bo'ldi? Shish kattalashyaptimi?",
+                "maqsad": "Kvinke shishi dinamikasini baholash"
+            },
+            {
+                "savol": "Badaningda qizil toshmalar, qichishish bormi, ko'rsat-chi?",
+                "maqsad": "Eshakemi (urtikariya) belgilarini ko'zdan kechirish"
+            },
+            {
+                "savol": "(Onasiga): Oldin biror dori yoki ovqatga allergiya bo'lganmi? Uyda antigistamin (Suprastin, Fenistil) berdingizmi?",
+                "maqsad": "Allergik anamnezni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Allergen ta'sirini darhol to'xtating. Bolani yarim o'tirgan holatga keltiring. Kislorod ulanadi. Prednizolon yoki Deksametazon, shuningdek antigistamin preparati shifokor ko'rsatmasi bilan tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Rayhonaxon, sen juda aqlli qizaloqsan! Hozir mana bu kichkina dori bilan yuzingdagi shishlar qaytadi, ko'zlaring ochilib, qichishish to'xtaydi. Xavotir olma, onang yoningda. Hozir kelaman!",
+            "hisobot": "Bemor Rayhona (7 yosh), o'tkir allergik Kvinke shishi: lab va periorbital shish, yuz eritemasi, toshma. Halqum shishi xavfi bor, zudlik bilan antiallergik terapiya boshlandi."
+        }
+    },
+
+    "bola_shamollash": {
+        "nomi": "23. Bolalar O'tkir Isitmasi (39.5°C Gipertermiya)",
+        "is_child": True,
+        "salomlashish": {
+            "matn": "Salom Madinaxon! Men hamshira opangman, seni issig'ingni tushirishga yordam beraman, xo'pmi?",
+            "izoh": "Pediatriya bemori (6 yosh). Yuqori febril harorat (39.5°C) fonida febril talvasa (sudorogi) xavfini oldini oling."
+        },
+        "savollar": [
+            {
+                "savol": "Madinaxon, boshing og'riyaptimi, tomog'ing yutinganda og'riyaptimi?",
+                "maqsad": "Bosh og'rig'i va O'RVI kataral belgilarini aniqlash"
+            },
+            {
+                "savol": "(Onasiga): Tana harorati 39.5°C ga qachon chiqdi? Bola qaltirab sovuq qotyaptimi yoki badani qizib ketganmi?",
+                "maqsad": "'Oq' yoki 'qizil' gipertermiyani ajratish"
+            },
+            {
+                "savol": "(Onasiga): Bolada qo'l-oyoqlar tortishishi, ko'zlarining yuqoriga ketib qolishi (talvasa) kuzatilmadimi?",
+                "maqsad": "Febril tutqanoqni istisno qilish"
+            },
+            {
+                "savol": "(Onasiga): Qanday isitma tushiruvchi dori (Paratsetamol, Ibuprofen) berdingiz va qachon berildi?",
+                "maqsad": "Dori dozasi va vaqtini aniqlash"
+            },
+            {
+                "savol": "(Onasiga): Bola suyuqlik (suv, choy) ichyaptimi yoki qusib tashlayaptimi?",
+                "maqsad": "Degidratatsiya va intoksikatsiya darajasini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bolani qalin kiyimlardan bo'shating (o'rab tashlamang!). Agar qo'l-oyoqlari issiq bo'lsa: iliq suv bilan jismoniy sovutish (peshana, bo'yin, chov sohasiga kompress). Paratsetamol/Ibuprofen siropi yoki shamchasi qo'llaniladi."
+        },
+        "yakunlash": {
+            "matn": "Madinaxon, jonim, peshanangga mana bu salqin dastro'molni qo'yamiz va mazali sirop ichiramiz. Issig'ing tezda tushib, yana o'ynab ketasan, xo'pmi? Onajoning bilan yotib tur, hozir dorini olib kelaman.",
+            "hisobot": "Bemor Madina (6 yosh), o'tkir gipertermiya sindromi: T 39.5°C, intoksikatsiya, qaltirash. Jismoniy sovutish va antipiretik terapiya boshlandi."
+        }
+    },
+
+    "yurak_yetishmovchiligi": {
+        "nomi": "24. Surunkali Yurak Yetishmovchiligi (Dekompenzatsiya)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Sobir ota. Men navbatchi hamshiraman. Holsizlanib qolganga o'xshaysiz, nafas olishingizni rostlab oling.",
+            "izoh": "Katta yoshli bemor (67 yosh). Yurak yetishmovchiligi dekompenzatsiyasi, o'tirgan holatda ortopnoe."
+        },
+        "savollar": [
+            {
+                "savol": "Sobir ota, nafas qisishi qachondan beri kuchaydi? Yotganingizda bo'g'ilish kuchayib, baland yostiqqa suyanib o'tirishga majbur bo'lyapsizmi?",
+                "maqsad": "Ortopnoe va o'pka dimlanishini baholash"
+            },
+            {
+                "savol": "Oyoqlaringizdagi shish qachon paydo bo'ldi? Paypoq yoki poyabzalingiz siqib, ertalab ham qaytmayaptimi?",
+                "maqsad": "Katta qon aylanish doirasidagi periferik venoz dimlanish"
+            },
+            {
+                "savol": "Ko'kragingizda og'irlik, quruq yo'tal yoki kechasi bo'g'ilib uyg'onish xurujlari bo'lyaptimi?",
+                "maqsad": "Yurak astmasi paroksizmini aniqlash"
+            },
+            {
+                "savol": "Siyishingiz kamayib ketmadimi? Siydik haydovchi (Furosemid, Torasemid) dorilaringizni ichyapsizmi?",
+                "maqsad": "Diurez va diuretiklar nazoratini tekshirish"
+            },
+            {
+                "savol": "Yurak uchun qanday dorilar (Digoksin, Kardiomagnil, Enalapril) qabul qilasiz?",
+                "maqsad": "Kardiologik dori anamnezini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni baland yostiqda, yarim o'tirgan (ortopnoe) holatga keltiring. Oyoqlarini pastga tushiring (yurakka venoz oqimni kamaytirish). Namlangan kislorod ulanadi. Arterial bosim, puls va SpO2 o'lchanadi."
+        },
+        "yakunlash": {
+            "matn": "Sobir ota, hech xavotirlanmang. Sizni balandroq suyab qo'ydim, nafas olishingiz ancha yengillashadi. Hozir kardiolog shifokor keladi, suyuqlikni haydaydigan dori va kislorod beramiz. Sekin, chuqur nafas oling.",
+            "hisobot": "Bemor Sobir ota (67 yosh), surunkali yurak yetishmovchiligi (IIB-III bosqich) dekompenzatsiyasi: ortopnoe, ikkala boldirda massiv shishlar, taxipnoe, SpO2 89%. Kardiologik yordam zarur."
+        }
+    },
+
+    "paroksizmal_taxikardiya": {
+        "nomi": "25. Paroksizmal Supraventrikulyar Taxikardiya (PSVT)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Qo'rqmang, xotirjam bo'ling, yuragingizni ritmini hozir tekshiramiz.",
+            "izoh": "Yurak 175 bpm ga to'satdan tezlashgan, vagal sinamalar yoki dori kerak."
+        },
+        "savollar": [
+            {
+                "savol": "Yuragingiz gupillashi birdaniga, xuddi tugma bosilgandek boshlandimi? Qancha vaqtdan beri davom etyapti?",
+                "maqsad": "Paroksizmning to'satdan boshlanish xususiyatini aniqlash"
+            },
+            {
+                "savol": "Bosh aylanishi, ko'z tinishi yoki quloqda jaranglash hissi bormi?",
+                "maqsad": "Gipoperfuziya va bosim pasayishini baholash"
+            },
+            {
+                "savol": "Ko'kragingizda qisilish, og'riq yoki havo yetishmasligi bormi?",
+                "maqsad": "Ishemiya va taxikardiyaning asoratlarini tekshirish"
+            },
+            {
+                "savol": "Bunday kuchli urish ilgari ham bo'lganmi? Vagus sinamalarini (masalan, nafasni ushlab zo'riqish — Valsalva) qilib ko'rganmisiz?",
+                "maqsad": "Valsalva manevri va ritm tiklanish anamnezi"
+            },
+            {
+                "savol": "Bugun ko'p kofe, energetik ichdingizmi yoki kuchli stress bo'ldimi?",
+                "maqsad": "Provokatsion omillarni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yotqizing. Shifokor nazorati ostida Valsalva sinamasini (chuqur nafas olib, 15 soniya kuchanish) bajartiring. 12 kanalli EKG apparatini darhol ulang. Vena ichiga Adenozin (ATF) yuborishga tayyor turing."
+        },
+        "yakunlash": {
+            "matn": "Jamshid aka, ritmingiz daqiqasiga 175 ta ekan, bu paroksizmal taxikardiya. Hozir birga nafas mashqini bajaramiz va EKG qog'ozini chiqaramiz. Shifokor bilan darhol ritmni to'xtatuvchi muolajani qilamiz. Hammasi yaxshi bo'ladi!",
+            "hisobot": "Bemor Jamshid (29 yosh), paroksizmal supraventrikulyar taxikardiya (HR 175 bpm, ritmik), BP 105/70 mmHg. EKG yozilmoqda, kardiologik tiklash choralari talab etiladi."
+        }
+    },
+
+    "qorinchalar_taxikardiyasi": {
+        "nomi": "26. Paroksizmal Qorinchalar Taxikardiyasi (VT)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Iltimos, mutlaqo qimirlamang, chuqur nafas oling!",
+            "izoh": "HAYOTGA XAVFLI ARITMIYA! Bemor hushidan ketishi va qorinchalar fibrillyatsiyasiga o'tishi mumkin!"
+        },
+        "savollar": [
+            {
+                "savol": "Ko'kragingizda qattiq zarba yoki gupillash qachon boshlandi?",
+                "maqsad": "Paroksizm boshlanish vaqtini aniqlash"
+            },
+            {
+                "savol": "Ko'zingiz qorong'ilashib, hushdan ketayotgandek bo'lyapsizmi? Boshingiz aylanyaptimi?",
+                "maqsad": "Gemodinamik beqarorlik va kollaps xavfini aniqlash"
+            },
+            {
+                "savol": "Ko'kragingizda siquvchi og'riq bormi, sovuq ter bosyaptimi?",
+                "maqsad": "Koronar ishemiya va shok belgilarini tekshirish"
+            },
+            {
+                "savol": "Ilgari infarkt o'tkazganmisiz yoki yuragingizda chandiq bormi?",
+                "maqsad": "VT ning organik zaminini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni zudlik bilan gorizontal yotqizing. Defibrillyator apparatini darhol yoniga keltiring va elektrodlarini tayyorlang! Kislorod niqobini taqing. Amiodaron (Kordaron) yoki Lidokain infuziyasiga tayyorlaning."
+        },
+        "yakunlash": {
+            "matn": "Baxtiyor aka, hech qayoqqa qimirlamang. Hozir reanimatsiya shifokorlari kelmoqda, yurak ritmingizni barqarorlashtirish uchun dori tomizamiz va monitoring qilamiz. Biz yoningizdamiz!",
+            "hisobot": "Bemor Baxtiyor (55 yosh), gemodinamik beqaror qorinchalar taxikardiyasi (VT, HR 160 bpm), BP 85/50 mmHg, hushdan ketish xavfi, sovuq ter. Qizil kod — defibrillyator va reanimatsiya brigadasi chaqirildi!"
+        }
+    },
+
+    "miokardit": {
+        "nomi": "27. O'tkir Infeksion Miokardit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Ko'kragingizdagi og'riq bo'yicha yordam beramiz, qulay o'tirib oling.",
+            "izoh": "Gripp yoki virusli infeksiyadan keyingi asorat."
+        },
+        "savollar": [
+            {
+                "savol": "Ko'krak sohasidagi og'riq qanday: simillovchi, bosuvchimi yoki sanchuvchimi? Nafas olganda o'zgaradimi?",
+                "maqsad": "Miokarditga xos noaniq og'riqni baholash"
+            },
+            {
+                "savol": "Yaqinda (1-2 hafta oldin) kuchli gripp, tomoq og'rig'i yoki virusli shamollash o'tkazganmidingiz?",
+                "maqsad": "Postinfeksion etiologiyani aniqlash"
+            },
+            {
+                "savol": "Ozgina harakat qilsangiz ham yuragingiz tez urib, hansirab qolyapsizmi?",
+                "maqsad": "Sinusli taxikardiya va yurak yetishmovchiligini tekshirish"
+            },
+            {
+                "savol": "Tana haroratingiz ko'tarilib turibdimi (subfebrilitet 37.5 - 38°C)?",
+                "maqsad": "Yallig'lanish sindromini aniqlash"
+            },
+            {
+                "savol": "Kuchli holsizlik, bo'g'imlarda zirqirash yoki mushak og'riqlari bormi?",
+                "maqsad": "Astenovegetativ intoksikatsiyani baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Jismoniy yuklamani mutlaqo to'xtating, qat'iy yarim to'shak rejimi. Puls va haroratni o'lchang. EKG, Exokardiografiya va qon tahlillariga (Troponin, SRB) tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Alisher aka, o'tkazilgan grippdan so'ng yurak mushagida yallig'lanish boshlangan bo'lishi mumkin. Hozir sizga to'liq tinchlik kerak. EKG olamiz va kardiolog shifokor bilan yallig'lanishga qarshi davolashni boshlaymiz. Xotirjam dam oling.",
+            "hisobot": "Bemor Alisher (34 yosh), o'tkir infeksion-allergik miokardit gumoni: postgrippoz davr, doimiy taxikardiya (HR 110 bpm), ko'krakda simillovchi og'riq, T 37.8°C. Kardiologik ko'rik kerak."
+        }
+    },
+
+    "perikardit": {
+        "nomi": "28. O'tkir Quruq Perikardit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Oldinga engashib o'tiribsiz, shunday o'tirish qulayroqmi?",
+            "izoh": "Klassik perikardit belgisi: oldinga egilganda og'riq kamayadi, chalqancha yotsa chidab bo'lmaydi."
+        },
+        "savollar": [
+            {
+                "savol": "Ko'kragingizdagi og'riq qachon kuchayadi: orqaga chalqancha yotganingizda yoki chuqur nafas olganingizda og'riq kuchayadimi?",
+                "maqsad": "Pozitsion og'riq va plevroperikardial belgilarni aniqlash"
+            },
+            {
+                "savol": "Oldinga engashib o'tirganingizda og'riq biroz bosilyaptimi?",
+                "maqsad": "Perikarditning patognomik belgisini tasdiqlash"
+            },
+            {
+                "savol": "Og'riq chap yelkaga yoki trapetsiyasimon mushakka tarqalyaptimi?",
+                "maqsad": "Frenikus nervi irradiatsiyasini tekshirish"
+            },
+            {
+                "savol": "Isitma, qaltirash yoki yaqinda shamollash bo'lganmidi?",
+                "maqsad": "Infeksion perikardit sababini aniqlash"
+            },
+            {
+                "savol": "Yutinayotganingizda ko'krakda noqulaylik bormi?",
+                "maqsad": "Disfagiya va qizilo'ngachga yaqinlikni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorga qulay bo'lgan holatda (oldinga biroz engashgan) o'tirishiga ruxsat bering, zo'rlab chalqancha yotqizmang! EKG da ST segmentining barcha tarmoqlarda konkav ko'tarilishini tekshiring."
+        },
+        "yakunlash": {
+            "matn": "Dilshod aka, sizdagi holat yurak xaltasi (perikard) yallig'lanishiga o'xshaydi. O'zingizga qulay o'tiring, zo'riqmang. Hozir shifokor bilan EKG va Exokardiografiya qilib, yallig'lanish va og'riqni qoldiruvchi dorilarni kiritamiz.",
+            "hisobot": "Bemor Dilshod (41 yosh), o'tkir quruq perikardit: to'sh ortida o'tkir og'riq, pozitsion xarakter (oldinga engashganda yengillashadi), taxikardiya. Kardiolog ko'rigi va EKG zarur."
+        }
+    },
+
+    "endokardit": {
+        "nomi": "29. Infeksion Bakterial Endokardit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Holsizlanib qolibsiz, haroratingizni o'lchab beraman.",
+            "izoh": "Infeksion bakterial endokardit, klapanlar zararlanishi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Isitma va qaltirash qancha vaqtdan beri davom etyapti? Kechalari ko'p terlash bormi?",
+                "maqsad": "Septik isitma va kechki terlashni aniqlash"
+            },
+            {
+                "savol": "Yaqinda stomatologda tish oldirdingizmi yoki biror jarrohlik/urologik muolaja qildirdingizmi?",
+                "maqsad": "Bakteremiya kirish darvozasini aniqlash"
+            },
+            {
+                "savol": "Bo'g'imlaringizda og'riq, tez charchash, vazn yo'qotish kuzatildimi?",
+                "maqsad": "Tizimli yallig'lanish belgilarini baholash"
+            },
+            {
+                "savol": "Barmoqlaringiz uchida, kaftlaringizda yoki tirnoqlaringiz ostida qizil-jigarrang nuqtalar paydo bo'lmadimi?",
+                "maqsad": "Osler tugunchalari va petexiyalarni tekshirish"
+            },
+            {
+                "savol": "Yurak sohasida shovqin yoki yangi paydo bo'lgan yurak o'ynashi sezildimi?",
+                "maqsad": "Klapan yetishmovchiligi shovqinini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Harorat, puls va bosimni o'lchang. Antibakterial dori berishdan oldin qonni steril ekmaga (gemokultura 3 marta) olishga tayyorlang. Exokardiografiyaga yozing."
+        },
+        "yakunlash": {
+            "matn": "Umid aka, davomiy isitma va tish muolajasidan keyingi holsizlik yurak klapanlariga ta'sir qilgan bo'lishi mumkin. Hozir qon tahlillari olamiz va shifokor bilan kuchli antibiotik terapiyasini boshlaymiz. Dam oling, hammasi nazorat ostida.",
+            "hisobot": "Bemor Umid (32 yosh), infeksion endokardit gumoni: tish ekstraktsiyasidan so'ng 2 haftalik septik isitma, taxikardiya, anemiya va holsizlik. Zudlik bilan qon ekmasi va Exokardiografiya kerak."
+        }
+    },
+
+    "aorta_anevrizmasi": {
+        "nomi": "30. Ko'krak Qafasi Aorta Anevrizmasi (Yorilish xavfi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Hech qimirlamang, gapirishga zo'riqmang!",
+            "izoh": "O'TA XAVFLI! Aorta yorilishi xavfi bor, har qanday zo'riqish va bosim oshishi o'limga olib kelishi mumkin."
+        },
+        "savollar": [
+            {
+                "savol": "Og'riq qayerda: ko'krak qafasining ichkarisida, xuddi ichingiz yirtilayotgandek chidab bo'lmas og'riqmi?",
+                "maqsad": "Aortaning qavatlanuvchi anevrizmasi og'rig'ini aniqlash"
+            },
+            {
+                "savol": "Og'riq orqangizga, ikki kurak o'rtasiga yoki belingizga qarab tarqalyaptimi?",
+                "maqsad": "Og'riq irradiatsiyasi va qavatlanish yo'nalishini aniqlash"
+            },
+            {
+                "savol": "Ovozingiz bo'g'ilib qolmadimi yoki yutinish qiyinlashmadimi?",
+                "maqsad": "Qaytuvchi hiqildoq nervi va qizilo'ngach kompressiyasini tekshirish"
+            },
+            {
+                "savol": "Qon bosimingiz ilgari doim baland (gipertoniya) bo'lganmi?",
+                "maqsad": "Asosiy xavf omilini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qat'iy gorizontal yotqizish, harakatlanish mutlaqo man etiladi! Ikkala qo'lda ham qon bosimini o'lchang (qo'llar orasida bosim farqini aniqlash). Qon tomir jarrohi va reanimatsiyani zudlik bilan xabardor qiling."
+        },
+        "yakunlash": {
+            "matn": "Rustam aka, siz mutlaqo qimirlamay yoting, chuqur va xotirjam nafas oling. Barcha ma'lumotlarni oldim, hozir shoshilinch qon tomir jarrohlari va reanimatsiya brigadasi kelmoqda. Biz yoningizdamiz!",
+            "hisobot": "Bemor Rustam aka (62 yosh), ko'krak aortasining qavatlanuvchi anevrizmasi gumoni: to'sh orqasida yirtuvchi og'riq, kuraklar orasiga tarqalishi, qon bosimi 190/100 mmHg. Qizil kod — shoshilinch angioxirurgiya va KT-angiografiya!"
+        }
+    },
+
+    "yurak_tamponadasi": {
+        "nomi": "31. O'tkir Yurak Tamponadasi (Bek triadasi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Holsizlanib qolibsiz, chuqur nafas oling.",
+            "izoh": "Bek triadasi: bo'rtgan bo'yin venalari, gipotoniya, kariklashgan yurak tonlari."
+        },
+        "savollar": [
+            {
+                "savol": "Havo yetishmasligi, kuchli hansirash va ko'krakda siqilish hissi qachon boshlandi?",
+                "maqsad": "Tamponada va o'tkir gipodiastoliyani baholash"
+            },
+            {
+                "savol": "Ko'kragingizga yaqinda zarba tekkanmidi, travma yoki yurak operatsiyasi bo'lganmidi?",
+                "maqsad": "Gematoperikard sababini aniqlash"
+            },
+            {
+                "savol": "Boshingiz aylanib, hushdan ketayotgandek bo'lyapsizmi?",
+                "maqsad": "Arterial bosim qulashi va serebral gipoperfuziyani aniqlash"
+            },
+            {
+                "savol": "Nafas olganingizda tomir urishi (puls) susayib ketayotganini sezyapsizmi?",
+                "maqsad": "Paradoksal puls (Pulsus paradoxus) mavjudligini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yarim o'tirgan holatda ushlang. Yuqori oqimli kislorod bering. Shoshilinch perikardiotsentez (yurak xaltasidan suyuqlikni igna bilan tortish) to'plamini tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Sanjar aka, yuragingiz atrofida suyuqlik to'plangan bo'lishi mumkin. Hozir zudlik bilan reanimatolog va kardioxirurg shifokor keladi, ultratovush (ExoKG) nazoratida yordam ko'rsatamiz. Xotirjam bo'ling.",
+            "hisobot": "Bemor Sanjar (44 yosh), o'tkir yurak tamponadasi (Bek triadasi): arterial gipotoniya (BP 80/50), bo'yin venalari bo'rtishi, paradoksal puls. Shoshilinch perikardiotsentezga tayyorgarlik!"
+        }
+    },
+
+    "ortostatik_kollaps": {
+        "nomi": "32. Ortostatik Kollaps va Vazovagal Hushdan Ketish",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Shahnozaxon, ko'zingizni oching, men hamshira opangizman. Xavotir olmang, siz xavfsiz joydasiz.",
+            "izoh": "Vazovagal sinkope / ortostatik gipotoniya, hushiga keltirish."
+        },
+        "savollar": [
+            {
+                "savol": "O'zingizga keldingizmi? Tik turganda birdan ko'zingiz qorong'ilashib, qulog'ingiz shang'illab ketdimi?",
+                "maqsad": "Kollaps xarakterini aniqlash"
+            },
+            {
+                "savol": "Bugun ertalab nonushta qilganmidingiz? Suv ichganmidingiz?",
+                "maqsad": "Gipoglikemiya va gipovolemiyani aniqlash"
+            },
+            {
+                "savol": "Hushingizdan ketishdan oldin ko'ngil aynishi, sovuq ter bosishi bo'ldimi?",
+                "maqsad": "Vazovagal prodromni baholash"
+            },
+            {
+                "savol": "Yiqilganingizda boshingizni biror joyga urib olmadingizmi?",
+                "maqsad": "Kalla suyagi shikastlanishini tekshirish"
+            },
+            {
+                "savol": "Ilgari ham issiqda yoki uzoq tik turganda shunday hushdan ketish bo'lganmi?",
+                "maqsad": "Anamnezni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni gorizontal yotqizib, oyoqlarini 30-45 gradusga ko'taring (bosh miyaga qon quyilishi yaxshilanadi). Yoqasini bo'shating, toza havo bering. Novshadil spirti hidlatilishi mumkin. Suv yoki shirin choy ichiring."
+        },
+        "yakunlash": {
+            "matn": "Shahnozaxon, hozir o'rningizdan turishga shoshilmang, 10-15 daqiqa oyoqlaringizni ko'tarib yoting. Bosimingiz 85/50 ga tushib ketgan ekan, hozir shirin choy beraman, o'zingizga kelasiz. Yoningizdaman.",
+            "hisobot": "Bemor Shahnoza (19 yosh), ortostatik kollaps va vazovagal hushdan ketish: BP 85/50 mmHg, travma yo'q, hushiga keldi, gemodinamika tiklanmoqda."
+        }
+    },
+
+    "dvt_tromboz": {
+        "nomi": "33. Pastki Oyoq Chuqur Venalari Trombozi (DVT)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Oyog'ingizdagi og'riq bo'yicha yordam beramiz, yotib oling.",
+            "izoh": "Chuqur venalar trombozi, oyog'ini aslo massaj qilmang (tromboemboliya xavfi)!"
+        },
+        "savollar": [
+            {
+                "savol": "Chap oyog'ingiz qachondan beri shishib, og'riyapti? O'ng oyog'ingizdan sezilarli darajada yo'g'onlashganmi?",
+                "maqsad": "Asimmetrik shish va og'riqni baholash"
+            },
+            {
+                "savol": "Uzoq vaqt harakatsiz o'tirdingizmi (masalan, mashinada, samolyotda yoki kasallik tufayli to'shakda)?",
+                "maqsad": "Venoz staz xavf omilini aniqlash"
+            },
+            {
+                "savol": "Boldir mushagini bosganda yoki oyoq panjasini yuqoriga bukkanda qattiq og'riq bormi?",
+                "maqsad": "Xomans simptomi va chuqur vena zararlanishini tekshirish"
+            },
+            {
+                "savol": "Ko'krak qafasingizda to'satdan sanchiq yoki nafas qisishi paydo bo'lmadimi?",
+                "maqsad": "TELA asoratini istisno qilish"
+            },
+            {
+                "savol": "Ilgari venalaringizda varikoz yoki tromboz bo'lganmi?",
+                "maqsad": "Trombotik anamnezni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yotqizing, oyog'ini baland yostiqqa ko'tarib qo'ying. DIQQAT: Oyog'ini massaj qilish, issiq vannalar qilish qat'iyan taqiqlanadi! Past molekulyar geparin (antikoagulyant) va UZDG tomirlar tekshiruviga tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Qodir aka, oyog'ingizdagi tomirda tromboz bo'lishi ehtimoli bor. Hech qachon oyog'ingizni uqalamang yoki massaj qilmang. Hozir qon suyultiruvchi ukol qilamiz va qon tomir jarrohi tekshiradi. Xotirjam dam oling.",
+            "hisobot": "Bemor Qodir aka (52 yosh), chap oyoq chuqur venalari o'tkir trombozi gumoni: boldir asimmetrik shishi, Xomans simptomi musbat, TELA belgilari yo'q. Zudlik bilan antikoagulyant va UZDG kerak."
+        }
+    },
+
+    "reyno_sindromi": {
+        "nomi": "34. Reyno Sindromi (Barmoqlar o'tkir ishemiyasi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Nigora opa. Men navbatchi hamshiraman. Qo'llaringiz muzlab qolibdi, sizga yordam beramiz.",
+            "izoh": "Periferik tomirlar o'tkir spazmi, sovuq ta'siri."
+        },
+        "savollar": [
+            {
+                "savol": "Barmoqlaringiz rangi qanday o'zgardi: avval oppoq oqarib, keyin ko'karib, isiganda qizarib ketadimi?",
+                "maqsad": "Klassik 3 fazali Reyno o'zgarishini aniqlash"
+            },
+            {
+                "savol": "Bu holat sovuq suv tekkanda yoki sovuq havoga chiqqanda boshlandimi?",
+                "maqsad": "Sovuq triggeryni aniqlash"
+            },
+            {
+                "savol": "Barmoqlaringizda muzdek qotish, uvishish, igna sanchilgandek og'riq bormi?",
+                "maqsad": "Ishemiya va paresteziyani tekshirish"
+            },
+            {
+                "savol": "Bo'g'imlaringizda og'riq, terida qattiqlashish yoki toshmalar bormi?",
+                "maqsad": "Tizimli sklerodermiya yoki revmatologik kasallikni tekshirish"
+            },
+            {
+                "savol": "Chekasizmi yoki qon tomir toraytiruvchi dori qabul qilasizmi?",
+                "maqsad": "Spazmni kuchaytiruvchi omillarni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qo'llarni asta-sekin iliq muhitda isiting (issiq suvga solmang!). Bemorni tinchlantiring, issiq choy bering. Tomir kengaytiruvchi dori (kalsiy kanallari blokatori) tayinlash uchun shifokorni chaqiring."
+        },
+        "yakunlash": {
+            "matn": "Nigora opa, barmoqlaringizdagi tomirlar qattiq qisqarib qolgan. Hozir qo'llaringizni iliq ushlab, tomirni kengaytiruvchi dori beramiz, tez orada qon aylanishi tiklanib, og'riq to'xtaydi. Xavotir olmang.",
+            "hisobot": "Bemor Nigora (28 yosh), Reyno sindromi o'tkir vazospastik xuruji: ikki tomonlama barmoqlar oqarishi, sianoz va kuydiruvchi og'riq. Isitish va vazodilatator terapiya rejalashtirildi."
+        }
+    },
+
+    "kardiogen_shok": {
+        "nomi": "35. Kardiogen Shok (O'tkir nasos yetishmovchiligi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Karim aka. Men navbatchi hamshiraman. Gapirmasdan tinch yotavering, sizga yordam beryapmiz.",
+            "izoh": "O'TA OG'IR HOLAT! Miokard infarkti fonida qon bosimi 70/40 mmHg ga tushgan."
+        },
+        "savollar": [
+            {
+                "savol": "To'shingiz orqasidagi og'riq davom etyaptimi? Chidab bo'lmas tosh ezgandek og'riqmi?",
+                "maqsad": "Og'ir infarkt og'rig'ini baholash"
+            },
+            {
+                "savol": "Havo yetmayaptimi, bo'g'ilish hissi bormi?",
+                "maqsad": "Chap qorincha yetishmovchiligini baholash"
+            },
+            {
+                "savol": "Bosh aylanishi, ko'z qorong'ilashishi bormi?",
+                "maqsad": "Bosh miya gipoperfuziyasini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni gorizontal yotqizib, boshini biroz ko'taring (o'pka shishi bo'lmasa). Yuqori oqimli kislorod ulanadi. Markaziy venaga kateter qo'yiladi. Inotrop preparatlar (Dofamin, Noradrenalin) perfuzor orqali yuborishga tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Karim aka, mutlaqo gapirishga zo'riqmang. Reanimatsiya brigadasi barcha dori vositalari bilan yoningizda. Bosimingizni ko'tarish va yuragingizni quvvatlash uchun barcha muolajalarni qilamiz. Siz bilan birgamiz!",
+            "hisobot": "Bemor Karim aka (59 yosh), o'tkir kardiogen shok: BP 70/40 mmHg, ipsimon puls 120 bpm, marmarsimon teri, anuriya, anginoz holat. Qizil kod — shoshilinch kardioreanimatsiya va inotropik terapiya!"
+        }
+    },
+
+    "pnevmotoraks": {
+        "nomi": "36. Spontan Taranglashgan Pnevmotoraks",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Hech qimirlamang, sekin nafas oling.",
+            "izoh": "Spontan pnevmotoraks: o'pka yorilib plevra bo'shlig'iga havo to'plangan."
+        },
+        "savollar": [
+            {
+                "savol": "Ko'kragingizdagi o'tkir pichoqdek og'riq aynan qaysi tomonda: o'ngdami yoki chapda?",
+                "maqsad": "Pnevmotoraks tomonini aniqlash"
+            },
+            {
+                "savol": "Og'ir yuk ko'targaningizda yoki qattiq yo'talganingizda birdaniga boshlandimi?",
+                "maqsad": "Spontan bulla yorilishini aniqlash"
+            },
+            {
+                "savol": "Har nafas olganingizda o'sha tomonda og'riq kuchayib, havo yetishmayaptimi?",
+                "maqsad": "Plevral og'riq va taxipnoeni baholash"
+            },
+            {
+                "savol": "Ovoz chiqarganingizda ko'kragingizda havo qisilib qolgandek tuyulyaptimi?",
+                "maqsad": "O'pka kollapsini aniqlash"
+            },
+            {
+                "savol": "Ilgari ko'krak qafasidan travma olganmisiz yoki pnevmotoraks bo'lganmi?",
+                "maqsad": "Anamnezni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yarim o'tirgan holatga keltiring. Kislorod niqobini taqing. Ko'krak qafasi a'zolarining qarama-qarshi tomonga siljishini kuzating (taranglashgan pnevmotoraks xavfi!). Shoshilinch plevra ponksiyasi yoki drenajlashga (Byulau drenaji) tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Bobur, o'pkangiz atrofida havo to'planib qolganga o'xshaydi. Tinch o'tiring, chuqur nafas olishga urinmang. Hozir torakal jarroh shifokor keladi, rentgen qilib havoni chiqarib tashlaymiz va nafasingiz darhol ochiladi.",
+            "hisobot": "Bemor Bobur (23 yosh), o'ng tomonlama o'tkir spontan pnevmotoraks gumoni: pichoqsimon og'riq, o'ng o'pkada nafas eshitilmaydi, SpO2 86%, taxipnoe. Shoshilinch torakal xirurgik yordam!"
+        }
+    },
+
+    "tela": {
+        "nomi": "37. O'pka Arteriyasi Tromboemboliyasi (TELA)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Manzura opa. Men navbatchi hamshiraman. Qimirlamang, gapirmang, kislorod niqobini taqaman.",
+            "izoh": "O'TA XAVFLI SHOSHILINCH HOLAT! Operatsiyadan keyingi to'satdan TELA."
+        },
+        "savollar": [
+            {
+                "savol": "Bo'g'ilish to'satdan, birdaniga boshlandimi? Havo umuman kirmayotgandek tuyulyaptimi?",
+                "maqsad": "O'tkir asfiksiya va gipoksiyani aniqlash"
+            },
+            {
+                "savol": "Ko'krak qafasingizda o'tkir sanchiq bormi?",
+                "maqsad": "Plevral ishemiya og'rig'ini tekshirish"
+            },
+            {
+                "savol": "Yo'talganda qon aralash balg'am (qon tupurish) keldilarmi?",
+                "maqsad": "O'pka infarkti belgisini aniqlash"
+            },
+            {
+                "savol": "Yaqinda operatsiya o'tkazganmidingiz yoki oyoqlaringizda shish, tomir og'rig'i bo'lganmidi?",
+                "maqsad": "Chuqur venalar trombozi manbasini aniqlash"
+            },
+            {
+                "savol": "Yuragingiz juda tez urib, hushdan ketayotgandek bo'lyapsizmi?",
+                "maqsad": "O'tkir o'pka yuragi va kollapsni baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni qat'iy to'shak rejimiga o'tkazing (harakatlanish qat'iyan man etiladi!). Yuqori oqimli kislorod bering. Darhol 2 ta venoz kateter qo'ying. Trombolizis yoki geparinoterapiyaga tayyorlaning."
+        },
+        "yakunlash": {
+            "matn": "Manzura opa, hech xavotir olmang, qimirlamay yoting. Kislorod ulandik. Reanimatsiya va kardiologiya jamoasi yoningizda, tomirdagi tiqilmani erituvchi maxsus dorilarni zudlik bilan boshlaymiz. Biz siz bilanmiz!",
+            "hisobot": "Bemor Manzura opa (56 yosh), massiv o'pka arteriyasi tromboemboliyasi (TELA): o'tkir bo'g'ilish, diffuz sianoz, taxikardiya (HR 130 bpm), BP 90/60 mmHg, qon tupurish. Qizil kod — reanimatsiya va trombolitik terapiya!"
+        }
+    },
+
+    "kosl_obstruksiya": {
+        "nomi": "38. KO'SL (Surunkali Obstruktiv O'pka Kasalligi zo'rayishi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Ahmad aka. Men navbatchi hamshiraman. Nafasingizni rostlab oling, sizga dori beramiz.",
+            "izoh": "Surunkali obstruktiv o'pka kasalligi zo'rayishi, uzoq yillik chekuvchi."
+        },
+        "savollar": [
+            {
+                "savol": "Nafas chiqarishingiz juda qiyinlashib ketdimi? Ko'kragingizda qaynash va xirillash eshitilyaptimi?",
+                "maqsad": "Ekspirator bronxial obstruktsiyani baholash"
+            },
+            {
+                "savol": "Yo'talganda qanday balg'am chiqyapti: sarg'ish-yashil yiringlimi, ko'chishi qiyinmi?",
+                "maqsad": "Bakterial infeksiya zo'rayishini tekshirish"
+            },
+            {
+                "savol": "Necha yildan beri tamaki chekasiz, kuniga necha dona chekardingiz?",
+                "maqsad": "Kashandalik indeksini aniqlash"
+            },
+            {
+                "savol": "Uyda doimiy ingalyator (Spiriva, Berodual, Seretid) ishlatasizmi? Bugun necha marta qabul qildingiz?",
+                "maqsad": "Bazis terapiya samaradorligini baholash"
+            },
+            {
+                "savol": "Tana haroratingiz ko'tarildimi, holsizlik kuchaydimi?",
+                "maqsad": "Yallig'lanish sindromini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni qo'llariga tayanib o'tirgan holatda qoldiring (yotqizmang!). Past oqimli (1-2 l/min) kislorod bering (yuqori oqim giperkapniyaga olib kelishi mumkin!). Nebulayzer orqali Berodual va Budesonid bilan ingalyatsiya qiling."
+        },
+        "yakunlash": {
+            "matn": "Ahmad aka, o'pka yo'llaringiz torayib, balg'am to'plangan. Hozir nebulayzer orqali bronxni kengaytiruvchi dori beramiz va kislorod ulaymiz. Nafas olishingiz tezda yengillashadi. Xotirjam o'tiring.",
+            "hisobot": "Bemor Ahmad aka (64 yosh), KO'SL zo'rayish bosqichi, III darajali nafas yetishmovchiligi: og'ir ekspirator dispnoe, SpO2 85%, yiringli balg'am. Nebulayzer terapiyasi va nazoratli kislorod berildi."
+        }
+    },
+
+    "opka_shishi": {
+        "nomi": "39. O'tkir Alveolyar O'pka Shishi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Salima opa, eshityapsizmi meni? Men navbatchi hamshiraman. Hech qimirlamang, yordam beramiz!",
+            "izoh": "O'TA XAVFLI! Alveolyar o'pka shishi: og'izdan pushti ko'pikli balg'am, uzoqdan eshitiluvchi qaynashsimon xirillash."
+        },
+        "savollar": [
+            {
+                "savol": "Bo'g'ilish qachon boshlandi? Yotganda umuman nafas ololmay qoldingizmi?",
+                "maqsad": "O'tkir chap qorincha yetishmovchiligini aniqlash"
+            },
+            {
+                "savol": "Qon bosimingiz ilgari juda baland ko'tarilarmidi yoki yurak infarkti bo'lganmidi?",
+                "maqsad": "Kardiogen etiologiyani aniqlash"
+            },
+            {
+                "savol": "Og'zingizdan ko'pik kelyaptimi?",
+                "maqsad": "Alveolalar gemorragik suyuqlik bilan to'lishini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni zudlik bilan oyoqlarini pastga osiltirgan holda o'tqazing! Etil spirti bug'lari orqali namlangan yuqori oqimli kislorod bering (spirt ko'pik so'ndiruvchi sifatida ishlatiladi!). Vena ichiga Furosemid (Lasix) 40-80 mg va Morfin tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Salima opa, oyoqlaringizni tushirib o'tiring, aslo yotmang. Kislorod niqobini taqdim, bu ko'pikni yo'qotadi. Hozir tomiringizdan o'pkadagi suvni haydaydigan dori yuboramiz. Reanimatsiya shifokorlari yoningizda!",
+            "hisobot": "Bemor Salima opa (61 yosh), o'tkir alveolyar o'pka shishi: pushti ko'pikli balg'am, masofadan eshitiluvchi klokotan nam xirillashlar, ortopnoe, SpO2 78%, BP 180/100 mmHg. Qizil kod — kardioreanimatsiya, ko'pik so'ndiruvchi kislorod va Furosemid!"
+        }
+    },
+
+    "plevrit": {
+        "nomi": "40. O'tkir Ekssudativ Plevrit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Sherzod aka. Men navbatchi hamshiraman. Nafasingiz qisayotganga o'xshaydi, keling sizni qulay joylashtiraman.",
+            "izoh": "Ekssudativ plevrit, plevra bo'shlig'ida suyuqlik to'plangan."
+        },
+        "savollar": [
+            {
+                "savol": "Ko'kragingizdagi og'irlik qachon paydo bo'ldi? Avval o'tkir sanchiq bo'lib, keyin tosh bosgandek bosimga aylandimi?",
+                "maqsad": "Quruq plevritdan ekssudativ plevritga o'tish dinamikasi"
+            },
+            {
+                "savol": "Qaysi tomonga yotganingizda nafas olishingiz osonlashadi: og'riyotgan chap tomoningizgami?",
+                "maqsad": "Kasal tomonga yotganda sog'lom o'pka erkin nafas olishini aniqlash"
+            },
+            {
+                "savol": "Hansirash jismoniy harakatda kuchayadimi? Tana haroratingiz ko'tarildimi?",
+                "maqsad": "Respirator yetishmovchilik va intoksikatsiyani baholash"
+            },
+            {
+                "savol": "Quruq yo'tal bezovta qilyaptimi?",
+                "maqsad": "Plevral yo'talni tekshirish"
+            },
+            {
+                "savol": "Yaqinda zotiljam (pnevmoniya) yoki sil kasalligi bilan og'riganmidingiz?",
+                "maqsad": "Plevrit etiologiyasini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni kasal (chap) tomoniga yarim yotqizing (sog'lom o'pka to'liq ekskursiya qilishi uchun). Kislorod bering. Plevral ponksiya (torakotsentez) o'tkazish uchun shifokorga yordamga tayyorlaning."
+        },
+        "yakunlash": {
+            "matn": "Sherzod aka, chap o'pkangiz atrofida suyuqlik yig'ilib qolgan ekan. Chap yoningizga yonboshlab yoting, nafasingiz osonlashadi. Hozir shifokor bilan rentgen qilib, kerak bo'lsa igna bilan suyuqlikni tortib olamiz, shunda o'pkangiz darhol yoziladi. Xotirjam dam oling.",
+            "hisobot": "Bemor Sherzod (36 yosh), chap tomonlama o'tkir ekssudativ plevrit: chap o'pka pastki qismida nafas yo'qligi, perkussiyada to'mtoq tovush, taxipnoe (24/daq), SpO2 91%. Torakal ponksiyaga tayyorgarlik ko'rilmoqda."
+        }
     }
 }
 
