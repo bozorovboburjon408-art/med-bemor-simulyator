@@ -1444,6 +1444,698 @@ DETAILED_TEMPLATES: Dict[str, Dict[str, Any]] = {
             "matn": "Sherzod aka, chap o'pkangiz atrofida suyuqlik yig'ilib qolgan ekan. Chap yoningizga yonboshlab yoting, nafasingiz osonlashadi. Hozir shifokor bilan rentgen qilib, kerak bo'lsa igna bilan suyuqlikni tortib olamiz, shunda o'pkangiz darhol yoziladi. Xotirjam dam oling.",
             "hisobot": "Bemor Sherzod (36 yosh), chap tomonlama o'tkir ekssudativ plevrit: chap o'pka pastki qismida nafas yo'qligi, perkussiyada to'mtoq tovush, taxipnoe (24/daq), SpO2 91%. Torakal ponksiyaga tayyorgarlik ko'rilmoqda."
         }
+    },
+
+    "opka_absessi": {
+        "nomi": "41. O'pka Absessi (Yiringli destruksiya)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Botir aka. Men navbatchi hamshiraman. Og'zingizni chayib olishingizga yordam beraman, qulay o'tiring.",
+            "izoh": "Bemor to'satdan ko'p miqdorda sasigan yiringli balg'am qusgan, nafas olish yo'llarini aspiratsiyadan saqlang."
+        },
+        "savollar": [
+            {
+                "savol": "Yo'talganda to'satdan ko'p miqdorda (og'iz to'lib) qo'lansa hidli balg'am keldilarmi? Taxminan necha millilitr chiqdi?",
+                "maqsad": "Absessning bronxga yorilishi va yiring hajmini aniqlash"
+            },
+            {
+                "savol": "Balg'am chiqqandan keyin ko'kragingizdagi og'riq va nafas qisishi biroz yengillashdimi?",
+                "maqsad": "Bo'shliq drenajlanishi dinamikasini baholash"
+            },
+            {
+                "savol": "Isitmangiz necha kundan beri 39°C dan tushmayapti? Qattiq qaltirash va kechasi terlash bo'lyaptimi?",
+                "maqsad": "Gektik isitma va yiringli intoksikatsiyani baholash"
+            },
+            {
+                "savol": "Balg'amda qon tomirlari yoki qon quyqalari bormi?",
+                "maqsad": "O'pka qon ketishi xavfini aniqlash"
+            },
+            {
+                "savol": "Yaqinda zotiljam (pnevmoniya) o'tkazganmidingiz yoki hushsiz holatda yotganmisiz?",
+                "maqsad": "Absessning aspiratsion yoki metapnevmonik etiologiyasini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni drenajlovchi holatga (sog'lom tomonga yonboshlatib, bosh qismini biroz pastlatish) keltiring. Balg'am yig'uvchi idish va og'iz chayish uchun antiseptik eritma bering. Kislorod ulanadi. Shoshilinch ko'krak qafasi rentgeni va antibakterial terapiyaga tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Botir aka, o'pkadagi yiringli bo'shliq bronxga ochilibdi. Hozir og'zingizni tozalab, nafas olishingizni yengillashtiramiz. Ko'p suyuqlik ichib turing. Shifokor bilan zudlik bilan kuchli antibiotik va o'pkani tozalash muolajasini boshlaymiz. Xavotir olmang.",
+            "hisobot": "Bemor Botir (48 yosh), o'pka absessi o'tkir bosqichi: bronxga yorilish (300 ml fuzid yiringli balg'am), T 39.5°C, intoksikatsiya, o'ng o'pkada amforik nafas. Torakal pulmonologiya ko'rigi talab etiladi."
+        }
+    },
+
+    "bronxoektaz": {
+        "nomi": "42. Bronxoektatik Kasallik va Qon Tupurish",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Jasur aka. Men navbatchi hamshiraman. Yo'talishingizni yengillatishga yordam beramiz, qulay o'tiring.",
+            "izoh": "Surunkali yiringli jarayon, qon tupurish xavfi bor."
+        },
+        "savollar": [
+            {
+                "savol": "Ertalab uyg'onganingizda ko'p miqdorda (og'iz to'la) balg'am ajraladimi? Idishda turganda 3 qavatga ajralishini sezganmisiz?",
+                "maqsad": "Bronxoektazga xos ertalabki 3 qatlamli balg'am xarakterini aniqlash"
+            },
+            {
+                "savol": "Balg'amingizda qon chiziqlari yoki qon quyqalari bormi? Bugun qon tupurdingizmi?",
+                "maqsad": "Gemoptizis (o'pka qon ketishi) darajasini baholash"
+            },
+            {
+                "savol": "Barmoqlaringiz uchlari yo'g'onlashgani (baraban cho'plari) va tirnoqlaringiz soat oynasiga o'xshab qolganiga ancha bo'lganmi?",
+                "maqsad": "Surunkali uzoq yillik gipoksiya belgilarini tasdiqlash"
+            },
+            {
+                "savol": "Tana haroratingiz ko'tarilib, holsizlik kuchaydimi?",
+                "maqsad": "Bronxoektatik infeksiya zo'rayishini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yarim o'tirgan holatda tuting. Qon tupurish bo'lsa: to'liq jismoniy va ovozli tinchlik, ko'krak qafasiga muz xaltasi qo'yiladi. Issiq ovqat va ichimliklar man etiladi. Gemostatik preparatlar (Etamzilat, Aminokapron kislota) tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Jasur aka, qon tupurganingiz uchun hozir mutlaqo yo'talmaslikka va qattiq gapirmaslikka harakat qiling. Ko'kragingizga muz qo'yamiz va qon to'xtatuvchi ukol qilamiz. Hozir shifokor bilan bronxoskopiya va davolashni kelishamiz. Dam oling.",
+            "hisobot": "Bemor Jasur (39 yosh), bronxoektatik kasallik zo'rayishi, qon tupurish (gemoptizis): yiringli balg'amda qon quyqalari, baraban cho'plari simptomi, T 37.6°C. Shoshilinch gemostaz va pulmonolog ko'rigi."
+        }
+    },
+
+    "respirator_distress": {
+        "nomi": "43. O'tkir Respirator Distress Sindromi (ARDS)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Dilshod aka. Men navbatchi hamshiraman. Hech gapirmang, faqat nafas olishga e'tibor bering!",
+            "izoh": "O'TA OG'IR! Refrakter gipoksemiya (SpO2 78%), o'pkaning noxirurgik diffuz zararlanishi, intubatsiya kerak."
+        },
+        "savollar": [
+            {
+                "savol": "Kislorod niqobida ham havo yetmayotgandek tuyulyaptimi? Ko'kragingizda qattiq qisilish bormi?",
+                "maqsad": "Refrakter gipoksemiya va og'ir nafas yetishmovchiligini baholash"
+            },
+            {
+                "savol": "Nafas olishingiz juda tezlashib ketganini (daqiqasiga 30-35 marta) sezyapsizmi?",
+                "maqsad": "Taxipnoe va respirator charchoqni aniqlash"
+            },
+            {
+                "savol": "Yaqinda og'ir virusli pnevmoniya, sepsis yoki travma o'tkazganmidingiz?",
+                "maqsad": "ARDS qo'zg'atuvchi omilini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni pron-pozitsiyaga (qorin bilan yotqizish — o'pkaning orqa segmentlarini shamollatish uchun) o'tkazing. Rezervuarli niqob orqali 100% kislorod bering. Reanimatologni zudlik bilan chaqirib, endotraxeal intubatsiya va O'SV apparatiga (PEEP rejimi) tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Dilshod aka, o'pkangizga maxsus apparat orqali chuqur nafas berishimiz kerak. Reanimatsiya brigadasi barcha apparatlar bilan yoningizda. Sizni uxlatib, nafas olishingizni to'liq mashina nazoratiga olamiz, kislorodingiz ko'tariladi. Biz siz bilanmiz!",
+            "hisobot": "Bemor Dilshod (45 yosh), o'tkir respirator distress sindromi (ARDS, og'ir daraja): SpO2 78% (O2 niqobida), RR 34/daq, diffuz infiltratsiya, refrakter gipoksiya. Zudlik bilan intubatsiya va O'SV (IVL) talab etiladi!"
+        }
+    },
+
+    "yot_jism_asfiksiya": {
+        "nomi": "44. Yuqori Nafas Yo'llariga Yot Jism Tiqilishi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Bemorga zudlik bilan murojaat: 'Bo'g'ilyapsizmi?! Tiqilib qoldimi?!' (Bemor gapira olmaydi, bo'ynini ikki qo'li bilan ushlagan — Geymlix belgisi).",
+            "izoh": "FAVQULODDA HOLAT! Sekundlar hal qiladi! Bemor gapira olmaydi, darhol Geymlix manevrini bajaring!"
+        },
+        "savollar": [
+            {
+                "savol": "(Tezkor harakat): Bemor yo'tala olyaptimi? (Agar yo'tala olmasa va gapirmasa — to'liq obstruktsiya)",
+                "maqsad": "Nafas yo'li to'liq yoki qisman to'silganini aniqlash"
+            },
+            {
+                "savol": "(Ko'rik): Yuz va lablarida sianoz (ko'karish) boshlandimi?",
+                "maqsad": "O'tkir asfiksiya darajasini baholash"
+            },
+            {
+                "savol": "(Atrofdagilarga): Ovqatlanayotganda go'sht yoki suyak tiqilib qoldimi?",
+                "maqsad": "Yot jism turini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "GEYMLIX MANEVRINI BAJARING: Bemorning orqasiga o'ting, qo'llaringizni uning qorniga (kindik va xanjarsimon o'simta o'rtasiga) o'rab, mushtingizni ichkariga va yuqoriga qarab 5 marta keskin siltang! Agar hushidan ketsa: chalqancha yotqizib yurak-o'pka reanimatsiyasini boshlang va krikotireotomiya/laringoskopiyaga tayyorlaning."
+        },
+        "yakunlash": {
+            "matn": "Geymlix manevri bajarildi! Go'sht bo'lagi tashqariga otilib chiqdi. Bemor chuqur nafas ola boshladi, lablaridagi ko'karish qaytmoqda.",
+            "hisobot": "Bemor Otabek (33 yosh), yuqori nafas yo'liga go'sht luqmasi tiqilishi (asfiksiya). Geymlix usuli orqali yot jism muvaffaqiyatli chiqarildi, nafas yo'llari o'tkazuvchanligi tiklandi."
+        }
+    },
+
+    "tuberkulyoz": {
+        "nomi": "45. O'pka Tuberkulyozi (Sil intoksikatsiyasi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Ravshan aka. Men navbatchi hamshiraman. Keling, sizga himoya niqobini beraman, o'zingizni erkin tuting.",
+            "izoh": "Sil infeksiyasi xavfi, hamshira va bemor respirator/niqob taqishi shart."
+        },
+        "savollar": [
+            {
+                "savol": "Yo'talingiz necha haftadan beri davom etyapti? 3 haftadan oshib ketganmi?",
+                "maqsad": "Surunkali yo'tal davomiyligini aniqlash"
+            },
+            {
+                "savol": "Har kuni kechqurun isitmangiz 37.2 - 37.4°C ga ko'tarilib, kechalari kiyimingizni almashtiradigan darajada qattiq terlaysizmi?",
+                "maqsad": "Klassik tuberkulyoz intoksikatsiyasi va tungi terlashni aniqlash"
+            },
+            {
+                "savol": "Oxirgi oylarda sezilarli darajada vazn yo'qotdingizmi? Necha kilo ozdingiz?",
+                "maqsad": "Sil kasalligidagi kaxeksiya va oziqlanish tanqisligini baholash"
+            },
+            {
+                "savol": "Yo'talganda balg'amda qon tomirlari chiqmadimi?",
+                "maqsad": "O'pka destruksiyasi va qon tupurishni tekshirish"
+            },
+            {
+                "savol": "Oilangizda yoki ishxonangizda uzoq yo'taladigan yoki sil bilan og'rigan odam bormidi?",
+                "maqsad": "Epidemiologik kontakt anamnezini o'rganish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni alohida ventilyatsiyalanuvchi xonaga ajrating (izolyatsiya). Bemorni N95 respirator bilan ta'minlang. Balg'amni mikobakteriyaga (BK tahlili va GenXpert) yig'ish uchun 3 ta steril idish tayyorlang. Flyurografiya/Rentgenografiyaga yo'naltiring."
+        },
+        "yakunlash": {
+            "matn": "Ravshan aka, 2 oylik yo'tal, isitma va ozish o'pkangizda jiddiy infeksiya borligini ko'rsatmoqda. Hozir balg'amingizni maxsus laboratoriyaga jo'natamiz va rentgen qilamiz. Ftiziatr shifokor ko'rib, to'liq davolash kursini belgilaydi. Hech tushkunlikka tushmang, sil to'liq davolanadigan kasallik.",
+            "hisobot": "Bemor Ravshan (41 yosh), o'pka tuberkulyozi gumoni: 2 oylik yo'tal, tungi gipergidroz, subfebrilitet (37.3°C), 8 kg vazn yo'qotishi. BK mikroskopiyasi va rentgen tekshiruviga yuborildi."
+        }
+    },
+
+    "pankreatit": {
+        "nomi": "46. O'tkir Destruktiv Pankreatit (Kamar og'rig'i)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum. Men navbatchi hamshiraman. Qorningiz qattiq og'riyaptimi, zudlik bilan yotib oling.",
+            "izoh": "O'tkir kamar shaklidagi og'riq, oshqozon osti bezi fermentativ autolizi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Og'riq qorinning yuqori qismida xuddi kamar bog'lagandek orqangizga va ikki yoningizga o'rab og'riyaptimi?",
+                "maqsad": "Pankreatitga xos kamar shaklidagi (opoyasyvayushchaya) og'riqni aniqlash"
+            },
+            {
+                "savol": "Og'riq yog'li ovqat (kabob, go'sht) yoki spirtli ichimlik iste'molidan keyin boshlandimi?",
+                "maqsad": "Alimentar va alkogol provokatsion omillarini aniqlash"
+            },
+            {
+                "savol": "Qusish necha marta bo'ldi? Qayt qilganingizdan keyin og'riq yengillashdimi yoki o'zgarishsiz qoldimi?",
+                "maqsad": "Yengillik keltirmaydigan to'xtovsiz qusishni aniqlash"
+            },
+            {
+                "savol": "Qorningiz shishib, gaz chiqishi to'xtab qolmadimi?",
+                "maqsad": "Parez va ichak tutilishi belgilarini baholash"
+            },
+            {
+                "savol": "Kindik atrofida yoki biqin sohasida ko'kargan dog'lar paydo bo'lmadimi?",
+                "maqsad": "Kallen va Grey-Terner simptomlarini (gemorragik pankreonekroz) ko'zdan kechirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "QAT'IY QOIDA: 'OCHLIK, SOVUQ VA TINCHLIK' (Golod, xolod i pokoy). Og'iz orqali ovqat va suv berish mutlaqo man etiladi! Qorinning yuqori sohasiga muz xaltasi qo'yiladi. Nazogastral zond qo'yishga tayyorlang. Spazmolitiklar, og'riqsizlantiruvchi va proteaz ingibitorlari (Kontrikal/Gordoks) tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Shavkat aka, sizda oshqozon osti bezining o'tkir yallig'lanishi (pankreatit). Hozir hech narsa yemang va ichmang, qorningizga muz qo'yamiz. Zudlik bilan shoshilinch jarroh chaqirildi, vena orqali osma ukollar bilan og'riqni qoldiramiz. Chidab turing, yordam beramiz!",
+            "hisobot": "Bemor Shavkat (46 yosh), o'tkir destruktiv pankreatit xuruji: kamar shaklidagi chidab bo'lmas og'riq, yengillik bermaydigan qayta qusish, takogen taomlar anamnezi. Shoshilinch xirurgik statsionar va intensiv terapiya."
+        }
+    },
+
+    "xolesistit": {
+        "nomi": "47. O'tkir Kalkulyoz Xolesistit (O't sanchig'i)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Gulnora opa. Men navbatchi hamshiraman. O'ng qovurg'angiz tagidagi og'riq bo'yicha yordam beramiz, yotib oling.",
+            "izoh": "O't pufagida tosh tiqilishi va yallig'lanish, og'izda taxirlik."
+        },
+        "savollar": [
+            {
+                "savol": "Og'riq aynan o'ng qovurg'angiz ostidami? O'ng yelkaga, kurakka yoki bo'yningizga tarqalyaptimi?",
+                "maqsad": "O't yo'llari og'rig'i irradiatsiyasini aniqlash"
+            },
+            {
+                "savol": "Kecha qovurilgan, yog'li ovqat (somsa, tuxum, mayonez) yeganingizdan keyin boshlandimi?",
+                "maqsad": "Xolestatik alimentar triggerni aniqlash"
+            },
+            {
+                "savol": "Og'zingizda achchiq taxir ta'm bormi? Ko'nglingiz aynib, sariq o't qusdingizmi?",
+                "maqsad": "O't refluksi va intoksikatsiyani baholash"
+            },
+            {
+                "savol": "Ko'zingiz oqi yoki teringiz sarg'ayib qolmadimi? Siydigingiz rangi pivo rangidek to'qlashmadimi?",
+                "maqsad": "Mexanik sariqlik (o't yo'li tosh bilan to'silishi)ni tekshirish"
+            },
+            {
+                "savol": "Tana haroratingiz ko'tarilib, qaltirash bo'ldimi?",
+                "maqsad": "Destruktiv xolesistit yoki xolangit asoratini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni to'shakka yotqizing. Ovqatlanishni to'xtating. O'ng qovurg'a ostiga sovuq qo'yiladi (aslo issiq grelka emas!). Spazmolitiklar (No-shpa, Platifillin) tayyorlanadi. Qorin bo'shlig'i UTT (UZI) tekshiruviga tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Gulnora opa, o't pufagingiz yallig'langan, tosh tiqilib qolgan bo'lishi mumkin. Hozir qorningizga sovuq qo'yib, spazmni yozuvchi ukol qilamiz, og'riq ancha pasayadi. Shoshilinch UZI tekshiruvidan o'tkazamiz va jarroh ko'radi. Xotirjam bo'ling.",
+            "hisobot": "Bemor Gulnora opa (52 yosh), o'tkir kalkulyoz xolesistit, o't sanchig'i: o'ng qovurg'a ostida og'riq, o'ng yelkaga irradiatsiya, Orttner va Myursi simptomi musbat, T 37.8°C. Shoshilinch UTT va xirurgik yordam."
+        }
+    },
+
+    "oshqozon_perforatsiya": {
+        "nomi": "48. Oshqozon Yarasi Teshilishi (Xanjarsimon og'riq)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Shuhrat aka. Men navbatchi hamshiraman. Hech qimirlamang, gapirishga urinmang!",
+            "izoh": "FAVQULODDA XIRURGIK HOLAT! Oshqozon teshilgan, xanjarsimon og'riq, taxtasimon qorin, peritonit xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Qorningizga to'satdan xuddi pichoq yoki xanjar suqqandek dahshatli og'riq kirdimi?",
+                "maqsad": "Teshilish (perforatsiya)ning patognomik xanjarsimon og'rig'ini aniqlash"
+            },
+            {
+                "savol": "Og'riq aynan qaysi daqiqada boshlandi?",
+                "maqsad": "Peritonit boshlanish vaqtini daqiqasigacha hisoblash"
+            },
+            {
+                "savol": "Ilgari oshqozon yoki 12 barmoqli ichak yarasidan davolanganmisiz?",
+                "maqsad": "Yara kasalligi anamnezini tasdiqlash"
+            },
+            {
+                "savol": "Nafas olganingizda qorningiz qimirlayaptimi yoki og'riqdan qorin devori taxtadek qotib qolganmi?",
+                "maqsad": "Taxtasimon qorin (defans muskulyar) belgisini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni zudlik bilan zambilda gorizontal yotqizing, har qanday harakatlanish man etiladi! Og'iz orqali suv va dori berish mutlaqo taqiqlanadi! Qoringa muz qo'yiladi. Vena ichiga 2 ta kateter qo'yiladi. Operatsion xona va shoshilinch jarrohlik brigadasi ogohlantiriladi."
+        },
+        "yakunlash": {
+            "matn": "Shuhrat aka, siz mutlaqo qimirlamay yoting. Oshqozon yarangiz teshilgan bo'lishi ehtimoli juda yuqori. Hozir zudlik bilan jarrohlar kelmoqda, operatsiya xonasini tayyorlayapmiz. Sizni qutqaramiz, xotirjam bo'ling!",
+            "hisobot": "Bemor Shuhrat aka (43 yosh), oshqozon yarasi perforatsiyasi gumoni: to'satdan xanjarsimon og'riq, taxtasimon qorin (defans), Shchyotkin-Blyumberg musbat, qorin nafasda qatnashmaydi. Qizil kod — shoshilinch laparotomiya!"
+        }
+    },
+
+    "oshqozon_qonash": {
+        "nomi": "49. Oshqozondan O'tkir Qon Ketish (Qon qusish va Melena)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Bahrom aka. Men navbatchi hamshiraman. Boshingiz aylanayotgan bo'lsa darhol yotib oling, boshni ko'tarmang.",
+            "izoh": "Massiv qon yo'qotish va kollaps xavfi, kofe quyqasidek qusish yoki melena."
+        },
+        "savollar": [
+            {
+                "savol": "Qusganingizda rangi qanday edi: to'q qizil qonmi yoki 'kofe quyqasi'ga o'xshagan jigarrang-qoramtirmi?",
+                "maqsad": "Qonash manbasi va xlorid kislota bilan reaksiyasini aniqlash"
+            },
+            {
+                "savol": "Hojatga borganingizda najasingiz qora smolaga (qatronga) o'xshab keldimi (melena)?",
+                "maqsad": "Oshqozon-ichak qonashining asosiy belgisi (melena)ni tekshirish"
+            },
+            {
+                "savol": "Kuchli bosh aylanishi, quloqda shang'illash, ko'z qorong'ilashishi bormi?",
+                "maqsad": "O'tkir anemiya va gipovolemiya darajasini baholash"
+            },
+            {
+                "savol": "Oldin oshqozon yarasi bo'lganmi yoki og'riq qoldiruvchi dorilar (Aspirin, Diklofenak, Ketonal) ichganmidingiz?",
+                "maqsad": "Medikamentoz yoki yarali eroziyani aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni qat'iy yotqizing, oyoqlarini biroz ko'taring. Epigastral sohaga muz xaltasi qo'yiladi. Muzdek suv ichirilishi mumkin. Gemostatik dorilar (Ditsinon/Etamzilat, Traneksam, Vikasol) vena ichiga yuboriladi. Qon guruhi va rezus-omil zudlik bilan aniqlanadi."
+        },
+        "yakunlash": {
+            "matn": "Bahrom aka, qon bosimingiz 80/50 ga tushibdi, oshqozoningizdan qon ketmoqda. Hozir qorningizga muz qo'yib, tomiringizdan qon to'xtatuvchi dorilarni kiritamiz. Endoskopist shifokor qonayotgan tomirni kuydirib to'xtatadi. Qimirlamay yoting, barchasi nazoratda.",
+            "hisobot": "Bemor Bahrom (47 yosh), o'tkir oshqozon-ichakdan qon ketishi: kofe quyqasimon qusish, melena, gemorragik shok I-II daraja (BP 80/50, HR 115). Shoshilinch EGDFS (gastroskopiya) va gemostaz."
+        }
+    },
+
+    "ichak_tutilishi": {
+        "nomi": "50. O'tkir Mexanik Ichak Tutilishi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Mansur aka. Men navbatchi hamshiraman. Qorningiz qattiq shishib ketibdi, keling sizni qulay yotqizaylik.",
+            "izoh": "Ichak buralishi / tutilishi, gaz va najas chiqmasligi, ichak gangrenasi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Necha kundan beri ichingiz kelmadi va gaz chiqishi butunlay to'xtab qoldi?",
+                "maqsad": "Ichak tutilishining bosh triadasi (najas va gaz to'xtashi)ni aniqlash"
+            },
+            {
+                "savol": "Qorningizdagi og'riq to'lqinsimon xarakterdami (tutib-tutib kuchayib, keyin biroz bosiladimi)?",
+                "maqsad": "Mexanik tutilishdagi kuchli peristaltik to'lqinlarni aniqlash"
+            },
+            {
+                "savol": "Qusish bo'lyaptimi? Qusgan narsangizda noxush ichak hidi (axlat hidi) bormi?",
+                "maqsad": "Fekaloid qusish va yuqori/pastki tutilishni aniqlash"
+            },
+            {
+                "savol": "Ilgari qorin bo'shlig'ida operatsiya bo'lganmisiz (spayka/chandiqlar bormi)?",
+                "maqsad": "Spayechnaya ichak tutilishi xavfini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Ovqat va suv berish taqiqlanadi! Hech qanday surgi dori (ich suruvchi) bermang (ichak yorilishiga olib kelishi mumkin!). Oshqozonni dekompressiya qilish uchun nazogastral zond o'rnating. Shoshilinch qorin bo'shlig'i umumiy rentgenografiyasiga (Kloyber kosachalari) tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Mansur aka, ichaklaringizda to'silish yuzaga kelgan. Hozir burningizdan ingichka naycha orqali oshqozondagi suyuqlikni tortib olamiz, qorningiz shishi ancha pasayadi. Rentgen qilib, shoshilinch jarrohlik yo'li bilan ichakni ochamiz. Xotirjam bo'ling.",
+            "hisobot": "Bemor Mansur aka (53 yosh), o'tkir mexanik (spayechnaya) ichak tutilishi: to'lqinsimon og'riq, qorin asimmetrik shishi, gaz va axlat yo'qligi, ko'p karra qusish. Shoshilinch rentgen va xirurgik amaliyot."
+        }
+    },
+
+    "qisilgan_churra": {
+        "nomi": "51. Bo'g'ilgan Chov Churrasi (Inkarseratsiya)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Ilhom aka. Men navbatchi hamshiraman. Chov sohasidagi og'riq bo'yicha yordam beramiz, yotib oling.",
+            "izoh": "Churra qisilib qolgan, o'zicha ichkariga tiqish mutlaqo taqiqlanadi (ichak nekrozi xavfi)!"
+        },
+        "savollar": [
+            {
+                "savol": "Chov sohangizdagi shish qachon paydo bo'ldi va qattiqlashib qoldi? Ilgari yotganingizda o'z-o'zidan ichkariga kirib ketarmidi?",
+                "maqsad": "Churraning erkin qaytuvchanlikdan qisilgan holatga o'tishini aniqlash"
+            },
+            {
+                "savol": "Bu shishni ichkariga qaytarishga o'zingiz urinib ko'rmadingizmi?",
+                "maqsad": "Qisilgan churra to'qimasini majburan tiqish asoratlarini tekshirish"
+            },
+            {
+                "savol": "Og'ir yuk ko'targaningizdan keyin birdan qattiq og'riq boshlandimi?",
+                "maqsad": "Inkarseratsiya sababini aniqlash"
+            },
+            {
+                "savol": "Ko'ngil aynishi, qusish yoki qorningiz shishishi kuzatildimi?",
+                "maqsad": "Ichak tutilishi asoratlarini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni gorizontal yotqizing. DIQQAT: Qisilgan churra xaltasini qo'l bilan ichkariga kiritishga urinish QAT'IYAN TAQIQLANADI (chunki qisilgan ichak nekrozga uchragan bo'lishi mumkin!). Chov sohasiga muz xaltasi qo'yiladi. Shoshilinch operatsiyaga tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Ilhom aka, churrangiz qisilib qolgan, uni qo'l bilan bosib bo'lmaydi. Hozir sizga muz qo'yib, og'riqsizlantiruvchi muolajani qilamiz. Navbatchi jarroh shifokor churra darvozasini operatsiya yo'li bilan kengaytirib, ichakni qutqarib qoladi. Xotirjam yoting.",
+            "hisobot": "Bemor Ilhom aka (50 yosh), bo'g'ilgan o'ng chov churrasi (inkarseratsiya): qaytmas qattiq o'tkir og'riqli hosila, yo'tal turtkisi manfiy, 3 soatlik davomiylik. Zudlik bilan shoshilinch gerniotomiya!"
+        }
+    },
+
+    "peritonit": {
+        "nomi": "52. Tarqalgan Yiringli Peritonit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Aziz aka. Men navbatchi hamshiraman. Iltimos qimirlamang, sekin nafas oling.",
+            "izoh": "OG'IR INTOTSIKATSIYA! Qorin pardasi yallig'lanishi, tili quruq jigarrang, Gipokrat yuzi."
+        },
+        "savollar": [
+            {
+                "savol": "Qorningizning barcha qismida qattiq og'riq bormi? Harakat qilganda, yo'talganda og'riq chidab bo'lmas darajada kuchayadimi?",
+                "maqsad": "Diffuz peritoneal og'riqni baholash"
+            },
+            {
+                "savol": "Tilingiz qaqrab qurib qolganini sezyapsizmi? Ko'p chanqayapsizmi?",
+                "maqsad": "Og'ir intoksikatsiya va suvsizlanish darajasini aniqlash"
+            },
+            {
+                "savol": "Bu holat boshlanishidan 1-2 kun oldin qorningizning biron joyi (masalan, appenditsit yoki oshqozon) og'riganmidi?",
+                "maqsad": "Peritonitning birlamchi manbasini aniqlash"
+            },
+            {
+                "savol": "Tana haroratingiz juda yuqori bo'lib, keyin birdan pasayib ketmadimi?",
+                "maqsad": "Toksik faza va septik shok xavfini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qorin devoriga qo'l tekkizganda ehtiyot bo'ling (Shchyotkin-Blyumberg belgisi kuchli og'riq beradi). Bemorni zambilda yotqizing. Ikkita yirik venaga kateter qo'yib massiv detoksikatsion infuziya boshlang. Shoshilinch operatsiyaga (laparotomiya va sanatsiya) tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Aziz aka, qorin pardangizda jiddiy yallig'lanish bor. Hozir tomiringizdan zaharli moddalarni haydaydigan eritmalarni ulaymiz. Jarrohlar jamoasi zudlik bilan operatsiya qilib, qorin bo'shlig'ini yuvib tozalaydi. Biz siz bilanmiz!",
+            "hisobot": "Bemor Aziz (35 yosh), tarqalgan o'tkir peritonit, toksik faza: qorin devori defansi, Shchyotkin-Blyumberg musbat, quruq karashli til, taxikardiya (HR 125), taxipnoe. Qizil kod — shoshilinch laparotomiya va sanatsiya!"
+        }
+    },
+
+    "mezenterial_tromboz": {
+        "nomi": "53. Mezenterial Qon Tomirlar Trombozi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Valijon aka. Men navbatchi hamshiraman. Mutlaqo qimirlamang, og'riqni qoldirishga yordam beramiz.",
+            "izoh": "O'TA XAVFLI! Ichak arteriyasi trombozi, qorin yumshoq bo'lsa ham dahshatli og'riq bo'ladi (ichak infarkti)."
+        },
+        "savollar": [
+            {
+                "savol": "Og'riq kindik atrofida to'satdan boshlandimi? Hech qanday og'riq qoldiruvchi dori ta'sir qilmayaptimi?",
+                "maqsad": "O'tkir mezenterial ishemiyaning doimiy chidab bo'lmas og'rig'ini aniqlash"
+            },
+            {
+                "savol": "Sizda yurak ritmi buzilishi (miltillovchi aritmiya) yoki infarkt bo'lganmi?",
+                "maqsad": "Kardiyogen emboliya manbasini aniqlash"
+            },
+            {
+                "savol": "Qon aralash suyuq ich ketishi yoki qusish kuzatildimi?",
+                "maqsad": "Ichak shilliq qavati nekrozi va qonashini aniqlash"
+            },
+            {
+                "savol": "Boshingiz aylanib, sovuq ter bosyaptimi?",
+                "maqsad": "Ishemik shok rivojlanishini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Har bir daqiqa qadrli (ichak nekrozi 2-4 soatda boshlanadi!). Vena ichiga Geparin/antikoagulyantlar va infuziya boshlang. Shoshilinch angioxirurg va umumiy jarrohni chaqirib, KT-angiografiya va laparotomiyaga tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Valijon aka, ichak tomiringizda tiqilma bo'lishi mumkin. Qimirlamay yoting, tomiringizdan qon aylanishini tiklovchi dorilarni kiritamiz. Jarrohlar zudlik bilan tomirni ochib ichakni saqlab qoladi. Yoningizdamiz!",
+            "hisobot": "Bemor Valijon aka (65 yosh), mezenterial qon tomirlar o'tkir trombozemboliyasi: kindik sohasida refrakter dahshatli og'riq, qonli diareya, miltillovchi aritmiya anamnezi. Zudlik bilan shoshilinch angioxirurgik ko'rik!"
+        }
+    },
+
+    "yarali_kolit": {
+        "nomi": "54. Nospetsifik Yarali Kolit (O'tkir qonli diareya)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Nodira opa. Men navbatchi hamshiraman. Holsizlanib qolibsiz, yotib dam oling.",
+            "izoh": "NYaK zo'rayishi, qonli diareya, tenezmlar, anemiya va suvsizlanish."
+        },
+        "savollar": [
+            {
+                "savol": "Bir kunda necha marta hojatga boryapsiz? 10-15 martadan ko'pmi?",
+                "maqsad": "Diareya chastotasi va NYaK og'irlik darajasini aniqlash"
+            },
+            {
+                "savol": "Najasingizda qip-qizil qon, shilimshiq yoki yiring aralash kelyaptimi?",
+                "maqsad": "Yo'g'on ichak shilliq qavati destruksiyasini baholash"
+            },
+            {
+                "savol": "Qorin pastki chap sohasida og'riq va hojatga soxta qistovlar (tenezmlar) bezovta qilyaptimi?",
+                "maqsad": "Sigmasimon va to'g'ri ichak spastik tenezmlarini aniqlash"
+            },
+            {
+                "savol": "Tana haroratingiz ko'tarilib, vazningiz keskin kamaydimi?",
+                "maqsad": "Tizimli yallig'lanish va intoksikatsiyani baholash"
+            },
+            {
+                "savol": "Ilgari Koloskopiya qildirganmisiz, qanday dori (Salofalk, Prednizolon) qabul qilasiz?",
+                "maqsad": "Bazis terapiyani tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yotqizing. Qon yo'qotish va suvsizlanishni qoplash uchun kristalloid va elektrolit eritmalar infuziyasini o'tkazing. Shifokor bilan glyukokortikoidlar (Gidrokortizon/Prednizolon) va gemostatiklar berilishini muvofiqlashtiring."
+        },
+        "yakunlash": {
+            "matn": "Nodira opa, ichakdagi yallig'lanish tufayli ko'p suyuqlik va qon yo'qotgansiz. Hozir tomiringizdan osma ukol bilan darmon dorilar va yallig'lanishni to'xtatuvchi preparatlarni beramiz, ichingiz kelishi tezda kamayadi. Xotirjam dam oling.",
+            "hisobot": "Bemor Nodira (30 yosh), nospetsifik yarali kolit (NYaK) o'tkir zo'rayish bosqichi: gemokolit (12-15 marta qonli diareya), tenezmlar, T 38.0°C, anemiya. Shoshilinch gastroenterologik va infuzion terapiya."
+        }
+    },
+
+    "jigar_sirrozi": {
+        "nomi": "55. Jigar Sirrozi Dekompenzatsiyasi va Astsit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Yoqub aka. Men navbatchi hamshiraman. Nafas olishingiz qiyinlashgan bo'lsa baland yostiqqa suyab qo'yaman.",
+            "izoh": "Portal gipertenziya, astsit (qorin suv to'lishi), sariqlik va jigar ensefalopatiyasi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Qorningiz shishib, ichiga suv to'planishi (astsit) qachondan beri kuchaydi? Yotganingizda hansirash bo'lyaptimi?",
+                "maqsad": "Astsit hajmi va diafragma baland ko'tarilishini baholash"
+            },
+            {
+                "savol": "Ko'zingiz oqi yoki teringiz sarg'ayib ketganini sezdingizmi? Qichishish bormi?",
+                "maqsad": "Xolestaz va parenximatoz sariqlikni aniqlash"
+            },
+            {
+                "savol": "Burundan qon ketish, badanda ko'karishlar paydo bo'lishi bormi?",
+                "maqsad": "Jigarning oqsil va qon ivish omillari yetishmovchiligini tekshirish"
+            },
+            {
+                "savol": "Uyqungiz buzilishi, kunduzi uxlab kechasi uyg'oq bo'lish yoki xotira chalkashishi kuzatilmadimi?",
+                "maqsad": "Jigar ensefalopatiyasi (prekoma) belgilarini erta aniqlash"
+            },
+            {
+                "savol": "Ilgari Gepatit B yoki C bilan og'riganmisiz?",
+                "maqsad": "Sirroz etiologiyasini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yarim o'tirgan holatda joylashtiring. Qorin aylanasi va tana vaznini har kuni o'lchang. Tuzsiz parhez. Siydik miqdorini (diurez) qat'iy nazorat qiling. Laparotsentez (qorindagi suyuqlikni chiqarish) uchun shifokorga yordamga tayyorlaning."
+        },
+        "yakunlash": {
+            "matn": "Yoqub aka, jigaringiz zo'riqqani uchun qorningizga suyuqlik to'plangan. Hozir sizga albumin va peshob haydovchi dorilar beramiz, nafas olishingiz osonlashadi. Shifokor bilan doimiy nazorat qilamiz. Xotirjam yoting.",
+            "hisobot": "Bemor Yoqub aka (57 yosh), jigar sirrozi dekompenzatsiyasi, portal gipertenziya: tarqalgan astsit, sariqlik, terida telangiektaziyalar, nafas qisishi. Diuretik va gepatoprotektiv terapiya boshlandi."
+        }
+    },
+
+    "qizilo'ngach_varikoz": {
+        "nomi": "56. Qizilo'ngach Venalari Yirtilishi (Massiv gematemezis)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Tohir aka, boshni yonga buring! Men navbatchi hamshiraman. Qonni yutmang, og'zingizdan chiqarib tashlang!",
+            "izoh": "FAVQULODDA XAVFLI! Favvora shaklida qon qusish, bemor bir necha daqiqada qonsizlanishi mumkin!"
+        },
+        "savollar": [
+            {
+                "savol": "(Ko'rik): Qusilgan qon to'q qizil (venoz) rangdami? Necha litr qon chiqdi?",
+                "maqsad": "Qon yo'qotish og'irligini ko'zdan kechirish"
+            },
+            {
+                "savol": "Sizda jigar sirrozi yoki qizilo'ngach venalari varikozi borligi ma'lummidi?",
+                "maqsad": "Portal gipertenziya anamnezini tasdiqlash"
+            },
+            {
+                "savol": "Hozir ko'zingiz qorong'ilashib, qulog'ingiz shang'illayaptimi?",
+                "maqsad": "Gemorragik shok va kollapsni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorning boshini yonga burib gorizontal yotqizing (qon nafas yo'liga ketmasligi uchun!). Zudlik bilan Blekmore-Sengstaken obturator zondini tayyorlang va shifokorga bering (zond baloni shishirilib qonayotgan venalar bosiladi). Ikkita yirik tomirga kateter qo'yib plazma/kristalloid va Oktreotid (Sandostatin) infuziyasini boshlang."
+        },
+        "yakunlash": {
+            "matn": "Tohir aka, qimirlamang. Qonayotgan tomirni to'xtatish uchun maxsus ballonli zond o'rnatamiz va qon to'xtatuvchi ukol qilamiz. Reanimatsiya va endoskopiya brigadasi yoningizda. Sizni qutqaramiz, chidab turing!",
+            "hisobot": "Bemor Tohir (51 yosh), qizilo'ngach varikoz venalaridan massiv qon ketishi: favvorasimon to'q qon qusish, gemorragik shok III daraja (BP 75/40, HR 135). Qizil kod — Blekmore zondi o'rnatilmoqda, shoshilinch qon quyish va endoskopik ligaturalash!"
+        }
+    },
+
+    "mallory_weiss": {
+        "nomi": "57. Mallori-Veys Sindromi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Sherali aka. Men navbatchi hamshiraman. Nafasingizni rostlang, qon qusish bo'yicha yordam beramiz.",
+            "izoh": "Kuchli qayt qilish oqibatida qizilo'ngach-oshqozon shilliq qavati yirtilishi."
+        },
+        "savollar": [
+            {
+                "savol": "Avval oddiy ovqat qusib, keyin ketma-ket qattiq zo'riqib qusganingizdan so'ng qizil qon aralashib ketdimi?",
+                "maqsad": "Mallori-Veys sindromiga xos ikki bosqichli qusish xarakterini aniqlash"
+            },
+            {
+                "savol": "Qusish boshlanishidan oldin ko'p spirtli ichimlik ichilganmidi yoki zaharlanish bo'lganmidi?",
+                "maqsad": "Alkogol yoki alimentar emetik provokatsiyani aniqlash"
+            },
+            {
+                "savol": "To'shingiz orqasida yoki qorin yuqori qismida yirtilgandek achishish bormi?",
+                "maqsad": "Kardioezofageal sohadagi yoriq og'rig'ini baholash"
+            },
+            {
+                "savol": "Hozir qon kelishi to'xtadimi yoki yana qusyapsizmi?",
+                "maqsad": "Davomiy qonashni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni tinch holatda yotqizing. Qusishga qarshi dori (Metoklopramid/Serukal yoki Ondansetron) yuboring (zo'riqishni to'xtatish uchun). Qoringa muz xaltasi qo'ying. Gemostatiklar va proton nasosi ingibitorlari (Omeprazol/Pantoprazol) vena ichiga beriladi."
+        },
+        "yakunlash": {
+            "matn": "Sherali aka, qattiq qayt qilganingiz uchun qizilo'ngach shilliq qavati biroz yirtilgan. Hozir qayt qilishni to'xtatuvchi va qonni ivituvchi ukol qilamiz. Shifokor gastroskopiya orqali yoriqni ko'rib davolaydi. Qimirlamay dam oling.",
+            "hisobot": "Bemor Sherali (38 yosh), Mallori-Veys sindromi: ketma-ket emetik zo'riqishdan so'ng yangi qon aralash qusish, gemodinamika nisbatan stabil (BP 110/70, HR 90). Gemostaz va EGDFS rejalashtirildi."
+        }
+    },
+
+    "divertikulit": {
+        "nomi": "58. Yo'g'on Ichak O'tkir Divertikuliti",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Halima xola. Men navbatchi hamshiraman. Qorningizdagi og'riq bo'yicha yordam beramiz, yotib oling.",
+            "izoh": "Chap yonbosh sohasida o'tkir og'riq ('chap tomonlama appenditsit'), perforatsiya xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Og'riq qorinning chap tomoni pastida (chap yonboshda) joylashganmi? Doimiy sanchib og'riyaptimi?",
+                "maqsad": "Sigmasimon ichak divertikuliti lokalizatsiyasini aniqlash"
+            },
+            {
+                "savol": "Ichingiz qotishi yoki ich ketishi almashinib turadimi? Qorningiz dam bo'lyaptimi?",
+                "maqsad": "Ichak disfunksiyasini baholash"
+            },
+            {
+                "savol": "Tana haroratingiz ko'tarilib (38°C), qaltirash bo'ldimi?",
+                "maqsad": "Yiringli yallig'lanish yoki mikroperforatsiyani aniqlash"
+            },
+            {
+                "savol": "Najasingizda qon yoki shilimshiq ko'rindingizmi?",
+                "maqsad": "Divertikuldan qonash yoki yiringlashni tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yotqizing. Qorinni bosmang. Issiq qo'yish yoki klizma qilish mutlaqo taqiqlanadi (divertikul yorilishi xavfi!). Ovqatlanishni cheklang. Spazmolitiklar va keng ta'sirli antibiotiklar tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Halima xola, yo'g'on ichagingizning chap qismida yallig'lanish bor ekan. Qorningizga qo'lingizni bosmang. Hozir antibiotik va og'riq qoldiruvchi dorilarni kiritamiz, shifokor tekshirib kerakli muolajani qiladi. Xotirjam dam oling.",
+            "hisobot": "Bemor Halima xola (66 yosh), yo'g'on ichak chap tomonlama o'tkir divertikuliti: chap yonbosh sohasida og'riq va mushak zo'riqishi, T 38.3°C, leykositoz. Xirurgik nazorat va antibakterial terapiya."
+        }
+    },
+
+    "gemorroy_tromboz": {
+        "nomi": "59. Gemorroidal Tugunlarning O'tkir Trombozi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Umid aka. Men navbatchi hamshiraman. Og'riq kuchli ekanini tushunaman, qulay yonboshlab yoting.",
+            "izoh": "Tashqi gemorroy tuguni o'tkir trombozi, o'ta kuchli mahalliy og'riq, o'tira olmaslik."
+        },
+        "savollar": [
+            {
+                "savol": "Orqa chiqaruv teshigi sohasida yong'oqdek qattiq va o'ta og'riqli shish qachon paydo bo'ldi?",
+                "maqsad": "O'tkir trombozlangan gemorroidal tugunni aniqlash"
+            },
+            {
+                "savol": "Og'ir yuk ko'targaningizdan yoki kuchli ich qotishidan keyin boshlandimi?",
+                "maqsad": "Vena ichi bosimi oshishi omilini aniqlash"
+            },
+            {
+                "savol": "O'tirish, yurish yoki hojatga borish chidab bo'lmas darajada og'riyaptimi?",
+                "maqsad": "Funksional cheklanish darajasini baholash"
+            },
+            {
+                "savol": "Tugundan qon oqishi yoki shilliq ajralishi bormi?",
+                "maqsad": "Tromblangan tugun nekrozi va o'z-o'zidan yorilishini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorga qorin bilan yoki yonboshlab yotishni tavsiya qiling (aslo o'tirmasin!). Mahalliy sovuq kompress qo'yiladi. Og'riqsizlantiruvchi va antikoagulyantli malhamlar (Geparin, Troksevazin) qo'llanadi. Shoshilinch proktologik ko'rik (trombektomiya imkoniyati)."
+        },
+        "yakunlash": {
+            "matn": "Umid aka, gemorroy tomirida tromb hosil bo'lib qattiq qisilibdi. Hozir og'riqsizlantiruvchi dori va maxsus malham qo'yamiz. Proktolog shifokor ko'rib, kerak bo'lsa 5 daqiqada kichik kesim bilan trombni olib tashlaydi va og'riq bir zumda butunlay yo'qoladi. Chidab turing!",
+            "hisobot": "Bemor Umid (42 yosh), tashqi gemorroidal tugunlarning o'tkir trombozi: perianal ko'kargan o'tkir og'riqli tugun, kuchli sfinkter spazmi, o'tira olmaslik. Shoshilinch proktologik konsultatsiya va trombektomiya."
+        }
+    },
+
+    "gemorragik_insult": {
+        "nomi": "60. Bosh Miyaga Qon Quyilishi (Gemorragik insult)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Odil aka. Meni eshityapsizmi? Men navbatchi hamshiraman. Hech qimirlamang!",
+            "izoh": "FAVQULODDA O'TA OG'IR! Gipertonik kriz (230/120) fonida kalla ichiga qon quyilishi, miya shishi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Boshingizga xuddi zarba berilgandek dahshatli og'riq kirdimi? Qayt qildingizmi?",
+                "maqsad": "Miya ichi qonashining to'satdan 'zarba' shaklida boshlanishi va serebral qusishni aniqlash"
+            },
+            {
+                "savol": "Chap qo'lingiz va oyog'ingiz butunlay ishlamay, bo'shashib qoldimi?",
+                "maqsad": "Gemiplegiya (falajlik) darajasini baholash"
+            },
+            {
+                "savol": "Gapirishingiz qiyinlashib, tilingiz aylanmay qoldimi?",
+                "maqsad": "Nutq markazi zararlanishini tekshirish"
+            },
+            {
+                "savol": "Doimiy qon bosimingiz juda baland bo'larmidi (bugun bosim 230/120 mmHg)?",
+                "maqsad": "Gipertenziv intracerebral gematoma sababini tasdiqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorning boshini 30 darajaga ko'taring (miya shishini kamaytirish). Nafas yo'llari ochiqligini ta'minlang (qusish aspiratsiyasidan saqlash). Qon bosimini asta-sekin pasaytiring (keskin tushirish man etiladi!). Zudlik bilan shoshilinch bosh miya MSKT (kompyuter tomografiyasi) va neyroxirurgik brigadani chaqiring."
+        },
+        "yakunlash": {
+            "matn": "Odil aka, siz mutlaqo qimirlamay yoting. Qon bosimingiz juda ko'tarilib ketgani uchun shoshilinch yordam ko'rsatyapmiz. Neyroreanimatsiya jamoasi yoningizda, miya tomografiyasiga olib boramiz va bosimni me'yoriga keltiramiz. Biz siz bilanmiz!",
+            "hisobot": "Bemor Odil aka (58 yosh), o'tkir gemorragik insult (bosh miyaga qon quyilishi): BP 230/120 mmHg, chap tomonlama chuqur gemiplegiya, hushning karaxtlashishi, anizokoriya. Qizil kod — shoshilinch neyroKT va neyroxirurgiya!"
+        }
     }
 }
 
