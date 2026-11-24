@@ -2136,6 +2136,726 @@ DETAILED_TEMPLATES: Dict[str, Dict[str, Any]] = {
             "matn": "Odil aka, siz mutlaqo qimirlamay yoting. Qon bosimingiz juda ko'tarilib ketgani uchun shoshilinch yordam ko'rsatyapmiz. Neyroreanimatsiya jamoasi yoningizda, miya tomografiyasiga olib boramiz va bosimni me'yoriga keltiramiz. Biz siz bilanmiz!",
             "hisobot": "Bemor Odil aka (58 yosh), o'tkir gemorragik insult (bosh miyaga qon quyilishi): BP 230/120 mmHg, chap tomonlama chuqur gemiplegiya, hushning karaxtlashishi, anizokoriya. Qizil kod — shoshilinch neyroKT va neyroxirurgiya!"
         }
+    },
+
+    "subaraxnoidal_qonash": {
+        "nomi": "61. Subaraxnoidal Qon Quyilishi (Momaqaldiroq bosh og'rig'i)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Dildoraxon, eshityapsizmi meni? Men navbatchi hamshiraman. Hech qimirlamang, gapirishga zo'riqmang.",
+            "izoh": "Bosh miya anevrizmasi yorilishi, momaqaldiroqsimon to'satdan dahshatli og'riq, takroriy qonash xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Bosh og'rig'i to'satdan, xuddi bosh ichida chaqmoq chaqqandek yoki zarba berilgandek sekund ichida boshlandimi?",
+                "maqsad": "Momaqaldiroqsimon (Thunderclap headache) og'riqni aniqlash"
+            },
+            {
+                "savol": "Hayotingizda bunaqa kuchli bosh og'rig'ini ilgari hech his qilganmidingiz?",
+                "maqsad": "'Hayotimdagi eng kuchli bosh og'rig'i' (Worst headache of life) mezonini tasdiqlash"
+            },
+            {
+                "savol": "Bo'yningiz orqasi qotib, boshingizni oldinga egish (iyakni ko'krakka tekkizish) qiyinlashib qoldimi?",
+                "maqsad": "Ensa mushaklari rigidligi (meningeal belgi)ni aniqlash"
+            },
+            {
+                "savol": "Yorug'likka qarash chidab bo'lmaydigan darajada og'riq beryaptimi (fotofobiya) va ko'nglingiz aynib qusdingizmi?",
+                "maqsad": "Miya qobiqlari ta'sirlanishi va miya ichi bosimi oshishini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qat'iy to'shak rejimi, to'liq qorong'ilik va sukunat ta'minlanadi. Har qanday zo'riqish, yo'talish yoki kuchanish man etiladi. Qon bosimi nazorat qilinadi (Nimodipin berilishi mumkin). Shoshilinch MSKT/KT-angiografiya va neyroxirurgga tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Dildoraxon, xonani qorong'ilatib qo'ydim, ko'zingizni yumib yoting. Bosh tomiringizda qonash yuz bergan bo'lishi mumkin. Hozir shoshilinch neyroxirurglar jamoasi kelmoqda, tomografiya qilib tomirni maxsus usulda yopamiz. Xotirjam bo'ling, biz yoningizdamiz.",
+            "hisobot": "Bemor Dildora (39 yosh), o'tkir subaraxnoidal qon quyilishi (SAQ) gumoni: to'satdan momaqaldiroqsimon bosh og'rig'i, ensa mushaklari rigidligi, fotofobiya, qusish. Qizil kod — shoshilinch neyroKT va neyroxirurgiya!"
+        }
+    },
+
+    "epilepsiya_tutqanoq": {
+        "nomi": "62. Epileptik Status / Katta Tutqanoqdan Keyingi Holat",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Timur, ko'zingizni oching, meni eshityapsizmi? Men shifoxona hamshirasiman, xavfsiz joydasiz.",
+            "izoh": "Katta tonik-klonik tutqanoqdan keyingi postiktal holat, til tishlangan, amneziya."
+        },
+        "savollar": [
+            {
+                "savol": "O'zingizga keldingizmi? Ismingiz nima, hozir qayerda ekaningizni bilasizmi?",
+                "maqsad": "Orientatsiya va postiktal ong tiklanishini baholash"
+            },
+            {
+                "savol": "Tilingiz yonini tishlab olganingizni yoki og'zingizdan qon aralash ko'pik kelganini sezyapsizmi?",
+                "maqsad": "Epileptik paroksizmning obyektiv tasdig'ini tekshirish"
+            },
+            {
+                "savol": "Tutqanoq boshlanishidan oldin biror noxush hid, tovush yoki ko'z oldida chaqnash (aura) bo'lganmidi?",
+                "maqsad": "Epileptik aura va o'choq sohasini aniqlash"
+            },
+            {
+                "savol": "Butun badaningiz, mushaklaringiz xuddi kaltaklanganidek og'riyaptimi?",
+                "maqsad": "Generalizatsiyalangan tonik-klonik spazmlar asoratini baholash"
+            },
+            {
+                "savol": "Doimiy qabul qiladigan tutqanoqqa qarshi dorilaringizni (Karbamazepin, Valproat) ichishni unutganmidingiz?",
+                "maqsad": "Antikonvulsant dorilar qabulidagi uzilishni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yonga burab yotqizing (aspiratsiya va til orqaga ketishining oldini olish). Og'iz bo'shlig'ini so'lakdan tozalang (DIQQAT: tishlar orasiga qattiq qoshiq yoki barmog'ingizni tiqmang!). Agar tutqanoq qaytalansa: vena ichiga Diazepam (Relanium) 10-20 mg sekin yuboriladi."
+        },
+        "yakunlash": {
+            "matn": "Timur, sizda epileptik tutqanoq bo'lib o'tdi, hozir xavf ortda qoldi. Yoningizga yostiq qo'yib qo'ydim, tinch nafas oling. Hozir nevropatolog shifokor keladi, tutqanoq qaytalanmasligi uchun tomiringizdan tinchlantiruvchi dori beramiz. Yoningizdaman.",
+            "hisobot": "Bemor Timur (27 yosh), postiktal holat (katta tonik-klonik tutqanoqdan so'ng): soporoz karaxtlik, til lateral qismi tishlanishi, retrograd amneziya. Nevrolog ko'rigi va antikonvulsant terapiya."
+        }
+    },
+
+    "tranzitor_ishemiya": {
+        "nomi": "63. Tranzitor Ishemik Xuruj (TIA)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Bahrom aka. Men navbatchi hamshiraman. Qo'lingiz va oyog'ingizdagi sezgi qanday, sinab ko'ramiz.",
+            "izoh": "Mini-insult! Belgilar vaqtincha yo'qolgan bo'lsa ham, keyingi 48 soatda haqiqiy insult xavfi o'ta yuqori."
+        },
+        "savollar": [
+            {
+                "savol": "O'ng qo'l va oyog'ingiz ishlamay, bo'shashib qolishi aynan necha daqiqa davom etdi? 15-20 daqiqadan so'ng asta-sekin o'tib ketdimi?",
+                "maqsad": "Fokal nevrologik defitsitning qaytuvchanlik (tranzitorlik) vaqtini aniqlash"
+            },
+            {
+                "savol": "O'sha paytda gapirishingiz tushunarsiz bo'lib, tilingiz aylanmay qolganmidi?",
+                "maqsad": "Tranzitor dizartriya va afaziyani baholash"
+            },
+            {
+                "savol": "Ko'zingizning bir tomoni to'satdan qora parda tutilgandek ko'rmay qolganmidi (amavroz)?",
+                "maqsad": "Ichki uyqu arteriyasi havzasidagi mikroemboliyani aniqlash"
+            },
+            {
+                "savol": "Qon bosimingiz qancha bo'ldi? Yurak aritmiyasi yoki bo'yin tomirlarida torayish bormi?",
+                "maqsad": "Kardioembolik va aterotrombotik xavf omillarini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemor ahvoli yaxshilangan bo'lsa ham mutlaqo o'rnidan turgizilmaydi (to'shak rejimi!). Qon bosimi va EKG nazorati. Aspirin/Klopidogrel antiagregant terapiyasini shifokor bilan boshlang. Bo'yin tomirlari (uyqu arteriyalari) UZDG tekshiruviga zudlik bilan yo'naltiring."
+        },
+        "yakunlash": {
+            "matn": "Bahrom aka, garchi qo'l-oyog'ingiz hozir ishlab turgan bo'lsa-da, bu bosh miyaga qon yetishmaganining juda jiddiy ogohlantiruvchi belgisi (mini-insult). Hozir qon suyultiruvchi dorilarni beramiz va tomirlaringizni tekshiramiz. O'rningizdan turmay yoting.",
+            "hisobot": "Bemor Bahrom aka (61 yosh), tranzitor ishemik xuruj (TIA) o'tkir davri: 20 daqiqalik o'ng tomonlama gemiparez va dizartriya retsessiyasi. ABCD2 shkalasi bo'yicha yuqori insult xavfi, neyrovaskulyar tekshiruv zarur."
+        }
+    },
+
+    "meningit": {
+        "nomi": "64. O'tkir Yiringli Meningit (Meningeal sindrom)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Elyor, eshityapsizmi? Men navbatchi hamshiraman. Xonani qorong'ilatdim, qattiq ovoz chiqarmaymiz.",
+            "izoh": "Meningeal sindrom, giperesteziya, yorug'lik va tovushdan kuchli bezillash, infeksion toksik shok xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Boshingiz butunlay qisilib, yorilib ketgudek qattiq og'riyaptimi?",
+                "maqsad": "Meningitga xos diffuz kuchli bosh og'rig'ini aniqlash"
+            },
+            {
+                "savol": "Bo'yningizni oldinga egib, iyagingizni ko'kragingizga tekkiza olasizmi? (Tekshiruv: tekkizib bo'lmaydi, ensa toshdek qotgan)",
+                "maqsad": "Ensa mushaklari rigidligi va Brudzinskiy simptomini tekshirish"
+            },
+            {
+                "savol": "Yorug'lik tushganda yoki ovoz chiqqanda og'riq chidab bo'lmaydigan darajada kuchayadimi?",
+                "maqsad": "Fotofobiya va umumiy giperesteziyani aniqlash"
+            },
+            {
+                "savol": "Oyoqlaringizda, soningizda yoki qorningizda qorong'i-qizil yulduzsimon toshmalar toshganini ko'rdingizmi?",
+                "maqsad": "Meningokokkemiya va gemorragik nekrotik toshmalarni erta aniqlash"
+            },
+            {
+                "savol": "Isitmangiz 40°C ga chiqib, ko'ngil aynimasdan birdaniga qusib yubordingizmi?",
+                "maqsad": "Serebral (ovqatsiz) qusishni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qorong'i va jimjit palata. Bemorni ehtiyotkorlik bilan yotqizing. Zudlik bilan tomir ichiga keng ta'sirli antibiotik (Seftriakson 2 g) va Deksametazon kiritishga tayyorlaning. Shoshilinch diagnostik lyumbal ponksiya (orqa miya suyuqligini tekshirish) to'plamini tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Elyor, sizda bosh miya qobiqlarining o'tkir infeksiyasi (meningit). Hozir tomiringizdan kuchli antibiotik va bosh ichidagi bosimni tushiruvchi dorilarni boshlaymiz. Shifokor kelib likvor tahlili oladi va dori darhol ta'sir qiladi. Ko'zingizni yumib dam oling.",
+            "hisobot": "Bemor Elyor (22 yosh), o'tkir yiringli meningit gumoni: T 39.8°C, yaqqol ensa mushaklari rigidligi (3 ko'ndalang barmoq), fotofobiya, serebral qusish, sonida yulduzsimon petexiyalar. Zudlik bilan izolyatsiya, lyumbal ponksiya va antibakterial terapiya!"
+        }
+    },
+
+    "bell_falaji": {
+        "nomi": "65. Yuz Nervi Nevriti (Bell falaji)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Lola opa. Men navbatchi hamshiraman. Xavotir olmang, yuzingizdagi holat bo'yicha yordam beramiz.",
+            "izoh": "Yuz nervi periferik falaji (Bell falaji), insultdan farqlash, ko'z qovog'ini himoya qilish."
+        },
+        "savollar": [
+            {
+                "savol": "O'ng ko'zingizni qattiq yumishga harakat qilib ko'ring-chi? (Tekshiruv: ko'z yumilmaydi, oq qismi ko'rinib qoladi — Bell fenomeni)",
+                "maqsad": "Lagoftalm va mimika mushaklari periferik falajini aniqlash"
+            },
+            {
+                "savol": "Peshonangizni yuqoriga tirishtirib ko'ring-chi? O'ng tomonda burmalar paydo bo'lyaptimi?",
+                "maqsad": "Periferik va markaziy falajni (insultdan farqlash) tekshirish"
+            },
+            {
+                "savol": "Og'zingiz chap tomonga qiyshayib, suv ichganingizda o'ng burchakdan oqib ketyaptimi?",
+                "maqsad": "Aylana og'iz mushagi falajini baholash"
+            },
+            {
+                "savol": "Bu holat sovuq konditsioner yoki deraza shamoli urganidan keyin boshlandimi? Qulog'ingiz orqasida og'riq bo'ldimi?",
+                "maqsad": "Shamollash (etio-patogenez) omilini aniqlash"
+            },
+            {
+                "savol": "Tilingizning oldingi qismida ta'm bilish buzilmadimi yoki qulog'ingizda tovushlar haddan tashqari baland eshitilmayaptimi?",
+                "maqsad": "Nog'ora tori (chorda tympani) va stapedius nervi zararlanishini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni tinchlantiring (bu insult emas, yuz nervi nevriti). Yumilmaydigan o'ng ko'z shox pardasi qurib qolmasligi uchun sun'iy ko'z yoshi tomchisini tomizing va tunda doka bilan yoping. Glyukokortikoid (Prednizolon), B guruhi vitaminlari va qon tomir preparatlarini tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Lola opa, bu insult emas, konditsioner shamolidan yuz nervingiz shamollagan. Hozir ko'zingizga quritmaydigan dori tomizamiz va shishni qaytaruvchi davolashni boshlaymiz. To'g'ri muolaja bilan yuzingiz to'liq o'z holiga qaytadi, xavotir olmang.",
+            "hisobot": "Bemor Lola (35 yosh), o'ng tomonlama yuz nervi o'tkir nevriti (Bell falaji): lagoftalm (o'ng ko'z yumilmaydi), yuz asimmetriyasi, peshona burmalari yo'qligi, insult belgilari inkor etildi. Gormonal va neyrotrofik terapiya tayinlandi."
+        }
+    },
+
+    "migren_krizi": {
+        "nomi": "66. O'tkir Migren Krizisi (Gemikraniya va ko'z og'rig'i)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Shahnozaxon, sekin gapiring. Men navbatchi hamshiraman. Chiroqni o'chirdim, xotirjam yoting.",
+            "izoh": "O'tkir migren gemikraniyasi, fotofobiya, fonofobiya va osmofobiya."
+        },
+        "savollar": [
+            {
+                "savol": "Og'riq boshning bir tomonida (chakkangizda va ko'zingiz orqasida) tomir urgandek lo'qillayaptimi?",
+                "maqsad": "Klassik gemikraniya va pulsatsiyalanuvchi og'riqni aniqlash"
+            },
+            {
+                "savol": "Og'riq boshlanishidan oldin ko'z oldingizda chaqnoqlar, miltillovchi yorug'lik yoki zigzag chiziqlar (aura) bo'ldimi?",
+                "maqsad": "Ko'ruv aurasini tasdiqlash"
+            },
+            {
+                "savol": "Yorug'lik, baland ovoz yoki o'tkir hidlar og'riqni chidab bo'lmaydigan darajada kuchaytiryaptimi?",
+                "maqsad": "Fotofobiya va fonofobiya mavjudligini aniqlash"
+            },
+            {
+                "savol": "Ko'nglingiz aynib, qayt qildingizmi?",
+                "maqsad": "Migren paroksizmining dispeptik belgisini tekshirish"
+            },
+            {
+                "savol": "Ilgari bunday xurujlar bo'lganmi? Maxsus migren dorilarini (Sumatriptan, Zolmitriptan) ichganmisiz?",
+                "maqsad": "Spesifik triptan terapiyasi anamnezini o'rganish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni qorong'i, jimjit, toza havoli xonaga joylashtiring. Boshning og'riyotgan tomoniga salqin kompress qo'ying. Shifokor ko'rsatmasi bilan triptanlar (Sumatriptan) yoki NQVBD + ko'ngil aynishiga qarshi dori (Metoklopramid) bering."
+        },
+        "yakunlash": {
+            "matn": "Shahnozaxon, chiroqni o'chirib, to'liq tinchlik yaratdik. Hozir maxsus migren krizini to'xtatuvchi dorini beramiz va ko'ngil aynishini bosamiz. Bir oz ko'zingizni yumib uxlasangiz, uyg'onganingizda bosh og'rig'i butunlay tarqaydi. Xotirjam dam oling.",
+            "hisobot": "Bemor Shahnoza (32 yosh), o'tkir aurali migren xuruji: chap tomonlama pulsatsiyalanuvchi gemikraniya, fotofobiya, ko'ngil aynishi. Triptan terapiyasi va sedatsiya boshlandi."
+        }
+    },
+
+    "miasteniya": {
+        "nomi": "67. Miasteniya Gravis (O'tkir miastenik kriz)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Rayhonaxon. Men navbatchi hamshiraman. Ko'p gapirmang, sekin nafas oling.",
+            "izoh": "Miastenik kriz! Chaynash, yutish va nafas mushaklari patologik toliqishi, asfiksiya xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Ertalab yaxshi bo'lib, kun oxiriga borib yoki harakat qilganingiz sari mushaklaringiz quvvatdan qolyaptimi?",
+                "maqsad": "Miasteniyaga xos patologik mushak toliqishini aniqlash"
+            },
+            {
+                "savol": "Ko'z qovoqlaringiz pastga osilib tushib qolyaptimi (ptoz) va narsalar ikkita bo'lib ko'rinyaptimi (diplopiya)?",
+                "maqsad": "Okulyar miasteniya belgilarini baholash"
+            },
+            {
+                "savol": "Ovqat chaynash, yutish qiyinlashib, suyuqlik ichganingizda burningizdan otilib ketyaptimi?",
+                "maqsad": "Bulbar falajlik va aspiratsiya xavfini aniqlash"
+            },
+            {
+                "savol": "Nafas olishingiz qiyinlashib, gapirganingizda ovozingiz pasayib, pichirlashga aylanib qolmayaptimi?",
+                "maqsad": "Diafragma va qovurg'alararo mushaklar parezi (miastenik kriz)ni erta aniqlash"
+            },
+            {
+                "savol": "Doimiy ichadigan Kalimin (Piridostigmin) doringizni o'z vaqtida ichganmidingiz?",
+                "maqsad": "Xolinesteraza ingibitorlari dozasini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yarim o'tirgan holatda tuting. Yutish va nafas olishni doimiy kuzating. Prozerin (Neostigmin) 0.05% 1-2 ml teri ostiga sinov uchun tayyorlang. Og'ir nafas qisishida shoshilinch intubatsiya va O'SV ga tayyor bo'ling."
+        },
+        "yakunlash": {
+            "matn": "Rayhonaxon, mushaklaringiz toliqqani sababli hozir ko'p gapirmang. Shifokor tayinlagan maxsus dori (Prozerin) ukolini qilamiz, bir necha daqiqada qovoqlaringiz ochilib, nafas olishingiz yengillashadi va kuchingiz qaytadi. Yoningizdaman.",
+            "hisobot": "Bemor Rayhona (26 yosh), miasteniya gravis zo'rayishi, bulbar va respirator sindrom: ikki tomonlama ptoz, diplopiya, disfagiya, nafas qisishi. Zudlik bilan Prozerin sinamasi va reanimatsion nazorat."
+        }
+    },
+
+    "disk_churrasi": {
+        "nomi": "68. Bel-Dumg'aza Radikulopatiyasi (O'tkir Lyumbago & Disk churrasi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Zafar aka. Men navbatchi hamshiraman. Qattiq qimirlamang, qulay yonboshlab yotishingizga yordam beraman.",
+            "izoh": "O'tkir radikulopatiya (ishias), beldan oyoqqa uzatiluvchi o'tkir og'riq, qattiq to'shak."
+        },
+        "savollar": [
+            {
+                "savol": "Belingizdagi og'riq to'satdan og'ir yuk ko'targaningizda yoki keskin burilganingizda elektr toki urgandek boshlandimi?",
+                "maqsad": "O'tkir lyumbago va disk churrasi boshlanish mexanizmini aniqlash"
+            },
+            {
+                "savol": "Og'riq belingizdan dumg'aza orqali soningizning orqasiga, boldir va tovon/barmoqlaringizgacha urib tarqalyaptimi?",
+                "maqsad": "Nerv ildizchasi (L5-S1 radikulopatiya / ishias) bo'ylab og'riq tarqalishini aniqlash"
+            },
+            {
+                "savol": "Yo'talsangiz, aksirsangiz yoki qorinni taranglashtirsangiz belingizga pichoq sanchilgandek kuchayadimi?",
+                "maqsad": "Dejerin simptomi (orqa miya kanali ichki bosimi)ni tekshirish"
+            },
+            {
+                "savol": "Oyog'ingiz panjasini yuqoriga ko'tara olyapsizmi? Panjangiz osilib, yurganingizda sudrab qolmayaptimi?",
+                "maqsad": "Parez va motor neyron zararlanishini tekshirish"
+            },
+            {
+                "savol": "Oraliq (chov) sohangizda uvishish yoki siydik/najas tutolmaslik paydo bo'lmadimi?",
+                "maqsad": "'Ot dumi' (Cauda equina) o'tkir kompressiyasini istisno qilish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni qattiq tekis to'shakka yotqizing, tizzalari tagiga yostiq qo'ying (psoas mushagini bo'shashtirish). Keskin harakatlar man etiladi. NQVBD (Ketonal, Diklofenak), miorelaksant (Middokalm) va B vitaminlari inyeksiyasini tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Zafar aka, umurtqalararo disk asab ildizini qisib qo'ygan. Sizni to'g'ri tekis yotqizdik, tizzangiz ostidagi yostiq asabni bo'shatadi. Hozir og'riqsizlantiruvchi va mushakni yumshatuvchi ukol qilamiz, og'riq ancha pasayadi. Shoshilmang, dam oling.",
+            "hisobot": "Bemor Zafar (40 yosh), o'tkir bel-dumg'aza radikulopatiyasi (L5-S1 disk churrasi): o'ng oyoq bo'ylab irradiatsiyalovchi ishias, Laseg simptomi musbat (30°), motor defitsit yo'q. NQVBD va MRT tekshiruvi rejalashtirildi."
+        }
+    },
+
+    "miya_osmasi": {
+        "nomi": "69. Bosh Miya O'smasi Gipertenzion-Dislokatsion Sindromi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Sanjar aka. Men navbatchi hamshiraman. Sekin gapiring, ko'zingizni yumib dam oling.",
+            "izoh": "Miya ichi bosimi o'tkir oshishi, dislokatsiya xavfi, ko'z tubi dimlanishi."
+        },
+        "savollar": [
+            {
+                "savol": "Bosh og'rig'i ayniqsa ertalab uyqudan uyg'onganingizda chidab bo'lmaydigan darajada kuchayib, yorilib ketgudek bo'ladimi?",
+                "maqsad": "Miya ichi gipertenziyasining ertalabki xarakterini aniqlash"
+            },
+            {
+                "savol": "Ko'nglingiz aynimasdan, to'satdan 'favvora' shaklida qusib yuborasizmi? Qusgandan keyin og'riq yengillashadimi?",
+                "maqsad": "Miya o'smasiga xos serebral qusishni baholash"
+            },
+            {
+                "savol": "Ko'rishingiz kundan-kunga xiralashib, ko'z oldingizda tuman paydo bo'lyaptimi?",
+                "maqsad": "Ko'ruv nervi diski dimlanishi (zastoy)ni aniqlash"
+            },
+            {
+                "savol": "Qo'l yoki oyog'ingizda kuchsizlik, yurganingizda bir tomonga chayqalib ketish bormi?",
+                "maqsad": "Fokal o'choqli nevrologik defitsitni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemor boshini 30 gradusga ko'taring. Miya shishini kamaytirish uchun Deksametazon 8-16 mg va Mannitol (yoki Furosemid) yuborishga tayyorlang. Zudlik bilan bosh miya kontrastli MRT tekshiruviga va neyroxirurgik konsultatsiyaga tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Sanjar aka, bosh miyangizdagi bosimni kamaytirish uchun hozir maxsus shishni qaytaruvchi dorilarni kiritamiz, qusish va bosh og'rig'i ancha yengillashadi. Neyroxirurg shifokor bilan MRT natijasini ko'rib, aniq davolash rejasini tuzamiz. Tinch yoting.",
+            "hisobot": "Bemor Sanjar (49 yosh), bosh miya o'smasi, gipertenzion sindrom: ertalabki chidab bo'lmas bosh og'rig'i, serebral favvorasimon qusish, ko'rish pasayishi. Deksametazon bilan degidratatsiya va shoshilinch MRT!"
+        }
+    },
+
+    "parkinson_kriz": {
+        "nomi": "70. Parkinson Kasalligi (O'tkir akineziya va rigidlik)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Omon ota. Men navbatchi hamshiraman. Shoshilmang, sizga o'tirishingizga yordam beraman.",
+            "izoh": "Parkinson o'tkir akineziyasi, qotib qolish (muzlash), yutish qiyinlashishi, qulash xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Omon ota, butun badaningiz toshdek qotib, qadam bosolmay 'muzlab' qoldingizmi?",
+                "maqsad": "O'tkir akinetik kriz va mushak rigidligini aniqlash"
+            },
+            {
+                "savol": "Qo'llaringiz tinch turganda xuddi 'tangalar sanayotgandek' tinimsiz qaltirayaptimi?",
+                "maqsad": "Parkinsonizmga xos tinchlikdagi tremorni baholash"
+            },
+            {
+                "savol": "Doimiy ichadigan doringizni (Nakom, Madopar yoki Levadopa) bugun o'z vaqtida ichganmidingiz yoki qabul qilish to'xtab qoldimi?",
+                "maqsad": "Levadopa dorisi 'off' (o'chish) davri yoki dorini keskin to'xtatishni aniqlash"
+            },
+            {
+                "savol": "Tupugingizni yutish qiyinlashib, og'zingizdan so'lak oqib ketyaptimi?",
+                "maqsad": "Disfagiya va aspiratsiya xavfini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qulashdan ehtiyot qiling (harakatlantirmang). Bemorga yordam berib o'tqazing. Zudlik bilan Levadopa preparatini (agar yutolmasa nazogastral zond orqali yoki eruvchi shaklini) bering. Suvsizlanish va aspiratsiyadan saqlang."
+        },
+        "yakunlash": {
+            "matn": "Omon ota, dori ta'siri tugagani uchun mushaklaringiz qotib qolgan. Hozir doringizni beraman, 20-30 daqiqada badaningiz bo'shashib, yana bemalol qadam bosa olasiz. Shoshilmasdan o'tiring, yoningizdaman.",
+            "hisobot": "Bemor Omon ota (72 yosh), Parkinson kasalligi o'tkir akinetik-rigid krizisi: yaqqol gipokineziya ('muzlash' fenomeni), 'tishli g'ildirak' rigidligi, tremor, disfagiya. Levadopa terapiyasi qayta tiklanmoqda."
+        }
+    },
+
+    "buyrak_sanchigi": {
+        "nomi": "71. O'tkir Buyrak Sanchig'i (Nefrolitiaz)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Akmal aka. Men navbatchi hamshiraman. Og'riq juda kuchli ekanini ko'ryapman, zudlik bilan yordam beramiz!",
+            "izoh": "Tosh siydik yo'lini to'sib qo'ygan, bemor og'riqdan o'ziga joy topolmay to'lg'onadi."
+        },
+        "savollar": [
+            {
+                "savol": "Belingizdagi og'riq to'satdan boshlanib, chov sohasiga, qovuqqa va moyakka qarab pastga urib tarqalyaptimi?",
+                "maqsad": "Buyrak sanchig'ining tipik irradiatsiyasini aniqlash"
+            },
+            {
+                "savol": "Og'riq shu darajada kuchliki, to'shakda qimirlamay yotolmay, o'zingizga joy topolmay to'lg'onyapsizmi?",
+                "maqsad": "Peritonitdan farqlovchi patognomik xatti-harakat (motor bezovtalik)"
+            },
+            {
+                "savol": "Tez-tez siygingiz kelyaptimi? Siydikda qon rangi (qizg'ishlik) ko'rindingizmi?",
+                "maqsad": "Dizuriya va toshning shilliq qavatni jarohatlashi (gematuriya)ni aniqlash"
+            },
+            {
+                "savol": "Ko'nglingiz aynib qusdingizmi?",
+                "maqsad": "Keltirib chiqaruvchi renointestinal refleksni baholash"
+            },
+            {
+                "savol": "Ilgari buyragingizdan tosh yoki qum tushganmidi?",
+                "maqsad": "Nefrolitiaz anamnezini tasdiqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorga qulay pozitsiya topishiga yordam bering. Bel sohasiga iliq grelka qo'yilishi mumkin (faqat o'tkir appenditsit to'liq inkor etilgach!). Spazmolitiklar (No-shpa, Platifillin, Baralgin) va NQVBD (Ketonal) vena ichiga zudlik bilan yuboriladi. Urologik UTT (UZI) tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Akmal aka, buyrakdagi tosh siydik yo'lini qisib qo'ygan, shuning uchun og'riq kuchli. Hozir tomiringizdan siydik yo'lini kengaytiruvchi va og'riq qoldiruvchi kuchli dorini qilamiz, bir necha daqiqada spazm yoziladi. Urolog shifokor UZIda toshni ko'radi. Chidab turing!",
+            "hisobot": "Bemor Akmal (37 yosh), o'ng tomonlama o'tkir buyrak sanchig'i: beldan chov va moyakka irradiatsiya, motor bezovtalik, mikrogematuriya, dizuriya. Shoshilinch spazmolitik terapiya va urologik tekshiruv."
+        }
+    },
+
+    "pielonefrit": {
+        "nomi": "72. O'tkir Yiringli Pielonefrit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Dilorom opa. Men navbatchi hamshiraman. Qaltirayotgan ekansiz, sizni iliq o'rab qo'yaman.",
+            "izoh": "Buyrak jomi yiringli yallig'lanishi, 39.5°C isitma, kuchli qaltirash, Pasternatskiy musbat."
+        },
+        "savollar": [
+            {
+                "savol": "Belingizning bir tomonida doimiy simillovchi yoki qattiq zirqiragan og'riq bormi?",
+                "maqsad": "Bir tomonlama buyrak og'rig'ini aniqlash"
+            },
+            {
+                "savol": "Isitmangiz 39-40°C ga chiqib, tishlaringiz bir-biriga tegib qattiq qaltiradingizmi?",
+                "maqsad": "Gektik bakterial isitma va titroqni baholash"
+            },
+            {
+                "savol": "Siydigingiz rangi loyqalanib, noxush yiring hidi kelyaptimi? Siyayotganda achishish bormi?",
+                "maqsad": "Piuriya va bakteriuriyani aniqlash"
+            },
+            {
+                "savol": "Ko'ngil aynishi, qusish va kuchli darmonsizlik bormi?",
+                "maqsad": "Endogen uroseptik intoksikatsiyani baholash"
+            },
+            {
+                "savol": "Yaqinda sistit bo'lganmidingiz yoki sovuq suvda shamollaganmisiz?",
+                "maqsad": "Ko'tariluvchi urogenital infeksiya yo'lini aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni iliq to'shakka yotqizing. Termometriya va puls nazorati. Ko'p miqdorda suyuqlik (morz, iliq choy) ichiring. Siydikning umumiy tahlili va ekmasi uchun steril namuna oling. Keng ta'sirli antibiotiklar (Sefalosporinlar/Ftorxinolonlar) infuziyasini boshlang."
+        },
+        "yakunlash": {
+            "matn": "Dilorom opa, buyragingizda jiddiy shamollash bor. Hozir qaltirashni to'xtatuvchi va infeksiyani yo'qotuvchi osma ukollarni boshlaymiz. Ko'p iliq suyuqlik ichib turing, yiringli toksinlar tezda yuvilib chiqadi. Shifokor bilan birga yoningizdamiz.",
+            "hisobot": "Bemor Dilorom opa (43 yosh), o'tkir o'ng tomonlama pielonefrit: T 39.2°C, kuchli qaltirash, o'ng belda og'riq, Pasternatskiy simptomi keskin musbat, piuriya. Antibakterial va dezintoksikatsion terapiya boshlandi."
+        }
+    },
+
+    "glomerulonefrit": {
+        "nomi": "73. O'tkir Diffuz Glomerulonefrit (Nefritik sindrom)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Javohir. Men navbatchi hamshiraman. Yuzingizdagi shish bo'yicha yordam beramiz, o'tiring.",
+            "izoh": "Poststreptokokk glomerulonefrit, yuz shishi, gipertenziya va 'go'sht yuvindisi' siydik."
+        },
+        "savollar": [
+            {
+                "savol": "Yuzingiz, ayniqsa ko'z qovoqlaringiz ertalab qattiq shishib qolishi qachon boshlandi?",
+                "maqsad": "Nefritik sindromga xos ertalabki periorbital shishlarni aniqlash"
+            },
+            {
+                "savol": "Siydigingiz rangi to'qlashib, xuddi 'go'sht yuvilgan suv'ga o'xshab qizg'ish-jigarrang bo'lib qoldimi?",
+                "maqsad": "Makrogematuriyani (glomerulyar qonash) aniqlash"
+            },
+            {
+                "savol": "Bundan 2-3 hafta oldin kuchli tomoq og'rig'i, yiringli angina yoki skarlatina bilan og'riganmidingiz?",
+                "maqsad": "Poststreptokokk autoimmun etiologiyani aniqlash"
+            },
+            {
+                "savol": "Qon bosimingiz ko'tarilib (160/100 mmHg), boshingiz og'riyaptimi?",
+                "maqsad": "Buyrak gipertenziyasi va eklampsiya xavfini baholash"
+            },
+            {
+                "savol": "Siyishingiz miqdori (peshob) kamayib ketmadimi (oliguriya)?",
+                "maqsad": "Koptokchalar filtratsiyasi pasayishini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qat'iy to'shak rejimi. Tuz va suyuqlik qabul qilish qat'iy cheklanadi. Qon bosimi va kunlik diurez (chiqqan siydik) har soatda yozib boriladi. Siydik haydovchi (Furosemid) va gipotenziv dorilar tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Javohir, o'tkazilgan anginadan so'ng buyrak koptokchalari yallig'langan. Hozir tuzsiz parhez qilib, shishni qaytaruvchi va bosimni tushiruvchi dorilarni beramiz. Bir necha kunda yuzingizdagi shishlar qaytib, siydik rangi tiniqlashadi. Qattiq dam oling.",
+            "hisobot": "Bemor Javohir (20 yosh), o'tkir diffuz glomerulonefrit, nefritik sindrom: ertalabki yuz shishi, makrogematuriya ('go'sht yuvindisi' siydik), arterial gipertenziya (BP 160/100), oliguriya. Nefrolog ko'rigi va gipotenziv terapiya."
+        }
+    },
+
+    "siydik_tutilishi": {
+        "nomi": "74. O'tkir Siydik Tutilishi (Ishuriya)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum G'ulom ota. Men navbatchi hamshiraman. Hozir darhol yordam beramiz, qulay yotib oling.",
+            "izoh": "Qovuq haddan tashqari to'lib ketgan (1-1.5 litr), qattiq azobli og'riq, qovuq yorilishi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Necha soatdan beri umuman siyolmayapsiz? 12-14 soatdan oshib ketdimi?",
+                "maqsad": "O'tkir ishuriya davomiyligini aniqlash"
+            },
+            {
+                "savol": "Qorningizning eng pastki qismida qovuq sharga o'xshab toshdek taranglashib og'riyaptimi?",
+                "maqsad": "To'lib toshgan siydik pufagi hajmini aniqlash"
+            },
+            {
+                "savol": "Ilgari siydik oqimi sustlashib, tomchilab kelishi bo'lganmi? Prostata bezi kasalligingiz bormi?",
+                "maqsad": "Prostata adenomasi yoki strikturani aniqlash"
+            },
+            {
+                "savol": "Siyishga qattiq qistov bo'lsa ham bir tomchi ham chiqmayaptimi?",
+                "maqsad": "To'liq mexanik to'silishni tasdiqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "DIQQAT: Qoringa bosim o'tkazmang! Shoshilinch steril Foley kateterini (yoki Nelaton) olib, siydik pufagiga sekinlik bilan kateter o'rnating. Siydikni birvarakayiga emas, asta-sekin (har 500 ml dan so'ng to'xtatib) chiqariladi (qovuq dekompressiya qonashini oldini olish uchun)."
+        },
+        "yakunlash": {
+            "matn": "G'ulom ota, qovug'ingiz siydikdan to'lib ketgan. Hozir ingichka yumshoq naycha (kateter) qo'yamiz va yig'ilib qolgan siydik bir zumda chiqib ketadi. Darhol o'zingizni yengil his qilasiz, hech qo'rqmang, og'riqsizlantiruvchi gel surtamiz.",
+            "hisobot": "Bemor G'ulom ota (69 yosh), o'tkir siydik tutilishi (ishuriya, 14 soatlik): qov usti sohasida taranglashgan og'riqli qovuq (1200 ml). Steril Foley kateteri orqali muvaffaqiyatli dekompressiya qilindi."
+        }
+    },
+
+    "otkir_buyrak_yetishmovchiligi": {
+        "nomi": "75. O'tkir Buyrak Yetishmovchiligi (Anuriya)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Eldor aka. Men navbatchi hamshiraman. Holsizlanib qolibsiz, darhol qon bosimingizni o'lchaymiz.",
+            "izoh": "Anuriya (24 soatda <50 ml siydik), uremiya, giperkaliyemiya, shoshilinch gemodializ zarurati."
+        },
+        "savollar": [
+            {
+                "savol": "Bir sutkadan (24 soatdan) beri umuman siyishga bormadingizmi? Bir tomchi ham siydik chiqmadi-ya?",
+                "maqsad": "Anuriya holatini (ishuriyadan farqlab) tasdiqlash"
+            },
+            {
+                "savol": "Og'zingizdan siydik (ammiak) hidi kelyaptimi va ko'nglingiz tinimsiz ayniyaptimi?",
+                "maqsad": "Uremik intoksikatsiyani aniqlash"
+            },
+            {
+                "savol": "Bu holatdan oldin qattiq qon yo'qotish, og'ir qusish-ich ketish yoki zaharli dori qabul qilish bo'lganmidi?",
+                "maqsad": "Prerenal yoki toksik buyrak zararlanishini aniqlash"
+            },
+            {
+                "savol": "Yurak urishingiz sekinlashib, to'xtab-to'xtab urayotgandek tuyulyaptimi?",
+                "maqsad": "Xavfli giperkaliyemiya kardiotoksik belgilarini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qovuqni kateterlab bo'shligini tasdiqlang (anuriyada qovuq bo'sh bo'ladi!). Suyuqlik yuborishni cheklang (o'pka shishini chaqirmaslik uchun!). Qondagi kaliy va kreatinin darajasini shoshilinch tekshiring. Zudlik bilan gemodializ bo'limini ogohlantiring."
+        },
+        "yakunlash": {
+            "matn": "Eldor aka, buyraklaringiz vaqtincha siydik ishlab chiqarishni to'xtatgan. Hozir qoningizdagi zaharli moddalarni chiqarish uchun gemodializ apparatini tayyorlayapmiz. Sun'iy buyrak apparati qoningizni tozalab beradi va buyraklaringiz yana ishlab ketadi. Biz siz bilanmiz!",
+            "hisobot": "Bemor Eldor (38 yosh), o'tkir buyrak yetishmovchiligi, anuriya bosqichi (24 soatda diurez 0 ml): uremik intoksikatsiya, giperkaliyemiya (K+ 6.8 mmol/l), kreatinin 620 mkmol/l. Shoshilinch gemodializ ko'rsatmasi!"
+        }
+    },
+
+    "urosepsis": {
+        "nomi": "76. Urosepsis va Septik Shok Xavfi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Jamila aya, eshityapsizmi? Men navbatchi hamshiraman. Hech xavotir olmang, sizga zudlik bilan yordam beramiz.",
+            "izoh": "Urosepsis, septik shok xavfi: bosim 80/50, taxikardiya 126 bpm, 40°C isitma, qon infektsiyasi."
+        },
+        "savollar": [
+            {
+                "savol": "Isitmangiz 40°C ga chiqib, butun vujudingiz qattiq qaltirab ketdimi?",
+                "maqsad": "Bakteremiya va septik paroksizmni aniqlash"
+            },
+            {
+                "savol": "Qon bosimingiz juda tushib ketgan, ko'zingiz qorong'ilashib, boshingiz qattiq aylanyaptimi?",
+                "maqsad": "Septik shok gipotenziyasini baholash"
+            },
+            {
+                "savol": "Uzoq vaqtdan beri buyrak yoki qovuq shamollashi bo'yicha davolanib yurarmidingiz?",
+                "maqsad": "Urosepsis birlamchi o'chog'ini aniqlash"
+            },
+            {
+                "savol": "Nafas olishingiz tezlashib, yuragingiz ko'kragingizdan chiqib ketayotgandek uryaptimi?",
+                "maqsad": "SIRS (tizimli yallig'lanish reaksiyasi) mezonlarini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "QAT'IY PROTOKOL: 'Surviving Sepsis Campaign' 1 soatlik to'plami. Yuqori oqimli kislorod bering. Darhol qondan steril ekma oling va keng ta'sirli antibiotikni (Meropenem) zudlik bilan tomirga yuboring. Oqim bilan kristalloidlar (fizioeritma 30 ml/kg) va pressorlar (Noradrenalin) tayyorlanadi."
+        },
+        "yakunlash": {
+            "matn": "Jamila aya, infeksiya butun tanangizga tarqagan, shuning uchun bosimingiz tushib ketgan. Hozir tomiringizdan kuchli antibiotik va bosimni ko'taruvchi dorilarni oqim bilan yuboryapmiz. Reanimatsiya shifokorlari yoningizda, barchasi nazoratda.",
+            "hisobot": "Bemor Jamila aya (70 yosh), o'tkir urosepsis, septik shok xavfi: T 40.0°C, BP 80/50 mmHg, HR 126 bpm, leykositoz 22*10^9, oliguriya. Qizil kod — shoshilinch massiv infuziya, Meropenem va vazopressorlar!"
+        }
+    },
+
+    "moyak_buralishi": {
+        "nomi": "77. Moyak Buralib Qolishi (O'tkir skrotum sindromi)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Bekzod. Men navbatchi hamshiraman. Og'riq juda kuchli ekanini tushunaman, qimirlamay yotib turing.",
+            "izoh": "Torsio testis, 6 soat ichida operatsiya qilinmasa moyak nekrozga uchrab o'ladi!"
+        },
+        "savollar": [
+            {
+                "savol": "Moyagingizdagi o'tkir chidab bo'lmas og'riq aynan qachon boshlandi? (Tekshiruv: 2 soat oldin)",
+                "maqsad": "Torsiya vaqtini (6 soatlik 'oltin soat' chegarasini) aniqlash"
+            },
+            {
+                "savol": "Og'riq borgan sari kuchayib, chov sohasiga va qorin pastiga tarqalyaptimi?",
+                "maqsad": "Urug' tizimchasi ishemiyasini baholash"
+            },
+            {
+                "savol": "O'ng moyagingiz shishib, yuqoriga (chov kanaliga) tortilib qolganini ko'rdingizmi?",
+                "maqsad": "Brunzel va Prehn simptomlarini tekshirish"
+            },
+            {
+                "savol": "Og'riqdan ko'nglingiz aynib qusdingizmi?",
+                "maqsad": "O'tkir og'riq shoki va reflektor qusishni aniqlash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Moyak sohasiga sovuq kompress qo'yiladi. Hech qanday issiq qo'yilmasin! Ovqat va suv berish man etiladi (shoshilinch narkoz uchun). Darhol navbatchi urolog-jarrohni chaqiring va shoshilinch operatsiyaga (ochiq detorsiya va orxiopeksiya) tayyorlang."
+        },
+        "yakunlash": {
+            "matn": "Bekzod, moyakingiz tomirlari bilan buralib qolgan. Hozir qattiq harakat qilmang. Urolog shifokorlar zudlik bilan kichik operatsiya qilib, buralgan tomirni to'g'rilab qo'yadi va og'riq darhol to'xtaydi. Barchasi yaxshi bo'ladi, biz yoningizdamiz.",
+            "hisobot": "Bemor Bekzod (17 yosh), o'tkir moyak buralishi (Torsio testis, o'ng tomonlama): 2 soatlik anamnez, moyak shishi va yuqoriga tortilishi, o'tkir og'riq. Qizil kod — shoshilinch urologik operatsiya (orxiopeksiya)!"
+        }
+    },
+
+    "surunkali_uremiya": {
+        "nomi": "78. Surunkali Buyrak Kasalligi (Terminal Uremiya)",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Qodir aka. Men navbatchi hamshiraman. Sekin yotib oling, dializ apparatiga tayyorgarlik ko'ramiz.",
+            "izoh": "Gemodializ qoldirilgan, terminal uremiya, giperkaliyemiya tufayli yurak to'xtashi xavfi."
+        },
+        "savollar": [
+            {
+                "savol": "Rejali gemodializ seansiga necha kun kechikdingiz? 2 kundan oshib ketdimi?",
+                "maqsad": "Dializ oralig'idagi toksinlar va suyuqlik to'planishini aniqlash"
+            },
+            {
+                "savol": "Butun tanangizda chidab bo'lmas qichishish bormi? Teringizda oq kukunsimon karash ('uremik qirov') sezdingizmi?",
+                "maqsad": "Mochevina ter orqali ajralishi (uremik dermatopatiya)ni baholash"
+            },
+            {
+                "savol": "Og'zingizdan siydik hidi kelyaptimi? Ishtahangiz butunlay yo'qolib, ko'nglingiz ayniyaptimi?",
+                "maqsad": "Uremik gastropatiya va intoksikatsiyani aniqlash"
+            },
+            {
+                "savol": "Ko'kragingizda qisilish, hansirash va yuragingiz urishida to'xtashlar bormi?",
+                "maqsad": "Giperkaliyemiya va o'pka shishi xavfini baholash"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qo'lidagi arteriovenoz fistulani (AVF) tekshiring (titrash va shovqin borligini bilish). EKG oling (giperkaliyemiyaning baland T tishchalarini tekshirish!). Kaliy darajasini zudlik bilan o'lchang. Shoshilinch navbatdan tashqari gemodializ seansini boshlang."
+        },
+        "yakunlash": {
+            "matn": "Qodir aka, dializ seansi qoldirilgani uchun qoningizda shlaklar ko'payib ketgan. Fistulangiz yaxshi ishlayapti, hozir darhol sizni gemodializ apparatiga ulaymiz. 2-3 soatda qoningiz to'liq tozalanib, yengil tortasiz. Xavotir olmang.",
+            "hisobot": "Bemor Qodir aka (56 yosh), surunkali buyrak kasalligi terminal bosqichi, o'tkir uremiya: dializ kechikishi (48 soat), uremik qichima, K+ 6.5 mmol/l, kreatinin 890 mkmol/l. Shoshilinch gemodializ seansi boshlandi."
+        }
+    },
+
+    "otkir_sistit": {
+        "nomi": "79. O'tkir Gemorragik Sistit",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Zilolaxon. Men navbatchi hamshiraman. Hozir og'riq va achishishni qoldirishga yordam beramiz, o'tiring.",
+            "izoh": "Qovuq o'tkir yallig'lanishi, kuchli dizuriya, tenizm va terminal gematuriya."
+        },
+        "savollar": [
+            {
+                "savol": "Har 5-10 daqiqada hojatxonaga qistov bo'lyaptimi? Qovuq bo'shashmayotgandek tuyulyaptimi?",
+                "maqsad": "Pollakiuriya va doimiy imperativ qistovlarni aniqlash"
+            },
+            {
+                "savol": "Siyayotganingizda va ayniqsa siyib bo'lish oxirida pichoq sanchilgandek qattiq achishish bormi?",
+                "maqsad": "Stranguriya va trigonal soha yallig'lanishini aniqlash"
+            },
+            {
+                "savol": "Siydik oxirida bir necha tomchi qizil qon chiqqanini ko'rdingizmi?",
+                "maqsad": "Terminal gematuriya belgisini tasdiqlash"
+            },
+            {
+                "savol": "Sovuq suvda cho'milganmidingiz yoki sovuq joyda o'tirganmidingiz?",
+                "maqsad": "Provokatsion shamollash omilini aniqlash"
+            },
+            {
+                "savol": "Belingizda ham og'riq bormi, isitmangiz bormi? (Pielonefritga o'tmaganini bilish)",
+                "maqsad": "Asoratlanmagan sistitni pielonefritdan ajratish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Qorin pastki qismiga iliq quruq issiqlik qo'yish mumkin. Spazmolitiklar (No-shpa, Spazmalgon) bering. Ko'p miqdorda iliq suyuqlik (brusnika, klyukva morzi) ichiring. Shifokor tayinlagan uroseptik/antibiotik (Fosfomitsin/Monural 3 g) bering."
+        },
+        "yakunlash": {
+            "matn": "Zilolaxon, sovuq urgani tufayli qovug'ingiz devori shamollagan. Hozir spazmni yozuvchi ukol qilamiz va ichishingiz uchun maxsus bitta kukun (Monural) beramiz. Bir necha soat ichida achishish va tez-tez qistash butunlay to'xtaydi. Xotirjam dam oling.",
+            "hisobot": "Bemor Zilola (25 yosh), o'tkir gemorragik sistit: pollakiuriya (har 10 daqiqada), stranguriya, terminal gematuriya, T 37.1°C, belda og'riq yo'q. Uroseptik va spazmolitik terapiya tayinlandi."
+        }
+    },
+
+    "nefrotik_sindrom": {
+        "nomi": "80. Massiv Nefrotik Shish Sindromi",
+        "is_child": False,
+        "salomlashish": {
+            "matn": "Assalomu alaykum Bobomurod aka. Men navbatchi hamshiraman. Shishlar sababli harakatlanishingiz qiyin bo'lsa, yordam beraman.",
+            "izoh": "Massiv proteinuriya (>3.5 g/kun), gipoalbuminemiya va generalizatsiyalangan shishlar (anasarka)."
+        },
+        "savollar": [
+            {
+                "savol": "Qisqa vaqt (1 hafta) ichida butun badaningiz — yuzingiz, oyoqlaringiz, qorningiz shishib ketdimi? Necha kilo og'irlashdingiz?",
+                "maqsad": "Anasarka massiv shish dinamikasini baholash"
+            },
+            {
+                "savol": "Peshobingiz ko'pikli (xuddi sovun ko'pigiga o'xshash) bo'lib qolganini sezdingizmi?",
+                "maqsad": "Massiv proteinuriya (oqsil chiqishi) belgisini aniqlash"
+            },
+            {
+                "savol": "Qorningiz shishib, ichiga suv to'plangandek (astsit) tuyulyaptimi?",
+                "maqsad": "Poliserozit va qorin devori shishini aniqlash"
+            },
+            {
+                "savol": "Teringiz oqarib, xiralashib, kuchli darmonsizlik sezyapsizmi?",
+                "maqsad": "Gipoalbuminemiya va gipovolemiya simptomlarini tekshirish"
+            }
+        ],
+        "parvarish": {
+            "tavsiya": "Bemorni yotqizing. Qat'iy tuzsiz parhez (sutkasiga <2 g tuz). Kunlik siydik va vaznni qat'iy nazorat qiling. Vena ichiga 20% li Albumin eritmasi va ortidan Furosemid infuziyasiga tayyorlang. Qon tahlilida oqsil, xolesterin va proteinuriyani tekshiring."
+        },
+        "yakunlash": {
+            "matn": "Bobomurod aka, buyragingiz orqali qoningizdagi foydali oqsil chiqib ketgani uchun tanangizga suyuqlik to'plangan. Hozir tomiringizdan albumin oqsilini quyamiz va suyuqlikni haydovchi dorilar beramiz. Shishlar tez orada qaytib, ancha yengillashasiz. Tinch dam oling.",
+            "hisobot": "Bemor Bobomurod (33 yosh), o'tkir nefrotik sindrom: tarqalgan massiv shishlar (anasarka, astsit), massiv ko'pikli proteinuriya, gipoalbuminemiya (18 g/l), giperxolesterinemiya. Albumin va nefrologik terapiya boshlandi."
+        }
     }
 }
 
